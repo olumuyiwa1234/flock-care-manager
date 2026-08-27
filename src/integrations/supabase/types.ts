@@ -14,16 +14,262 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      attendance: {
+        Row: {
+          check_in_time: string
+          created_at: string
+          id: string
+          member_id: string
+          recorded_by: string | null
+          service_date: string
+          service_type: string
+          status: string
+        }
+        Insert: {
+          check_in_time?: string
+          created_at?: string
+          id?: string
+          member_id: string
+          recorded_by?: string | null
+          service_date?: string
+          service_type?: string
+          status?: string
+        }
+        Update: {
+          check_in_time?: string
+          created_at?: string
+          id?: string
+          member_id?: string
+          recorded_by?: string | null
+          service_date?: string
+          service_type?: string
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "attendance_member_id_fkey"
+            columns: ["member_id"]
+            isOneToOne: false
+            referencedRelation: "members"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      church_settings: {
+        Row: {
+          church_name: string
+          geofence_enabled: boolean
+          id: number
+          latitude: number | null
+          longitude: number | null
+          radius_meters: number
+          updated_at: string
+        }
+        Insert: {
+          church_name?: string
+          geofence_enabled?: boolean
+          id?: number
+          latitude?: number | null
+          longitude?: number | null
+          radius_meters?: number
+          updated_at?: string
+        }
+        Update: {
+          church_name?: string
+          geofence_enabled?: boolean
+          id?: number
+          latitude?: number | null
+          longitude?: number | null
+          radius_meters?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      follow_ups: {
+        Row: {
+          contact_method: string
+          contacted_on: string
+          created_at: string
+          created_by: string | null
+          id: string
+          member_id: string
+          notes: string | null
+          situation: string | null
+        }
+        Insert: {
+          contact_method: string
+          contacted_on?: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          member_id: string
+          notes?: string | null
+          situation?: string | null
+        }
+        Update: {
+          contact_method?: string
+          contacted_on?: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          member_id?: string
+          notes?: string | null
+          situation?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "follow_ups_member_id_fkey"
+            columns: ["member_id"]
+            isOneToOne: false
+            referencedRelation: "members"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      members: {
+        Row: {
+          age_bracket: string | null
+          anniversary_day: number | null
+          anniversary_month: number | null
+          birth_month: number | null
+          birth_year: number | null
+          created_at: string
+          created_by: string | null
+          department: string | null
+          email: string | null
+          full_name: string
+          gender: string | null
+          home_address: string | null
+          id: string
+          invited_by: string | null
+          is_first_timer: boolean
+          marital_status: string | null
+          member_code: string
+          membership_year: number | null
+          phone: string | null
+          photo_url: string | null
+          user_id: string | null
+        }
+        Insert: {
+          age_bracket?: string | null
+          anniversary_day?: number | null
+          anniversary_month?: number | null
+          birth_month?: number | null
+          birth_year?: number | null
+          created_at?: string
+          created_by?: string | null
+          department?: string | null
+          email?: string | null
+          full_name: string
+          gender?: string | null
+          home_address?: string | null
+          id?: string
+          invited_by?: string | null
+          is_first_timer?: boolean
+          marital_status?: string | null
+          member_code?: string
+          membership_year?: number | null
+          phone?: string | null
+          photo_url?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          age_bracket?: string | null
+          anniversary_day?: number | null
+          anniversary_month?: number | null
+          birth_month?: number | null
+          birth_year?: number | null
+          created_at?: string
+          created_by?: string | null
+          department?: string | null
+          email?: string | null
+          full_name?: string
+          gender?: string | null
+          home_address?: string | null
+          id?: string
+          invited_by?: string | null
+          is_first_timer?: boolean
+          marital_status?: string | null
+          member_code?: string
+          membership_year?: number | null
+          phone?: string | null
+          photo_url?: string | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "members_invited_by_fkey"
+            columns: ["invited_by"]
+            isOneToOne: false
+            referencedRelation: "members"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      profiles: {
+        Row: {
+          created_at: string
+          department: string | null
+          full_name: string
+          id: string
+          phone: string | null
+        }
+        Insert: {
+          created_at?: string
+          department?: string | null
+          full_name?: string
+          id: string
+          phone?: string | null
+        }
+        Update: {
+          created_at?: string
+          department?: string | null
+          full_name?: string
+          id?: string
+          phone?: string | null
+        }
+        Relationships: []
+      }
+      user_roles: {
+        Row: {
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          id?: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      has_full_access: { Args: { _user_id: string }; Returns: boolean }
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
+      my_department: { Args: { _user_id: string }; Returns: string }
     }
     Enums: {
-      [_ in never]: never
+      app_role:
+        | "senior_pastor"
+        | "attendance_officer"
+        | "follow_up_team"
+        | "department_leader"
+        | "floor_member"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -150,6 +396,14 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      app_role: [
+        "senior_pastor",
+        "attendance_officer",
+        "follow_up_team",
+        "department_leader",
+        "floor_member",
+      ],
+    },
   },
 } as const
