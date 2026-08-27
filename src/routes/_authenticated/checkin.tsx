@@ -1,0 +1,292 @@
+import { createFileRoute } from "@tanstack/react-router";
+import { useEffect, useMemo, useState } from "react";
+import { useQueryClient } from "@tanstack/react-query";
+import { Check, MapPin, Loader2 } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { AppShell } from "@/components/AppShell";
+import { MemberForm } from "@/components/MemberForm";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { toast } from "sonner";
+import { SERVICE_TYPES, distanceMeters, todayISO } from "@/lib/shepherd";
+import { useChurchSettings, useMembers } from "@/lib/queries";
+import { useAuth } from "@/lib/useAuth";
+
+export const Route = createFileRoute("/_authenticated/checkin")({
+  head: () => ({
+    meta: [
+      { title: "Check In — Shepherd" },
+      { name: "description", content: "Tap to check in at the church premises and record attendance instantly." },
+      { property: "og:title", content: "Check In — Shepherd" },
+      { property: "og:description", content: "One-tap attendance check-in for church members." },
+    ],
+  }),
+  component: CheckIn,
+});
+
+type Step = "idle" | "ask-invite" | "invitee" | "done";
+
+function CheckIn() {
+  const { auth, isFloor } = useAuth();
+  const queryClient = useQueryClient();
+  const { data: settings } = useChurchSettings();
+  const { data: members = [] } = useMembers();
+
+  const [coords, setCoords] = useState<{ lat: number; lng: number } | null>(null);
+  const [geoError, setGeoError] = useState<string | null>(null);
+  const [locating, setLocating] = useState(true);
+  const [step, setStep] = useState<Step>("idle");
+  const [serviceType, setServiceType] = useState<string>(SERVICE_TYPES[0]);
+  const [selectedMember, setSelectedMember] = useState<string>("");
+  const [search, setSearch] = useState("");
+  const [saving, setSaving] = useState(false);
+
+  const ownMember = useMemo(
+    () => members.find((m) => m.user_id === auth?.userId) ?? null,
+    [members, auth?.userId],
+  );
+
+  useEffect(() => {
+    if (ownMember && !selectedMember) setSelectedMember(ownMember.id);
+  }, [ownMember, selectedMember]);
+
+  useEffect(() => {
+    if (typeof navigator === "undefined" || !navigator.geolocation) {
+      setLocating(false);
+      setGeoError("Location is not available on this device.");
+      return;
+    }
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        setCoords({ lat: pos.coords.latitude, lng: pos.coords.longitude });
+        setLocating(false);
+      },
+      () => {
+        setGeoError("Location permission denied.");
+        setLocating(false);
+      },
+      { enableHighAccuracy: true, timeout: 10000 },
+    );
+  }, []);
+
+  const geofenceOn = !!settings?.geofence_enabled && settings.latitude != null && settings.longitude != null;
+  const distance =
+    geofenceOn && coords
+      ? distanceMeters(coords, { lat: settings!.latitude!, lng: settings!.longitude! })
+      : null;
+  const withinPremises = !geofenceOn || (distance != null && distance <= (settings?.radius_meters ?? 300));
+
+  const filtered = search
+    ? members.filter(
+        (m) =>
+          m.full_name.toLowerCase().includes(search.toLowerCase()) ||
+          m.member_code.toLowerCase().includes(search.toLowerCase()) ||
+          (m.phone ?? "").includes(search),
+      )
+    : members.slice(0, 25);
+
+  async function saveAttendance(memberId: string) {
+    setSaving(true);
+    const { error } = await supabase.from("attendance").upsert(
+      {
+        member_id: memberId,
+        service_date: todayISO(),
+        service_type: serviceType,
+        status: "Present",
+        check_in_time: new Date().toISOString(),
+        recorded_by: auth?.userId ?? null,
+      },
+      { onConflict: "member_id,service_date,service_type" },
+    );
+    setSaving(false);
+    if (error) {
+      toast.error(error.message);
+      return;
+    }
+    await queryClient.invalidateQueries({ queryKey: ["attendance"] });
+    setStep("done");
+    toast.success("Attendance saved");
+  }
+
+  function startCheckIn() {
+    if (!selectedMember) {
+      toast.error("Select who is checking in first");
+      return;
+    }
+    setStep("ask-invite");
+  }
+
+  return (
+    <AppShell title="Check In" subtitle={settings?.church_name ?? "Church"}>
+      <div className="space-y-5">
+        <div className="rounded-2xl border border-border bg-card p-4">
+          <Label className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+            Service type
+          </Label>
+          <Select value={serviceType} onValueChange={setServiceType}>
+            <SelectTrigger className="mt-2">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {SERVICE_TYPES.map((s) => (
+                <SelectItem key={s} value={s}>
+                  {s}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+
+        <div className="rounded-2xl border border-border bg-card p-4">
+          <Label className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+            Who is checking in?
+          </Label>
+          {isFloor && ownMember ? (
+            <p className="mt-2 font-medium">
+              {ownMember.full_name}{" "}
+              <span className="text-sm text-muted-foreground">({ownMember.member_code})</span>
+            </p>
+          ) : (
+            <>
+              <Input
+                className="mt-2"
+                placeholder="Search name, phone or member ID"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+              />
+              <div className="mt-3 max-h-56 space-y-1 overflow-auto">
+                {filtered.map((m) => (
+                  <button
+                    key={m.id}
+                    type="button"
+                    onClick={() => setSelectedMember(m.id)}
+                    className={`flex w-full items-center justify-between rounded-xl px-3 py-2 text-left text-sm transition ${
+                      selectedMember === m.id ? "bg-primary text-primary-foreground" : "hover:bg-secondary"
+                    }`}
+                  >
+                    <span>{m.full_name}</span>
+                    <span className="text-xs opacity-70">{m.member_code}</span>
+                  </button>
+                ))}
+                {filtered.length === 0 && (
+                  <p className="px-3 py-2 text-sm text-muted-foreground">No members found.</p>
+                )}
+              </div>
+            </>
+          )}
+        </div>
+
+        <div className="flex flex-col items-center gap-4 pt-2">
+          <button
+            type="button"
+            disabled={!withinPremises || locating || saving}
+            onClick={startCheckIn}
+            className={`grid size-52 place-items-center rounded-full text-primary-foreground transition ${
+              withinPremises && !locating
+                ? "bg-sky-gradient shadow-float animate-pulse-ring active:scale-95"
+                : "cursor-not-allowed bg-muted text-muted-foreground"
+            }`}
+          >
+            <span className="flex flex-col items-center gap-2">
+              {locating ? (
+                <Loader2 className="size-10 animate-spin" />
+              ) : (
+                <Check className="size-14" strokeWidth={2.5} />
+              )}
+              <span className="text-lg font-semibold">
+                {locating ? "Locating…" : withinPremises ? "Check In" : "Out of range"}
+              </span>
+            </span>
+          </button>
+
+          <p className="flex items-center gap-2 text-center text-sm text-muted-foreground">
+            <MapPin className="size-4" />
+            {!geofenceOn
+              ? "Location check is off — check-in is open."
+              : geoError
+                ? geoError
+                : distance != null
+                  ? `${Math.round(distance)} m from ${settings?.church_name}`
+                  : "Checking your location…"}
+          </p>
+        </div>
+      </div>
+
+      <Dialog open={step === "ask-invite"} onOpenChange={(o) => !o && setStep("idle")}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Did you invite someone today?</DialogTitle>
+            <DialogDescription>
+              If yes, create a profile for your guest before we save your attendance.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="grid grid-cols-2 gap-3">
+            <Button variant="outline" onClick={() => setStep("invitee")}>
+              Yes, add guest
+            </Button>
+            <Button onClick={() => void saveAttendance(selectedMember)} disabled={saving}>
+              No, check me in
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={step === "invitee"} onOpenChange={(o) => !o && setStep("idle")}>
+        <DialogContent className="max-h-[85vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Guest profile</DialogTitle>
+            <DialogDescription>
+              We'll record them as a first-time visitor invited by you.
+            </DialogDescription>
+          </DialogHeader>
+          <MemberForm
+            isFirstTimer
+            invitedBy={selectedMember}
+            submitLabel="Save guest & check in"
+            onSaved={async (guest) => {
+              await supabase.from("attendance").upsert(
+                {
+                  member_id: guest.id,
+                  service_date: todayISO(),
+                  service_type: serviceType,
+                  status: "Present",
+                  recorded_by: auth?.userId ?? null,
+                },
+                { onConflict: "member_id,service_date,service_type" },
+              );
+              await queryClient.invalidateQueries({ queryKey: ["members"] });
+              await saveAttendance(selectedMember);
+            }}
+          />
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={step === "done"} onOpenChange={(o) => !o && setStep("idle")}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>You're checked in</DialogTitle>
+            <DialogDescription>
+              Attendance was saved automatically for {serviceType.toLowerCase()} today.
+            </DialogDescription>
+          </DialogHeader>
+          <Button onClick={() => setStep("idle")}>Done</Button>
+        </DialogContent>
+      </Dialog>
+    </AppShell>
+  );
+}
