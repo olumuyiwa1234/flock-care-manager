@@ -66,23 +66,28 @@ function CheckIn() {
   }, [ownMember, selectedMember]);
 
   useEffect(() => {
-    if (typeof navigator === "undefined" || !navigator.geolocation) {
-      setLocating(false);
-      setGeoError("Location is not available on this device.");
-      return;
-    }
-    navigator.geolocation.getCurrentPosition(
-      (pos) => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const { Geolocation } = await import("@capacitor/geolocation");
+        const pos = await Geolocation.getCurrentPosition({
+          enableHighAccuracy: true,
+          timeout: 10000,
+        });
+        if (cancelled) return;
         setCoords({ lat: pos.coords.latitude, lng: pos.coords.longitude });
         setLocating(false);
-      },
-      () => {
-        setGeoError("Location permission denied.");
+      } catch {
+        if (cancelled) return;
+        setGeoError("Location permission denied or unavailable.");
         setLocating(false);
-      },
-      { enableHighAccuracy: true, timeout: 10000 },
-    );
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
   }, []);
+
 
   const geofenceOn = !!settings?.geofence_enabled && settings.latitude != null && settings.longitude != null;
   const distance =
