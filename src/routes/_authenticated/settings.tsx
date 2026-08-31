@@ -26,7 +26,7 @@ export const Route = createFileRoute("/_authenticated/settings")({
 });
 
 function Settings() {
-  const { auth, isFloor, hasFullAccess } = useAuth();
+  const { auth, isFloor, isStaff } = useAuth();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const { data: settings } = useChurchSettings();
@@ -76,7 +76,10 @@ function Settings() {
   }
 
   function useMyLocation() {
-    if (!navigator.geolocation) return toast.error("Location not available");
+    if (!navigator.geolocation) {
+      toast.error("Location not available");
+      return;
+    }
     navigator.geolocation.getCurrentPosition(
       (p) => {
         setLat(String(p.coords.latitude));
@@ -97,7 +100,7 @@ function Settings() {
         </p>
       </div>
 
-      {isFloor || !hasFullAccess ? (
+      {isFloor || !isStaff ? (
         <div className="mt-4">
           <EmptyState
             title="Church setup is managed by leaders"
