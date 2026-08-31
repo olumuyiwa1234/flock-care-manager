@@ -43,7 +43,7 @@ type Step = "idle" | "ask-invite" | "invitee" | "done";
 function CheckIn() {
   const { auth } = useAuth();
   const queryClient = useQueryClient();
-  const { data: settings } = useChushSettings();
+  const { data: settings } = useChurchSettings();
   const { data: members = [] } = useMembers();
 
   const [coords, setCoords] = useState<{ lat: number; lng: number } | null>(null);
