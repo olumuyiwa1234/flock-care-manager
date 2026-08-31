@@ -6,7 +6,6 @@ import { supabase } from "@/integrations/supabase/client";
 import { AppShell } from "@/components/AppShell";
 import { MemberForm } from "@/components/MemberForm";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
   Dialog,
@@ -42,7 +41,7 @@ export const Route = createFileRoute("/_authenticated/checkin")({
 type Step = "idle" | "ask-invite" | "invitee" | "done";
 
 function CheckIn() {
-  const { auth, isFloor } = useAuth();
+  const { auth } = useAuth();
   const queryClient = useQueryClient();
   const { data: settings } = useChurchSettings();
   const { data: members = [] } = useMembers();
@@ -53,7 +52,6 @@ function CheckIn() {
   const [step, setStep] = useState<Step>("idle");
   const [serviceType, setServiceType] = useState<string>(SERVICE_TYPES[0]);
   const [selectedMember, setSelectedMember] = useState<string>("");
-  const [search, setSearch] = useState("");
   const [saving, setSaving] = useState(false);
 
   const ownMember = useMemo(
@@ -95,15 +93,6 @@ function CheckIn() {
       ? distanceMeters(coords, { lat: settings!.latitude!, lng: settings!.longitude! })
       : null;
   const withinPremises = !geofenceOn || (distance != null && distance <= (settings?.radius_meters ?? 300));
-
-  const filtered = search
-    ? members.filter(
-        (m) =>
-          m.full_name.toLowerCase().includes(search.toLowerCase()) ||
-          m.member_code.toLowerCase().includes(search.toLowerCase()) ||
-          (m.phone ?? "").includes(search),
-      )
-    : members.slice(0, 25);
 
   async function saveAttendance(memberId: string) {
     setSaving(true);
@@ -155,45 +144,6 @@ function CheckIn() {
               ))}
             </SelectContent>
           </Select>
-        </div>
-
-        <div className="rounded-2xl border border-border bg-card p-4">
-          <Label className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
-            Who is checking in?
-          </Label>
-          {isFloor && ownMember ? (
-            <p className="mt-2 font-medium">
-              {ownMember.full_name}{" "}
-              <span className="text-sm text-muted-foreground">({ownMember.member_code})</span>
-            </p>
-          ) : (
-            <>
-              <Input
-                className="mt-2"
-                placeholder="Search name, phone or member ID"
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-              />
-              <div className="mt-3 max-h-56 space-y-1 overflow-auto">
-                {filtered.map((m) => (
-                  <button
-                    key={m.id}
-                    type="button"
-                    onClick={() => setSelectedMember(m.id)}
-                    className={`flex w-full items-center justify-between rounded-xl px-3 py-2 text-left text-sm transition ${
-                      selectedMember === m.id ? "bg-primary text-primary-foreground" : "hover:bg-secondary"
-                    }`}
-                  >
-                    <span>{m.full_name}</span>
-                    <span className="text-xs opacity-70">{m.member_code}</span>
-                  </button>
-                ))}
-                {filtered.length === 0 && (
-                  <p className="px-3 py-2 text-sm text-muted-foreground">No members found.</p>
-                )}
-              </div>
-            </>
-          )}
         </div>
 
         <div className="flex flex-col items-center gap-4 pt-2">
