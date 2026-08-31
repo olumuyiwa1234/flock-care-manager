@@ -88,7 +88,13 @@ export function MemberForm({
 
   async function uploadPhoto(file: File) {
     const ext = file.name.split(".").pop() ?? "jpg";
-    const path = `${crypto.randomUUID()}.${ext}`;
+    const { data: userData } = await supabase.auth.getUser();
+    const uid = userData.user?.id;
+    if (!uid) {
+      toast.error("You must be signed in to upload a photo");
+      return;
+    }
+    const path = `${uid}/${crypto.randomUUID()}.${ext}`;
     const { error } = await supabase.storage.from("member-photos").upload(path, file);
     if (error) {
       toast.error("Photo upload failed");
@@ -97,6 +103,7 @@ export function MemberForm({
     setPhotoPath(path);
     toast.success("Photo attached");
   }
+
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
