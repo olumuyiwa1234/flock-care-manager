@@ -22,14 +22,18 @@ export const CONTACT_METHODS = ["Phone Call", "SMS", "WhatsApp Message", "Home V
 export const SITUATIONS = ["Sick", "Traveling", "Relocated", "None"] as const;
 export const DEPARTMENTS = [
   "Choir",
-  "Ushering",
+  "Sanitation",
+  "Technical",
   "Media",
-  "Children",
-  "Youth",
-  "Prayer",
-  "Welfare",
+  "Usher",
   "Protocol",
+  "IT",
+  "Greeters",
+  "Prayer",
 ] as const;
+
+/** Departments a staff account can lead — includes Children (child members have no phones). */
+export const PROFILE_DEPARTMENTS = [...DEPARTMENTS, "Children"] as const;
 
 export const MONTHS = [
   "January",

@@ -12,7 +12,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { toast } from "sonner";
-import { DEPARTMENTS } from "@/lib/shepherd";
+import { PROFILE_DEPARTMENTS } from "@/lib/shepherd";
 
 export const Route = createFileRoute("/auth")({
   head: () => ({
@@ -168,7 +168,7 @@ function AuthPage() {
                       <SelectValue placeholder="Select department" />
                     </SelectTrigger>
                     <SelectContent>
-                      {DEPARTMENTS.map((d) => (
+                      {PROFILE_DEPARTMENTS.map((d) => (
                         <SelectItem key={d} value={d}>
                           {d}
                         </SelectItem>

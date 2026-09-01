@@ -11,6 +11,7 @@ export type MemberRow = {
   home_address: string | null;
   gender: string | null;
   birth_month: number | null;
+  birth_day: number | null;
   birth_year: number | null;
   age_bracket: string | null;
   anniversary_month: number | null;

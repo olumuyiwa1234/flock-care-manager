@@ -12,7 +12,9 @@ export type Notification = {
 
 export function birthdaysToday(members: MemberRow[]) {
   const now = new Date();
-  return members.filter((m) => m.birth_month === now.getMonth() + 1 && !!m.birth_year);
+  return members.filter(
+    (m) => m.birth_month === now.getMonth() + 1 && m.birth_day === now.getDate(),
+  );
 }
 
 export function anniversariesToday(members: MemberRow[]) {
@@ -49,11 +51,11 @@ export function useNotifications() {
   const items: Notification[] = [];
 
   for (const m of members) {
-    if (m.birth_month === now.getMonth() + 1 && m.birth_year) {
+    if (m.birth_month === now.getMonth() + 1 && m.birth_day === now.getDate()) {
       items.push({
         id: `bday-${m.id}`,
         kind: "birthday",
-        title: `Birthday this month: ${m.full_name}`,
+        title: `Birthday today: ${m.full_name}`,
         body: "Send a birthday blessing.",
         memberId: m.id,
       });

@@ -46,6 +46,8 @@ export function useAuth() {
   const auth = query.data ?? null;
   const role = auth?.role ?? "floor_member";
   const isFloor = role === "floor_member";
+  const isChildrenLeader =
+    role === "department_leader" && (auth?.department ?? "").toLowerCase() === "children";
 
   return {
     auth,
@@ -56,5 +58,6 @@ export function useAuth() {
     canManageMembers: role === "senior_pastor" || role === "follow_up_team" || role === "attendance_officer",
     canFollowUp: role !== "floor_member",
     isAdmin: role === "senior_pastor",
+    isChildrenLeader,
   };
 }

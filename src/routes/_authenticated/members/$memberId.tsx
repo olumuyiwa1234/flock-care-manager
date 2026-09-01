@@ -112,7 +112,7 @@ function MemberDetail() {
             home_address: m.home_address ?? "",
             gender: m.gender ?? "",
             birth_month: m.birth_month ? String(m.birth_month) : "",
-            birth_year: m.birth_year ? String(m.birth_year) : "",
+            birth_day: m.birth_day ? String(m.birth_day) : "",
             age_bracket: m.age_bracket ?? "",
             anniversary_month: m.anniversary_month ? String(m.anniversary_month) : "",
             anniversary_day: m.anniversary_day ? String(m.anniversary_day) : "",
@@ -166,7 +166,7 @@ function MemberDetail() {
         <Row label="Gender" value={m.gender} />
         <Row
           label="Date of birth"
-          value={m.birth_month ? `${MONTHS[m.birth_month - 1]} ${m.birth_year ?? ""}` : null}
+          value={m.birth_month ? `${m.birth_day ?? ""} ${MONTHS[m.birth_month - 1]}` : null}
         />
         <Row label="Age bracket" value={m.age_bracket} />
         <Row label="Marital status" value={m.marital_status} />

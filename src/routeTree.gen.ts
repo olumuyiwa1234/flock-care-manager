@@ -14,6 +14,7 @@ import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AuthenticatedAttendanceRouteImport } from './routes/_authenticated/attendance'
 import { Route as AuthenticatedCheckinRouteImport } from './routes/_authenticated/checkin'
+import { Route as AuthenticatedChildrenRouteImport } from './routes/_authenticated/children'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
 import { Route as AuthenticatedFollowupRouteImport } from './routes/_authenticated/followup'
 import { Route as AuthenticatedHomeRouteImport } from './routes/_authenticated/home'
@@ -46,6 +47,11 @@ const AuthenticatedAttendanceRoute = AuthenticatedAttendanceRouteImport.update({
 const AuthenticatedCheckinRoute = AuthenticatedCheckinRouteImport.update({
   id: '/checkin',
   path: '/checkin',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedChildrenRoute = AuthenticatedChildrenRouteImport.update({
+  id: '/children',
+  path: '/children',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedDashboardRoute = AuthenticatedDashboardRouteImport.update({
@@ -102,6 +108,7 @@ export interface FileRoutesByFullPath {
   '/auth': typeof AuthRoute
   '/attendance': typeof AuthenticatedAttendanceRoute
   '/checkin': typeof AuthenticatedCheckinRoute
+  '/children': typeof AuthenticatedChildrenRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/followup': typeof AuthenticatedFollowupRoute
   '/home': typeof AuthenticatedHomeRoute
@@ -117,6 +124,7 @@ export interface FileRoutesByTo {
   '/auth': typeof AuthRoute
   '/attendance': typeof AuthenticatedAttendanceRoute
   '/checkin': typeof AuthenticatedCheckinRoute
+  '/children': typeof AuthenticatedChildrenRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/followup': typeof AuthenticatedFollowupRoute
   '/home': typeof AuthenticatedHomeRoute
@@ -134,6 +142,7 @@ export interface FileRoutesById {
   '/auth': typeof AuthRoute
   '/_authenticated/attendance': typeof AuthenticatedAttendanceRoute
   '/_authenticated/checkin': typeof AuthenticatedCheckinRoute
+  '/_authenticated/children': typeof AuthenticatedChildrenRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
   '/_authenticated/followup': typeof AuthenticatedFollowupRoute
   '/_authenticated/home': typeof AuthenticatedHomeRoute
@@ -151,6 +160,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/attendance'
     | '/checkin'
+    | '/children'
     | '/dashboard'
     | '/followup'
     | '/home'
@@ -166,6 +176,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/attendance'
     | '/checkin'
+    | '/children'
     | '/dashboard'
     | '/followup'
     | '/home'
@@ -182,6 +193,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/_authenticated/attendance'
     | '/_authenticated/checkin'
+    | '/_authenticated/children'
     | '/_authenticated/dashboard'
     | '/_authenticated/followup'
     | '/_authenticated/home'
@@ -234,6 +246,13 @@ declare module '@tanstack/react-router' {
       path: '/checkin'
       fullPath: '/checkin'
       preLoaderRoute: typeof AuthenticatedCheckinRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/children': {
+      id: '/_authenticated/children'
+      path: '/children'
+      fullPath: '/children'
+      preLoaderRoute: typeof AuthenticatedChildrenRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/dashboard': {
@@ -305,6 +324,7 @@ declare module '@tanstack/react-router' {
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedAttendanceRoute: typeof AuthenticatedAttendanceRoute
   AuthenticatedCheckinRoute: typeof AuthenticatedCheckinRoute
+  AuthenticatedChildrenRoute: typeof AuthenticatedChildrenRoute
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
   AuthenticatedFollowupRoute: typeof AuthenticatedFollowupRoute
   AuthenticatedHomeRoute: typeof AuthenticatedHomeRoute
@@ -319,6 +339,7 @@ interface AuthenticatedRouteRouteChildren {
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedAttendanceRoute: AuthenticatedAttendanceRoute,
   AuthenticatedCheckinRoute: AuthenticatedCheckinRoute,
+  AuthenticatedChildrenRoute: AuthenticatedChildrenRoute,
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
   AuthenticatedFollowupRoute: AuthenticatedFollowupRoute,
   AuthenticatedHomeRoute: AuthenticatedHomeRoute,
