@@ -1,6 +1,7 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import {
   BarChart3,
+  Baby,
   Bell,
   CalendarDays,
   ClipboardList,
@@ -31,6 +32,7 @@ export const Route = createFileRoute("/_authenticated/home")({
 const tiles = [
   { to: "/checkin", label: "Check In", icon: CalendarDays, staffOnly: false },
   { to: "/members", label: "Members", icon: Users, staffOnly: true },
+  { to: "/children", label: "Children", icon: Baby, staffOnly: true, childrenOnly: true },
   { to: "/attendance", label: "Attendance", icon: ClipboardList, staffOnly: true },
   { to: "/followup", label: "Follow-up", icon: HeartHandshake, staffOnly: true },
   { to: "/reports", label: "Reports", icon: BarChart3, staffOnly: true },
@@ -39,7 +41,7 @@ const tiles = [
 ];
 
 function Home() {
-  const { auth, isFloor, role } = useAuth();
+  const { auth, isFloor, role, isChildrenLeader, isAdmin } = useAuth();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const { items } = useNotifications();
@@ -51,7 +53,10 @@ function Home() {
     navigate({ to: "/auth", replace: true });
   }
 
-  const visible = tiles.filter((t) => !t.staffOnly || !isFloor);
+  const visible = tiles.filter(
+    (t) =>
+      (!t.staffOnly || !isFloor) && (!("childrenOnly" in t) || isChildrenLeader || isAdmin),
+  );
 
   return (
     <div className="min-h-screen bg-background">
