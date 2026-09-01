@@ -18,7 +18,6 @@ import {
   GENDERS,
   MARITAL_STATUSES,
   MONTHS,
-  bracketFromBirthYear,
 } from "@/lib/shepherd";
 
 export type MemberDraft = {
@@ -28,7 +27,7 @@ export type MemberDraft = {
   home_address: string;
   gender: string;
   birth_month: string;
-  birth_year: string;
+  birth_day: string;
   age_bracket: string;
   anniversary_month: string;
   anniversary_day: string;
@@ -44,7 +43,7 @@ const empty: MemberDraft = {
   home_address: "",
   gender: "",
   birth_month: "",
-  birth_year: "",
+  birth_day: "",
   age_bracket: "",
   anniversary_month: "",
   anniversary_day: "",
@@ -120,8 +119,8 @@ export function MemberForm({
       home_address: draft.home_address || null,
       gender: draft.gender || null,
       birth_month: draft.birth_month ? Number(draft.birth_month) : null,
-      birth_year: draft.birth_year ? Number(draft.birth_year) : null,
-      age_bracket: draft.age_bracket || bracketFromBirthYear(Number(draft.birth_year)) || null,
+      birth_day: draft.birth_day ? Number(draft.birth_day) : null,
+      age_bracket: draft.age_bracket || null,
       anniversary_month: draft.anniversary_month ? Number(draft.anniversary_month) : null,
       anniversary_day: draft.anniversary_day ? Number(draft.anniversary_day) : null,
       marital_status: draft.marital_status || null,
@@ -238,12 +237,12 @@ export function MemberForm({
             </SelectContent>
           </Select>
         </Field>
-        <Field label="Birth year">
+        <Field label="Birth day">
           <Input
-            value={draft.birth_year}
-            onChange={(e) => set("birth_year", e.target.value)}
+            value={draft.birth_day}
+            onChange={(e) => set("birth_day", e.target.value)}
             inputMode="numeric"
-            placeholder="1990"
+            placeholder="14"
           />
         </Field>
       </div>
@@ -251,7 +250,7 @@ export function MemberForm({
       <Field label="Age bracket">
         <Select value={draft.age_bracket} onValueChange={(v) => set("age_bracket", v)}>
           <SelectTrigger>
-            <SelectValue placeholder="Auto from birth year" />
+            <SelectValue placeholder="Select age bracket" />
           </SelectTrigger>
           <SelectContent>
             {AGE_BRACKETS.map((b) => (
