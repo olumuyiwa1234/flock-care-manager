@@ -60,10 +60,6 @@ function CheckIn() {
   );
 
   useEffect(() => {
-    if (ownMember && !selectedMember) setSelectedMember(ownMember.id);
-  }, [ownMember, selectedMember]);
-
-  useEffect(() => {
     let cancelled = false;
     (async () => {
       try {
@@ -117,11 +113,46 @@ function CheckIn() {
     toast.success("Attendance saved");
   }
 
-  function startCheckIn() {
-    if (!selectedMember) {
-      toast.error("Select who is checking in first");
-      return;
+  async function ensureOwnMember(): Promise<string | null> {
+    if (!auth?.userId) {
+      toast.error("You must be signed in to check in");
+      return null;
     }
+    if (ownMember) return ownMember.id;
+
+    const { data: existing } = await supabase
+      .from("members")
+      .select("id")
+      .eq("user_id", auth.userId)
+      .maybeSingle();
+    if (existing) return existing.id;
+
+    const { data, error } = await supabase
+      .from("members")
+      .insert({
+        full_name: auth.fullName || "Member",
+        email: auth.email,
+        user_id: auth.userId,
+        created_by: auth.userId,
+        department: auth.department,
+        membership_year: new Date().getFullYear(),
+      })
+      .select("id")
+      .single();
+    if (error) {
+      toast.error(error.message);
+      return null;
+    }
+    await queryClient.invalidateQueries({ queryKey: ["members"] });
+    return data.id;
+  }
+
+  async function startCheckIn() {
+    setSaving(true);
+    const memberId = await ensureOwnMember();
+    setSaving(false);
+    if (!memberId) return;
+    setSelectedMember(memberId);
     setStep("ask-invite");
   }
 
