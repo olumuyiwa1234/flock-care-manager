@@ -60,10 +60,6 @@ function CheckIn() {
   );
 
   useEffect(() => {
-    if (ownMember && !selectedMember) setSelectedMember(ownMember.id);
-  }, [ownMember, selectedMember]);
-
-  useEffect(() => {
     let cancelled = false;
     (async () => {
       try {
