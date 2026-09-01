@@ -131,6 +131,7 @@ export type Database = {
           age_bracket: string | null
           anniversary_day: number | null
           anniversary_month: number | null
+          birth_day: number | null
           birth_month: number | null
           birth_year: number | null
           created_at: string
@@ -154,6 +155,7 @@ export type Database = {
           age_bracket?: string | null
           anniversary_day?: number | null
           anniversary_month?: number | null
+          birth_day?: number | null
           birth_month?: number | null
           birth_year?: number | null
           created_at?: string
@@ -177,6 +179,7 @@ export type Database = {
           age_bracket?: string | null
           anniversary_day?: number | null
           anniversary_month?: number | null
+          birth_day?: number | null
           birth_month?: number | null
           birth_year?: number | null
           created_at?: string
