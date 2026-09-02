@@ -1,23 +1,42 @@
 export type AppRole =
-  | "senior_pastor"
-  | "attendance_officer"
-  | "follow_up_team"
-  | "department_leader"
-  | "floor_member";
+  | "pastorate"
+  | "hod"
+  | "group_leader"
+  | "member"
+  | "it_infrastructure"
+  | "follow_up";
 
 export const ROLE_LABELS: Record<AppRole, string> = {
-  senior_pastor: "Senior Pastor",
-  attendance_officer: "Attendance Officer",
-  follow_up_team: "Follow-up Team",
-  department_leader: "Department Leader",
-  floor_member: "Floor Member",
+  pastorate: "Pastorate",
+  hod: "HOD",
+  group_leader: "Natural Group Leader",
+  member: "Member",
+  it_infrastructure: "IT Infrastructure",
+  follow_up: "Follow-up",
 };
+
+export const PASTORATE_SUB_ROLES = ["Pastor", "Minister"] as const;
+
+export const FELLOWSHIPS = [
+  "Men's Fellowship",
+  "Good Women Fellowship",
+  "Youth Fellowship",
+  "Elders Fellowship",
+] as const;
 
 export const SERVICE_TYPES = ["Sunday Service", "Midweek Service", "Special Program"] as const;
 export const ATTENDANCE_STATUSES = ["Present", "Absent", "Late"] as const;
 export const GENDERS = ["Male", "Female"] as const;
 export const MARITAL_STATUSES = ["Single", "Married", "Widowed", "Divorced"] as const;
-export const AGE_BRACKETS = ["Under 18", "18-29", "30-39", "40-49", "50 and Above"] as const;
+export const AGE_BRACKETS = [
+  "0-12",
+  "13-17",
+  "18-29",
+  "30-39",
+  "40-49",
+  "50 and Above",
+] as const;
+export const CHILD_BRACKETS = ["0-12", "13-17"] as const;
 export const CONTACT_METHODS = ["Phone Call", "SMS", "WhatsApp Message", "Home Visit"] as const;
 export const SITUATIONS = ["Sick", "Traveling", "Relocated", "None"] as const;
 export const DEPARTMENTS = [
@@ -32,8 +51,44 @@ export const DEPARTMENTS = [
   "Prayer",
 ] as const;
 
-/** Departments a staff account can lead — includes Children (child members have no phones). */
-export const PROFILE_DEPARTMENTS = [...DEPARTMENTS, "Children"] as const;
+/** Departments a HOD can lead — includes Children (child members have no phones). */
+export const HOD_DEPARTMENTS = [
+  "Choir",
+  "Media",
+  "Technical",
+  "Sanitation",
+  "Usher",
+  "Greeters",
+  "Children",
+] as const;
+
+export const PROFILE_DEPARTMENTS = HOD_DEPARTMENTS;
+
+/** Sub-role options per role. Roles without sub-roles return an empty list. */
+export const SUB_ROLES: Record<AppRole, readonly string[]> = {
+  pastorate: PASTORATE_SUB_ROLES,
+  hod: HOD_DEPARTMENTS,
+  group_leader: FELLOWSHIPS,
+  member: [],
+  it_infrastructure: [],
+  follow_up: [],
+};
+
+/** Mirrors app.fellowship_of() in the database. */
+export function fellowshipOf(
+  gender: string | null,
+  marital: string | null,
+  bracket: string | null,
+): string | null {
+  if (bracket === "50 and Above") return "Elders Fellowship";
+  if (bracket === "0-12" || bracket === "13-17") return null;
+  if (marital === "Married" && gender === "Male") return "Men's Fellowship";
+  if ((marital === "Married" || marital === "Widowed") && gender === "Female")
+    return "Good Women Fellowship";
+  if (marital !== "Married") return "Youth Fellowship";
+  return null;
+}
+
 
 export const MONTHS = [
   "January",
