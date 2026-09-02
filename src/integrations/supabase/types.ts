@@ -211,25 +211,37 @@ export type Database = {
       }
       profiles: {
         Row: {
+          approval_status: string
+          approved_at: string | null
+          approved_by: string | null
           created_at: string
           department: string | null
           full_name: string
           id: string
           phone: string | null
+          sub_role: string | null
         }
         Insert: {
+          approval_status?: string
+          approved_at?: string | null
+          approved_by?: string | null
           created_at?: string
           department?: string | null
           full_name?: string
           id: string
           phone?: string | null
+          sub_role?: string | null
         }
         Update: {
+          approval_status?: string
+          approved_at?: string | null
+          approved_by?: string | null
           created_at?: string
           department?: string | null
           full_name?: string
           id?: string
           phone?: string | null
+          sub_role?: string | null
         }
         Relationships: []
       }
@@ -260,11 +272,12 @@ export type Database = {
     }
     Enums: {
       app_role:
-        | "senior_pastor"
-        | "attendance_officer"
-        | "follow_up_team"
-        | "department_leader"
-        | "floor_member"
+        | "pastorate"
+        | "hod"
+        | "group_leader"
+        | "member"
+        | "it_infrastructure"
+        | "follow_up"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -393,11 +406,12 @@ export const Constants = {
   public: {
     Enums: {
       app_role: [
-        "senior_pastor",
-        "attendance_officer",
-        "follow_up_team",
-        "department_leader",
-        "floor_member",
+        "pastorate",
+        "hod",
+        "group_leader",
+        "member",
+        "it_infrastructure",
+        "follow_up",
       ],
     },
   },
