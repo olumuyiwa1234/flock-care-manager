@@ -268,7 +268,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      check_geofence: { Args: { _lat: number; _lng: number }; Returns: Json }
+      [_ in never]: never
     }
     Enums: {
       app_role:
