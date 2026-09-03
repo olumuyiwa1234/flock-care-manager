@@ -1,0 +1,1 @@
+DROP FUNCTION IF EXISTS public.check_geofence(double precision, double precision);
