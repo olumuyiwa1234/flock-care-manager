@@ -22,8 +22,9 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { toast } from "sonner";
-import { SERVICE_TYPES, distanceMeters, todayISO } from "@/lib/shepherd";
-import { useChurchSettings, useMembers } from "@/lib/queries";
+import { SERVICE_TYPES, todayISO } from "@/lib/shepherd";
+import { useMembers } from "@/lib/queries";
+import { checkGeofence, type GeofenceResult } from "@/lib/geofence.functions";
 import { useAuth } from "@/lib/useAuth";
 
 export const Route = createFileRoute("/_authenticated/checkin")({
