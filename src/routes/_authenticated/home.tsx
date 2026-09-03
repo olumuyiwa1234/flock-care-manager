@@ -9,6 +9,7 @@ import {
   LayoutDashboard,
   LogOut,
   Settings,
+  ShieldCheck,
   Users,
 } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
@@ -16,6 +17,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/useAuth";
 import { ROLE_LABELS } from "@/lib/shepherd";
 import { useNotifications } from "@/lib/useNotifications";
+import { usePendingApprovals } from "./approvals";
 
 export const Route = createFileRoute("/_authenticated/home")({
   head: () => ({
@@ -37,14 +39,16 @@ const tiles = [
   { to: "/followup", label: "Follow-up", icon: HeartHandshake, staffOnly: true },
   { to: "/reports", label: "Reports", icon: BarChart3, staffOnly: true },
   { to: "/dashboard", label: "Dashboard", icon: LayoutDashboard, staffOnly: true },
+  { to: "/approvals", label: "Approvals", icon: ShieldCheck, staffOnly: true, pastorOnly: true },
   { to: "/settings", label: "Settings", icon: Settings, staffOnly: true },
 ];
 
 function Home() {
-  const { auth, isFloor, role, isChildrenLeader, isAdmin } = useAuth();
+  const { auth, isFloor, role, isChildrenLeader, isAdmin, isPastor, pending } = useAuth();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const { items } = useNotifications();
+  const { data: approvals } = usePendingApprovals(isPastor);
 
   async function signOut() {
     await queryClient.cancelQueries();
@@ -55,7 +59,9 @@ function Home() {
 
   const visible = tiles.filter(
     (t) =>
-      (!t.staffOnly || !isFloor) && (!("childrenOnly" in t) || isChildrenLeader || isAdmin),
+      (!t.staffOnly || !isFloor) &&
+      (!("childrenOnly" in t) || isChildrenLeader || isAdmin) &&
+      (!("pastorOnly" in t) || isPastor),
   );
 
   return (
@@ -96,6 +102,19 @@ function Home() {
       </header>
 
       <main className="mx-auto -mt-6 max-w-xl px-5 pb-16">
+        {pending && (
+          <div className="mb-4 rounded-2xl border border-border bg-card p-4 text-sm text-muted-foreground shadow-tile">
+            Your leadership access is awaiting a pastor's approval. You can check in meanwhile.
+          </div>
+        )}
+        {isPastor && (approvals?.length ?? 0) > 0 && (
+          <Link
+            to="/approvals"
+            className="mb-4 block rounded-2xl border border-primary/30 bg-secondary p-4 text-sm font-medium text-primary shadow-tile"
+          >
+            {approvals?.length} access request{(approvals?.length ?? 0) > 1 ? "s" : ""} awaiting your approval
+          </Link>
+        )}
         <Link
           to="/checkin"
           className="mb-4 flex items-center gap-4 rounded-3xl bg-card p-5 shadow-float transition active:scale-[0.99]"
