@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import {
   Select,
   SelectContent,
@@ -12,7 +13,17 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { toast } from "sonner";
-import { PROFILE_DEPARTMENTS } from "@/lib/shepherd";
+import {
+  AGE_BRACKETS,
+  DEPARTMENTS,
+  GENDERS,
+  MARITAL_STATUSES,
+  MONTHS,
+  ROLE_LABELS,
+  SUB_ROLES,
+  type AppRole,
+} from "@/lib/shepherd";
+import { savePendingMember, flushPendingMember, clearPendingMember } from "@/lib/pendingMember";
 
 export const Route = createFileRoute("/auth")({
   head: () => ({
@@ -29,18 +40,50 @@ export const Route = createFileRoute("/auth")({
   component: AuthPage,
 });
 
+const ROLE_OPTIONS: AppRole[] = [
+  "member",
+  "pastorate",
+  "hod",
+  "group_leader",
+  "it_infrastructure",
+  "follow_up",
+];
+
+function Field({ label, children }: { label: string; children: React.ReactNode }) {
+  return (
+    <div className="space-y-1.5">
+      <Label className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+        {label}
+      </Label>
+      {children}
+    </div>
+  );
+}
+
 function AuthPage() {
   const navigate = useNavigate();
   const [mode, setMode] = useState<"signin" | "signup">("signin");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [fullName, setFullName] = useState("");
-  const [phone, setPhone] = useState("");
-  const [role, setRole] = useState("floor_member");
-  const [department, setDepartment] = useState("");
-  const [accessCode, setAccessCode] = useState("");
   const [busy, setBusy] = useState(false);
   const [sentEmail, setSentEmail] = useState(false);
+
+  // profile / member details
+  const [fullName, setFullName] = useState("");
+  const [phone, setPhone] = useState("");
+  const [address, setAddress] = useState("");
+  const [gender, setGender] = useState("");
+  const [birthMonth, setBirthMonth] = useState("");
+  const [birthDay, setBirthDay] = useState("");
+  const [bracket, setBracket] = useState("");
+  const [annivMonth, setAnnivMonth] = useState("");
+  const [annivDay, setAnnivDay] = useState("");
+  const [marital, setMarital] = useState("");
+  const [department, setDepartment] = useState("");
+  const [membershipYear, setMembershipYear] = useState(String(new Date().getFullYear()));
+  const [role, setRole] = useState<AppRole>("member");
+  const [subRole, setSubRole] = useState("");
+  const [photoFile, setPhotoFile] = useState<File | null>(null);
 
   useEffect(() => {
     void supabase.auth.getSession().then(({ data }) => {
@@ -48,19 +91,61 @@ function AuthPage() {
     });
   }, [navigate]);
 
+  const subRoleOptions = SUB_ROLES[role];
+
+  async function uploadPhoto(userId: string) {
+    if (!photoFile) return;
+    const ext = photoFile.name.split(".").pop() ?? "jpg";
+    const path = `${userId}/${crypto.randomUUID()}.${ext}`;
+    const { error } = await supabase.storage.from("member-photos").upload(path, photoFile);
+    if (error) return;
+    await supabase.from("members").update({ photo_url: path }).eq("user_id", userId);
+  }
+
+  async function afterSession(userId: string) {
+    await flushPendingMember(userId);
+    await uploadPhoto(userId);
+  }
+
   async function submit(e: React.FormEvent) {
     e.preventDefault();
     setBusy(true);
+
     if (mode === "signin") {
-      const { error } = await supabase.auth.signInWithPassword({ email, password });
-      setBusy(false);
+      const { data, error } = await supabase.auth.signInWithPassword({ email, password });
       if (error) {
+        setBusy(false);
         toast.error(error.message);
         return;
       }
+      if (data.user) await afterSession(data.user.id);
+      setBusy(false);
       navigate({ to: "/home", replace: true });
       return;
     }
+
+    if (subRoleOptions.length > 0 && !subRole) {
+      setBusy(false);
+      toast.error("Please select your sub-role");
+      return;
+    }
+
+    savePendingMember({
+      full_name: fullName.trim(),
+      photo_url: null,
+      phone: phone || null,
+      email: email || null,
+      home_address: address || null,
+      gender: gender || null,
+      birth_month: birthMonth ? Number(birthMonth) : null,
+      birth_day: birthDay ? Number(birthDay) : null,
+      age_bracket: bracket || null,
+      anniversary_month: annivMonth ? Number(annivMonth) : null,
+      anniversary_day: annivDay ? Number(annivDay) : null,
+      marital_status: marital || null,
+      department: department || null,
+      membership_year: membershipYear ? Number(membershipYear) : null,
+    });
 
     const { data, error } = await supabase.auth.signUp({
       email,
@@ -68,22 +153,29 @@ function AuthPage() {
       options: {
         emailRedirectTo: window.location.origin,
         data: {
-          full_name: fullName,
+          full_name: fullName.trim(),
           phone,
           role,
-          department: role === "department_leader" ? department : null,
-          access_code: accessCode.trim(),
+          sub_role: subRole || null,
+          department: role === "hod" ? subRole : department || null,
         },
       },
     });
-    setBusy(false);
     if (error) {
+      setBusy(false);
+      clearPendingMember();
       toast.error(error.message);
       return;
     }
     if (!data.session) {
+      setBusy(false);
       setSentEmail(true);
       return;
+    }
+    if (data.user) await afterSession(data.user.id);
+    setBusy(false);
+    if (role !== "member" && !(role === "pastorate" && subRole === "Pastor")) {
+      toast.success("Account created. A pastor will review your access request.");
     }
     navigate({ to: "/home", replace: true });
   }
@@ -139,61 +231,151 @@ function AuthPage() {
         <form onSubmit={submit} className="space-y-4">
           {mode === "signup" && (
             <>
-              <div className="space-y-1.5">
-                <Label>Full name</Label>
+              <Field label="Full name">
                 <Input value={fullName} onChange={(e) => setFullName(e.target.value)} required />
-              </div>
-              <div className="space-y-1.5">
-                <Label>Phone number</Label>
+              </Field>
+
+              <Field label="Photo">
+                <Input
+                  type="file"
+                  accept="image/*"
+                  onChange={(e) => setPhotoFile(e.target.files?.[0] ?? null)}
+                />
+              </Field>
+
+              <Field label="Phone number">
                 <Input value={phone} onChange={(e) => setPhone(e.target.value)} inputMode="tel" />
-              </div>
-              <div className="space-y-1.5">
-                <Label>Your role</Label>
-                <Select value={role} onValueChange={setRole}>
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="floor_member">Floor Member</SelectItem>
-                    <SelectItem value="attendance_officer">Attendance Officer</SelectItem>
-                    <SelectItem value="department_leader">Department Leader</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              {role === "department_leader" && (
-                <div className="space-y-1.5">
-                  <Label>Department</Label>
-                  <Select value={department} onValueChange={setDepartment}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select department" />
-                    </SelectTrigger>
+              </Field>
+
+              <Field label="Home address">
+                <Textarea value={address} onChange={(e) => setAddress(e.target.value)} rows={2} />
+              </Field>
+
+              <div className="grid grid-cols-2 gap-3">
+                <Field label="Gender">
+                  <Select value={gender} onValueChange={setGender}>
+                    <SelectTrigger><SelectValue placeholder="Select" /></SelectTrigger>
                     <SelectContent>
-                      {PROFILE_DEPARTMENTS.map((d) => (
-                        <SelectItem key={d} value={d}>
-                          {d}
-                        </SelectItem>
+                      {GENDERS.map((g) => (
+                        <SelectItem key={g} value={g}>{g}</SelectItem>
                       ))}
                     </SelectContent>
                   </Select>
-                </div>
-              )}
-              <div className="space-y-1.5">
-                <Label>Church access code (optional)</Label>
-                <Input
-                  value={accessCode}
-                  onChange={(e) => setAccessCode(e.target.value)}
-                  placeholder="e.g. HOPEHALL"
-                  autoCapitalize="characters"
-                />
-                <p className="text-xs text-muted-foreground">
-                  Leaders with the church code get full access to every feature.
-                </p>
+                </Field>
+                <Field label="Marital status">
+                  <Select value={marital} onValueChange={setMarital}>
+                    <SelectTrigger><SelectValue placeholder="Select" /></SelectTrigger>
+                    <SelectContent>
+                      {MARITAL_STATUSES.map((m) => (
+                        <SelectItem key={m} value={m}>{m}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </Field>
               </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <Field label="Birth month">
+                  <Select value={birthMonth} onValueChange={setBirthMonth}>
+                    <SelectTrigger><SelectValue placeholder="Month" /></SelectTrigger>
+                    <SelectContent>
+                      {MONTHS.map((m, i) => (
+                        <SelectItem key={m} value={String(i + 1)}>{m}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </Field>
+                <Field label="Birth day">
+                  <Input value={birthDay} onChange={(e) => setBirthDay(e.target.value)} inputMode="numeric" placeholder="14" />
+                </Field>
+              </div>
+
+              <Field label="Age bracket">
+                <Select value={bracket} onValueChange={setBracket}>
+                  <SelectTrigger><SelectValue placeholder="Select age bracket" /></SelectTrigger>
+                  <SelectContent>
+                    {AGE_BRACKETS.map((b) => (
+                      <SelectItem key={b} value={b}>{b}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </Field>
+
+              <div className="grid grid-cols-2 gap-3">
+                <Field label="Anniversary month">
+                  <Select value={annivMonth} onValueChange={setAnnivMonth}>
+                    <SelectTrigger><SelectValue placeholder="Month" /></SelectTrigger>
+                    <SelectContent>
+                      {MONTHS.map((m, i) => (
+                        <SelectItem key={m} value={String(i + 1)}>{m}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </Field>
+                <Field label="Anniversary day">
+                  <Input value={annivDay} onChange={(e) => setAnnivDay(e.target.value)} inputMode="numeric" placeholder="14" />
+                </Field>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <Field label="Department (optional)">
+                  <Select value={department} onValueChange={setDepartment}>
+                    <SelectTrigger><SelectValue placeholder="None" /></SelectTrigger>
+                    <SelectContent>
+                      {DEPARTMENTS.map((d) => (
+                        <SelectItem key={d} value={d}>{d}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </Field>
+                <Field label="Membership year">
+                  <Input
+                    value={membershipYear}
+                    onChange={(e) => setMembershipYear(e.target.value)}
+                    inputMode="numeric"
+                  />
+                </Field>
+              </div>
+
+              <Field label="Your role">
+                <Select
+                  value={role}
+                  onValueChange={(v) => {
+                    setRole(v as AppRole);
+                    setSubRole("");
+                  }}
+                >
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    {ROLE_OPTIONS.map((r) => (
+                      <SelectItem key={r} value={r}>{ROLE_LABELS[r]}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </Field>
+
+              {subRoleOptions.length > 0 && (
+                <Field label={role === "hod" ? "Department led" : "Sub-role"}>
+                  <Select value={subRole} onValueChange={setSubRole}>
+                    <SelectTrigger><SelectValue placeholder="Select" /></SelectTrigger>
+                    <SelectContent>
+                      {subRoleOptions.map((s) => (
+                        <SelectItem key={s} value={s}>{s}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </Field>
+              )}
+
+              {role !== "member" && !(role === "pastorate" && subRole === "Pastor") && (
+                <p className="text-xs text-muted-foreground">
+                  Leadership accounts need a pastor's approval before full access is granted.
+                </p>
+              )}
             </>
           )}
 
-          <div className="space-y-1.5">
-            <Label>Email</Label>
+          <Field label="Email">
             <Input
               type="email"
               value={email}
@@ -201,9 +383,8 @@ function AuthPage() {
               required
               autoComplete="email"
             />
-          </div>
-          <div className="space-y-1.5">
-            <Label>Password</Label>
+          </Field>
+          <Field label="Password">
             <Input
               type="password"
               value={password}
@@ -212,7 +393,7 @@ function AuthPage() {
               minLength={6}
               autoComplete={mode === "signin" ? "current-password" : "new-password"}
             />
-          </div>
+          </Field>
 
           <Button type="submit" size="lg" className="w-full" disabled={busy}>
             {busy ? "Please wait…" : mode === "signin" ? "Sign in" : "Create account"}
