@@ -157,7 +157,7 @@ function CheckIn() {
   }
 
   return (
-    <AppShell title="Check In" subtitle={settings?.church_name ?? "Church"}>
+    <AppShell title="Check In" subtitle={geo?.churchName ?? "Church"}>
       <div className="space-y-5">
         <div className="rounded-2xl border border-border bg-card p-4">
           <Label className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
@@ -206,8 +206,10 @@ function CheckIn() {
               ? "Location check is off — check-in is open."
               : geoError
                 ? geoError
-                : distance != null
-                  ? `${Math.round(distance)} m from ${settings?.church_name}`
+                : geo
+                  ? withinPremises
+                    ? `You are within ${geo.churchName} premises`
+                    : `You are outside ${geo.churchName} premises`
                   : "Checking your location…"}
           </p>
         </div>
