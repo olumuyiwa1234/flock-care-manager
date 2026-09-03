@@ -44,10 +44,9 @@ type Step = "idle" | "ask-invite" | "invitee" | "done";
 function CheckIn() {
   const { auth } = useAuth();
   const queryClient = useQueryClient();
-  const { data: settings } = useChurchSettings();
   const { data: members = [] } = useMembers();
 
-  const [coords, setCoords] = useState<{ lat: number; lng: number } | null>(null);
+  const [geo, setGeo] = useState<GeofenceResult | null>(null);
   const [geoError, setGeoError] = useState<string | null>(null);
   const [locating, setLocating] = useState(true);
   const [step, setStep] = useState<Step>("idle");
@@ -70,7 +69,11 @@ function CheckIn() {
           timeout: 10000,
         });
         if (cancelled) return;
-        setCoords({ lat: pos.coords.latitude, lng: pos.coords.longitude });
+        const result = await checkGeofence({
+          data: { lat: pos.coords.latitude, lng: pos.coords.longitude },
+        });
+        if (cancelled) return;
+        setGeo(result);
         setLocating(false);
       } catch {
         if (cancelled) return;
@@ -84,12 +87,8 @@ function CheckIn() {
   }, []);
 
 
-  const geofenceOn = !!settings?.geofence_enabled && settings.latitude != null && settings.longitude != null;
-  const distance =
-    geofenceOn && coords
-      ? distanceMeters(coords, { lat: settings!.latitude!, lng: settings!.longitude! })
-      : null;
-  const withinPremises = !geofenceOn || (distance != null && distance <= (settings?.radius_meters ?? 300));
+  const geofenceOn = geo?.enabled ?? true;
+  const withinPremises = geo?.allowed ?? false;
 
   async function saveAttendance(memberId: string) {
     setSaving(true);
