@@ -1,21 +1,36 @@
 import { supabase } from "@/integrations/supabase/client";
-import type { MemberPayload } from "@/components/MemberForm";
 
 const KEY = "shepherd:pending-member";
 
-export function savePendingMember(payload: MemberPayload) {
+export type PendingMember = {
+  full_name: string;
+  photo_url: string | null;
+  phone: string | null;
+  email: string | null;
+  home_address: string | null;
+  gender: string | null;
+  birth_month: number | null;
+  birth_day: number | null;
+  age_bracket: string | null;
+  anniversary_month: number | null;
+  anniversary_day: number | null;
+  marital_status: string | null;
+  department: string | null;
+  membership_year: number | null;
+};
+
+export function savePendingMember(payload: PendingMember) {
   try {
-    const { photoFile: _photoFile, ...rest } = payload;
-    localStorage.setItem(KEY, JSON.stringify(rest));
+    localStorage.setItem(KEY, JSON.stringify(payload));
   } catch {
     /* storage unavailable */
   }
 }
 
-export function readPendingMember(): Omit<MemberPayload, "photoFile"> | null {
+export function readPendingMember(): PendingMember | null {
   try {
     const raw = localStorage.getItem(KEY);
-    return raw ? JSON.parse(raw) : null;
+    return raw ? (JSON.parse(raw) as PendingMember) : null;
   } catch {
     return null;
   }
