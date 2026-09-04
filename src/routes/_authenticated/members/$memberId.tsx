@@ -277,6 +277,45 @@ function MemberDetail() {
           </ul>
         )}
       </section>
+
+      {isFullAccess && m.user_id && m.user_id !== auth?.userId && (
+        <section className="mt-6">
+          <Button
+            variant="outline"
+            className="w-full border-destructive/40 text-destructive"
+            onClick={() => setConfirmDelete(true)}
+          >
+            <Trash2 className="mr-2 size-4" /> Delete account
+          </Button>
+          <p className="mt-2 text-center text-xs text-muted-foreground">
+            Removes this member's sign-in account. Their member record stays.
+          </p>
+        </section>
+      )}
+
+      <AlertDialog open={confirmDelete} onOpenChange={setConfirmDelete}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete this account?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This permanently deletes {m.full_name}'s sign-in account. This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={deleting}>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              onClick={(e) => {
+                e.preventDefault();
+                void deleteAccount();
+              }}
+              disabled={deleting}
+            >
+              {deleting ? "Deleting…" : "Delete account"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </AppShell>
   );
 }
