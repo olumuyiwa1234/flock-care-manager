@@ -1,14 +1,27 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
-import { Pencil } from "lucide-react";
+import { Pencil, Trash2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { AppShell } from "@/components/AppShell";
 import { MemberPhoto } from "@/components/MemberPhoto";
 import { MemberForm } from "@/components/MemberForm";
 import { Button } from "@/components/ui/button";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { toast } from "sonner";
 import { MONTHS, formatDate } from "@/lib/shepherd";
 import type { MemberRow, AttendanceRow } from "@/lib/queries";
+import { useAuth } from "@/lib/useAuth";
+import { deleteUserAccount } from "@/lib/accounts.functions";
 
 export const Route = createFileRoute("/_authenticated/members/$memberId")({
   head: () => ({
@@ -46,6 +59,9 @@ function MemberDetail() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [editing, setEditing] = useState(false);
+  const [confirmDelete, setConfirmDelete] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+  const { isFullAccess, auth } = useAuth();
 
   const memberQuery = useQuery({
     queryKey: ["member", memberId],
@@ -97,6 +113,23 @@ function MemberDetail() {
         <p className="text-sm text-muted-foreground">This member could not be found.</p>
       </AppShell>
     );
+  }
+
+  async function deleteAccount() {
+    if (!m?.user_id) return;
+    setDeleting(true);
+    try {
+      await deleteUserAccount({ data: { userId: m.user_id } });
+      await supabase.from("members").update({ user_id: null }).eq("id", m.id);
+      await queryClient.invalidateQueries({ queryKey: ["member", memberId] });
+      await queryClient.invalidateQueries({ queryKey: ["members"] });
+      toast.success("Account deleted");
+      setConfirmDelete(false);
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Could not delete account");
+    } finally {
+      setDeleting(false);
+    }
   }
 
   if (editing) {
@@ -244,6 +277,45 @@ function MemberDetail() {
           </ul>
         )}
       </section>
+
+      {isFullAccess && m.user_id && m.user_id !== auth?.userId && (
+        <section className="mt-6">
+          <Button
+            variant="outline"
+            className="w-full border-destructive/40 text-destructive"
+            onClick={() => setConfirmDelete(true)}
+          >
+            <Trash2 className="mr-2 size-4" /> Delete account
+          </Button>
+          <p className="mt-2 text-center text-xs text-muted-foreground">
+            Removes this member's sign-in account. Their member record stays.
+          </p>
+        </section>
+      )}
+
+      <AlertDialog open={confirmDelete} onOpenChange={setConfirmDelete}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete this account?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This permanently deletes {m.full_name}'s sign-in account. This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={deleting}>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              onClick={(e) => {
+                e.preventDefault();
+                void deleteAccount();
+              }}
+              disabled={deleting}
+            >
+              {deleting ? "Deleting…" : "Delete account"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </AppShell>
   );
 }
