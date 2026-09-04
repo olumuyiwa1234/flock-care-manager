@@ -24,6 +24,8 @@ import {
   type AppRole,
 } from "@/lib/shepherd";
 import { savePendingMember, flushPendingMember, clearPendingMember } from "@/lib/pendingMember";
+import { pastorSeatTaken } from "@/lib/pastor.functions";
+
 
 export const Route = createFileRoute("/auth")({
   head: () => ({
