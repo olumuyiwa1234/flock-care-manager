@@ -1,14 +1,27 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
-import { Pencil } from "lucide-react";
+import { Pencil, Trash2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { AppShell } from "@/components/AppShell";
 import { MemberPhoto } from "@/components/MemberPhoto";
 import { MemberForm } from "@/components/MemberForm";
 import { Button } from "@/components/ui/button";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { toast } from "sonner";
 import { MONTHS, formatDate } from "@/lib/shepherd";
 import type { MemberRow, AttendanceRow } from "@/lib/queries";
+import { useAuth } from "@/lib/useAuth";
+import { deleteUserAccount } from "@/lib/accounts.functions";
 
 export const Route = createFileRoute("/_authenticated/members/$memberId")({
   head: () => ({
