@@ -91,7 +91,17 @@ function AuthPage() {
     });
   }, [navigate]);
 
-  const subRoleOptions = SUB_ROLES[role];
+  const [pastorTaken, setPastorTaken] = useState(false);
+  useEffect(() => {
+    void pastorSeatTaken()
+      .then((r) => setPastorTaken(r.taken))
+      .catch(() => setPastorTaken(false));
+  }, []);
+
+  const subRoleOptions = (SUB_ROLES[role] as readonly string[]).filter(
+    (s) => !(role === "pastorate" && s === "Pastor" && pastorTaken),
+  );
+
 
   async function uploadPhoto(userId: string) {
     if (!photoFile) return;
