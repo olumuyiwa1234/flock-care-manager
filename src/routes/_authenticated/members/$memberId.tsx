@@ -59,6 +59,9 @@ function MemberDetail() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [editing, setEditing] = useState(false);
+  const [confirmDelete, setConfirmDelete] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+  const { isFullAccess, auth } = useAuth();
 
   const memberQuery = useQuery({
     queryKey: ["member", memberId],
