@@ -72,7 +72,9 @@ function Home() {
             <div>
               <p className="text-xs font-medium uppercase tracking-[0.3em] opacity-70">Shepherd</p>
               <h1 className="mt-2 text-2xl font-semibold">
-                Peace be with you, {auth?.fullName?.split(" ")[0] ?? "friend"}.
+                {auth?.fullName
+                  ? `Peace be with you, ${auth.fullName.split(" ")[0]}.`
+                  : "Peace be with you."}
               </h1>
               <p className="mt-1 text-sm opacity-80">{ROLE_LABELS[role]}</p>
             </div>

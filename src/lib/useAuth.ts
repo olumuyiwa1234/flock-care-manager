@@ -45,7 +45,7 @@ export async function fetchAuthInfo(): Promise<AuthInfo | null> {
   return {
     userId: user.id,
     email: user.email ?? null,
-    fullName: profile?.full_name || "friend",
+    fullName: profile?.full_name || "",
     department: profile?.department ?? null,
     subRole: profile?.sub_role ?? null,
     approvalStatus: (profile?.approval_status ?? "pending") as AuthInfo["approvalStatus"],
