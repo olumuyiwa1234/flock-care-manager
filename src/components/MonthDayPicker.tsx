@@ -22,7 +22,7 @@ interface Props {
   allowClear?: boolean;
 }
 
-export function MonthDayPicker({ month, day, onChange, placeholder = "Pick a date" }: Props) {
+export function MonthDayPicker({ month, day, onChange, placeholder = "Pick a date", allowClear = true }: Props) {
   const [open, setOpen] = useState(false);
   const [view, setView] = useState<"month" | "day">("month");
   const [selMonth, setSelMonth] = useState<number | null>(month);
