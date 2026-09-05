@@ -30,7 +30,7 @@ type FeedbackRow = {
 };
 
 function Feedback() {
-  const { auth, isStaff } = useAuth();
+  const { auth, isPastor } = useAuth();
   const queryClient = useQueryClient();
   const [text, setText] = useState("");
   const [busy, setBusy] = useState(false);
