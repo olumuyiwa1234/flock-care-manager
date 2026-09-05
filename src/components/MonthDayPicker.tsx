@@ -19,6 +19,7 @@ interface Props {
   day: number | null;
   onChange: (month: number | null, day: number | null) => void;
   placeholder?: string;
+  allowClear?: boolean;
 }
 
 export function MonthDayPicker({ month, day, onChange, placeholder = "Pick a date" }: Props) {
