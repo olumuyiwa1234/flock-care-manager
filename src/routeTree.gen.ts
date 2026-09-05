@@ -16,6 +16,7 @@ import { Route as AuthenticatedApprovalsRouteImport } from './routes/_authentica
 import { Route as AuthenticatedAttendanceRouteImport } from './routes/_authenticated/attendance'
 import { Route as AuthenticatedCheckinRouteImport } from './routes/_authenticated/checkin'
 import { Route as AuthenticatedChildrenRouteImport } from './routes/_authenticated/children'
+import { Route as AuthenticatedContactPastorRouteImport } from './routes/_authenticated/contact-pastor'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
 import { Route as AuthenticatedFollowupRouteImport } from './routes/_authenticated/followup'
 import { Route as AuthenticatedHomeRouteImport } from './routes/_authenticated/home'
@@ -62,6 +63,12 @@ const AuthenticatedChildrenRoute = AuthenticatedChildrenRouteImport.update({
   path: '/children',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedContactPastorRoute =
+  AuthenticatedContactPastorRouteImport.update({
+    id: '/contact-pastor',
+    path: '/contact-pastor',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedDashboardRoute = AuthenticatedDashboardRouteImport.update({
   id: '/dashboard',
   path: '/dashboard',
@@ -129,6 +136,7 @@ export interface FileRoutesByFullPath {
   '/attendance': typeof AuthenticatedAttendanceRoute
   '/checkin': typeof AuthenticatedCheckinRoute
   '/children': typeof AuthenticatedChildrenRoute
+  '/contact-pastor': typeof AuthenticatedContactPastorRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/followup': typeof AuthenticatedFollowupRoute
   '/home': typeof AuthenticatedHomeRoute
@@ -148,6 +156,7 @@ export interface FileRoutesByTo {
   '/attendance': typeof AuthenticatedAttendanceRoute
   '/checkin': typeof AuthenticatedCheckinRoute
   '/children': typeof AuthenticatedChildrenRoute
+  '/contact-pastor': typeof AuthenticatedContactPastorRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/followup': typeof AuthenticatedFollowupRoute
   '/home': typeof AuthenticatedHomeRoute
@@ -169,6 +178,7 @@ export interface FileRoutesById {
   '/_authenticated/attendance': typeof AuthenticatedAttendanceRoute
   '/_authenticated/checkin': typeof AuthenticatedCheckinRoute
   '/_authenticated/children': typeof AuthenticatedChildrenRoute
+  '/_authenticated/contact-pastor': typeof AuthenticatedContactPastorRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
   '/_authenticated/followup': typeof AuthenticatedFollowupRoute
   '/_authenticated/home': typeof AuthenticatedHomeRoute
@@ -190,6 +200,7 @@ export interface FileRouteTypes {
     | '/attendance'
     | '/checkin'
     | '/children'
+    | '/contact-pastor'
     | '/dashboard'
     | '/followup'
     | '/home'
@@ -209,6 +220,7 @@ export interface FileRouteTypes {
     | '/attendance'
     | '/checkin'
     | '/children'
+    | '/contact-pastor'
     | '/dashboard'
     | '/followup'
     | '/home'
@@ -229,6 +241,7 @@ export interface FileRouteTypes {
     | '/_authenticated/attendance'
     | '/_authenticated/checkin'
     | '/_authenticated/children'
+    | '/_authenticated/contact-pastor'
     | '/_authenticated/dashboard'
     | '/_authenticated/followup'
     | '/_authenticated/home'
@@ -297,6 +310,13 @@ declare module '@tanstack/react-router' {
       path: '/children'
       fullPath: '/children'
       preLoaderRoute: typeof AuthenticatedChildrenRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/contact-pastor': {
+      id: '/_authenticated/contact-pastor'
+      path: '/contact-pastor'
+      fullPath: '/contact-pastor'
+      preLoaderRoute: typeof AuthenticatedContactPastorRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/dashboard': {
@@ -384,6 +404,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedAttendanceRoute: typeof AuthenticatedAttendanceRoute
   AuthenticatedCheckinRoute: typeof AuthenticatedCheckinRoute
   AuthenticatedChildrenRoute: typeof AuthenticatedChildrenRoute
+  AuthenticatedContactPastorRoute: typeof AuthenticatedContactPastorRoute
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
   AuthenticatedFollowupRoute: typeof AuthenticatedFollowupRoute
   AuthenticatedHomeRoute: typeof AuthenticatedHomeRoute
@@ -402,6 +423,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedAttendanceRoute: AuthenticatedAttendanceRoute,
   AuthenticatedCheckinRoute: AuthenticatedCheckinRoute,
   AuthenticatedChildrenRoute: AuthenticatedChildrenRoute,
+  AuthenticatedContactPastorRoute: AuthenticatedContactPastorRoute,
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
   AuthenticatedFollowupRoute: AuthenticatedFollowupRoute,
   AuthenticatedHomeRoute: AuthenticatedHomeRoute,
