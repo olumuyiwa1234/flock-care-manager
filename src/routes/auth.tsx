@@ -178,7 +178,18 @@ function AuthPage() {
     if (error) {
       setBusy(false);
       clearPendingMember();
-      toast.error(error.message);
+      const msg = /already|registered|exists/i.test(error.message)
+        ? "This email address already has an account. Please sign in instead."
+        : error.message;
+      toast.error(msg);
+      if (/already|registered|exists/i.test(error.message)) setMode("signin");
+      return;
+    }
+    if (data.user && (data.user.identities?.length ?? 0) === 0) {
+      setBusy(false);
+      clearPendingMember();
+      toast.error("This email address already has an account. Please sign in instead.");
+      setMode("signin");
       return;
     }
     if (!data.session) {
