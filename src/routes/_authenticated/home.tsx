@@ -10,6 +10,10 @@ import {
   LogOut,
   Settings,
   ShieldCheck,
+  Lightbulb,
+  MessageSquareHeart,
+  UserCog,
+  UserRound,
   Users,
 } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
@@ -40,6 +44,10 @@ const tiles = [
   { to: "/reports", label: "Reports", icon: BarChart3, staffOnly: true },
   { to: "/dashboard", label: "Dashboard", icon: LayoutDashboard, staffOnly: true },
   { to: "/approvals", label: "Approvals", icon: ShieldCheck, staffOnly: true, pastorOnly: true },
+  { to: "/roles", label: "User Roles", icon: UserCog, staffOnly: true, pastorOnly: true },
+  { to: "/profile", label: "My Profile", icon: UserRound, staffOnly: false },
+  { to: "/suggestions", label: "Suggestion", icon: Lightbulb, staffOnly: false },
+  { to: "/contact-pastor", label: "Contact Pastor", icon: MessageSquareHeart, staffOnly: false },
   { to: "/settings", label: "Settings", icon: Settings, staffOnly: true },
 ];
 
