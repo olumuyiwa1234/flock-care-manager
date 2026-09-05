@@ -229,30 +229,17 @@ export function MemberForm({
         </Field>
       </div>
 
-      <div className="grid grid-cols-2 gap-3">
-        <Field label="Birth month">
-          <Select value={draft.birth_month} onValueChange={(v) => set("birth_month", v)}>
-            <SelectTrigger>
-              <SelectValue placeholder="Month" />
-            </SelectTrigger>
-            <SelectContent>
-              {MONTHS.map((m, i) => (
-                <SelectItem key={m} value={String(i + 1)}>
-                  {m}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </Field>
-        <Field label="Birth day">
-          <Input
-            value={draft.birth_day}
-            onChange={(e) => set("birth_day", e.target.value)}
-            inputMode="numeric"
-            placeholder="14"
-          />
-        </Field>
-      </div>
+      <Field label="Birthday">
+        <MonthDayPicker
+          month={draft.birth_month ? Number(draft.birth_month) : null}
+          day={draft.birth_day ? Number(draft.birth_day) : null}
+          onChange={(m, d) => {
+            set("birth_month", m ? String(m) : "");
+            set("birth_day", d ? String(d) : "");
+          }}
+          placeholder="Pick birthday"
+        />
+      </Field>
 
       <Field label="Age bracket">
         <Select value={draft.age_bracket} onValueChange={(v) => set("age_bracket", v)}>
