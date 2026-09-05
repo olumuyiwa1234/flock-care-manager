@@ -209,6 +209,36 @@ export type Database = {
           },
         ]
       }
+      pastor_messages: {
+        Row: {
+          author_name: string
+          created_at: string
+          id: string
+          message: string
+          subject: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          author_name?: string
+          created_at?: string
+          id?: string
+          message: string
+          subject?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          author_name?: string
+          created_at?: string
+          id?: string
+          message?: string
+          subject?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           approval_status: string
@@ -242,6 +272,33 @@ export type Database = {
           id?: string
           phone?: string | null
           sub_role?: string | null
+        }
+        Relationships: []
+      }
+      suggestions: {
+        Row: {
+          author_name: string
+          content: string
+          created_at: string
+          id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          author_name?: string
+          content: string
+          created_at?: string
+          id?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          author_name?: string
+          content?: string
+          created_at?: string
+          id?: string
+          updated_at?: string
+          user_id?: string
         }
         Relationships: []
       }
