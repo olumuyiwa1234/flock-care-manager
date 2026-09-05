@@ -26,6 +26,27 @@ export const deleteUserAccount = createServerFn({ method: "POST" })
     }
 
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+
+    // Collect every member record tied to this user so all their data goes too.
+    const { data: memberRows } = await supabaseAdmin
+      .from("members")
+      .select("id")
+      .or(`user_id.eq.${data.userId},created_by.eq.${data.userId}`);
+    const memberIds = (memberRows ?? []).map((m) => m.id);
+
+    if (memberIds.length > 0) {
+      await supabaseAdmin.from("attendance").delete().in("member_id", memberIds);
+      await supabaseAdmin.from("follow_ups").delete().in("member_id", memberIds);
+      await supabaseAdmin.from("members").update({ invited_by: null }).in("invited_by", memberIds);
+      await supabaseAdmin.from("members").delete().in("id", memberIds);
+    }
+
+    // Anything else recorded by this user
+    await supabaseAdmin.from("attendance").delete().eq("recorded_by", data.userId);
+    await supabaseAdmin.from("follow_ups").delete().eq("created_by", data.userId);
+    await supabaseAdmin.from("user_roles").delete().eq("user_id", data.userId);
+    await supabaseAdmin.from("profiles").delete().eq("id", data.userId);
+
     const { error } = await supabaseAdmin.auth.admin.deleteUser(data.userId);
     if (error) throw new Error(error.message);
 
