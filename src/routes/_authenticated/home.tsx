@@ -46,7 +46,7 @@ const tiles = [
   { to: "/approvals", label: "Approvals", icon: ShieldCheck, staffOnly: true, pastorOnly: true },
   { to: "/roles", label: "User Roles", icon: UserCog, staffOnly: true, pastorOnly: true },
   { to: "/profile", label: "My Profile", icon: UserRound, staffOnly: false },
-  { to: "/suggestions", label: "Suggestion", icon: Lightbulb, staffOnly: false },
+  { to: "/feedback", label: "Feedback", icon: Lightbulb, staffOnly: false },
   { to: "/contact-pastor", label: "Contact Pastor", icon: MessageSquareHeart, staffOnly: false },
   { to: "/settings", label: "Settings", icon: Settings, staffOnly: true },
 ];
