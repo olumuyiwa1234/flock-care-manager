@@ -20,7 +20,6 @@ import {
   DEPARTMENTS,
   GENDERS,
   MARITAL_STATUSES,
-  MONTHS,
   ROLE_LABELS,
   SUB_ROLES,
   type AppRole,
