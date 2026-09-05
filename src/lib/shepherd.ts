@@ -79,6 +79,7 @@ export const HOD_DEPARTMENTS = [
   "Usher",
   "Greeters",
   "Children",
+  "Teens",
 ] as const;
 
 export const PROFILE_DEPARTMENTS = HOD_DEPARTMENTS;
