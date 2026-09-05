@@ -14,15 +14,8 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { toast } from "sonner";
-import { SERVICE_TYPES, todayISO } from "@/lib/shepherd";
+import { todaysService, todayISO } from "@/lib/shepherd";
 import { useMembers } from "@/lib/queries";
 import { checkGeofence, type GeofenceResult } from "@/lib/geofence.functions";
 import { useAuth } from "@/lib/useAuth";
@@ -50,7 +43,8 @@ function CheckIn() {
   const [geoError, setGeoError] = useState<string | null>(null);
   const [locating, setLocating] = useState(true);
   const [step, setStep] = useState<Step>("idle");
-  const [serviceType, setServiceType] = useState<string>(SERVICE_TYPES[0]);
+  const todayService = useMemo(() => todaysService(), []);
+  const serviceType = todayService ?? "";
   const [selectedMember, setSelectedMember] = useState<string>("");
   const [saving, setSaving] = useState(false);
 
@@ -91,6 +85,10 @@ function CheckIn() {
   const withinPremises = geo?.allowed ?? false;
 
   async function saveAttendance(memberId: string) {
+    if (!todayService) {
+      toast.error("No service is scheduled today — check-in is closed.");
+      return;
+    }
     setSaving(true);
     const { error } = await supabase.from("attendance").upsert(
       {
@@ -161,29 +159,25 @@ function CheckIn() {
       <div className="space-y-5">
         <div className="rounded-2xl border border-border bg-card p-4">
           <Label className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
-            Service type
+            Today's service
           </Label>
-          <Select value={serviceType} onValueChange={setServiceType}>
-            <SelectTrigger className="mt-2">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              {SERVICE_TYPES.map((s) => (
-                <SelectItem key={s} value={s}>
-                  {s}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+          {todayService ? (
+            <p className="mt-2 text-base font-semibold text-foreground">{todayService}</p>
+          ) : (
+            <p className="mt-2 text-sm text-muted-foreground">
+              No service is scheduled today. Check-in opens on Sundays (Sunday Service),
+              Tuesdays (Digging Deep) and Thursdays (Faith Clinic).
+            </p>
+          )}
         </div>
 
         <div className="flex flex-col items-center gap-4 pt-2">
           <button
             type="button"
-            disabled={!withinPremises || locating || saving}
+            disabled={!todayService || !withinPremises || locating || saving}
             onClick={startCheckIn}
             className={`grid size-52 place-items-center rounded-full text-primary-foreground transition ${
-              withinPremises && !locating
+              todayService && withinPremises && !locating
                 ? "bg-sky-gradient shadow-float animate-pulse-ring active:scale-95"
                 : "cursor-not-allowed bg-muted text-muted-foreground"
             }`}
@@ -195,7 +189,13 @@ function CheckIn() {
                 <Check className="size-14" strokeWidth={2.5} />
               )}
               <span className="text-lg font-semibold">
-                {locating ? "Locating…" : withinPremises ? "Check In" : "Out of range"}
+                {!todayService
+                  ? "No service today"
+                  : locating
+                    ? "Locating…"
+                    : withinPremises
+                      ? "Check In"
+                      : "Out of range"}
               </span>
             </span>
           </button>
