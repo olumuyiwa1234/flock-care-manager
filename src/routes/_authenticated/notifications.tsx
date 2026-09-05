@@ -2,6 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { Bell, Cake, Heart, TriangleAlert } from "lucide-react";
 import { AppShell, EmptyState } from "@/components/AppShell";
 import { useNotifications } from "@/lib/useNotifications";
+import { useAuth } from "@/lib/useAuth";
 
 export const Route = createFileRoute("/_authenticated/notifications")({
   head: () => ({
@@ -19,6 +20,7 @@ const icons = { birthday: Cake, anniversary: Heart, absent: TriangleAlert };
 
 function Notifications() {
   const { items, loading } = useNotifications();
+  const { isFloor } = useAuth();
 
   return (
     <AppShell title="Notifications" subtitle="Care alerts">
@@ -30,13 +32,8 @@ function Notifications() {
         <ul className="space-y-2">
           {items.map((n) => {
             const Icon = icons[n.kind] ?? Bell;
-            return (
-              <li key={n.id}>
-                <Link
-                  to="/members/$memberId"
-                  params={{ memberId: n.memberId }}
-                  className="flex items-start gap-3 rounded-2xl border border-border bg-card p-4"
-                >
+            const inner = (
+              <>
                   <span
                     className={`grid size-10 shrink-0 place-items-center rounded-xl ${
                       n.kind === "absent"
@@ -50,7 +47,18 @@ function Notifications() {
                     <span className="block font-medium">{n.title}</span>
                     <span className="block text-sm text-muted-foreground">{n.body}</span>
                   </span>
-                </Link>
+              </>
+            );
+            const className = "flex items-start gap-3 rounded-2xl border border-border bg-card p-4";
+            return (
+              <li key={n.id}>
+                {isFloor ? (
+                  <div className={className}>{inner}</div>
+                ) : (
+                  <Link to="/members/$memberId" params={{ memberId: n.memberId }} className={className}>
+                    {inner}
+                  </Link>
+                )}
               </li>
             );
           })}

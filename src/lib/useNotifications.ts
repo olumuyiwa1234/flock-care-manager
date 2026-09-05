@@ -1,6 +1,8 @@
+import { useQuery } from "@tanstack/react-query";
 import { useMembers, useAttendance, type MemberRow, type AttendanceRow } from "./queries";
 import { lastSundays } from "./shepherd";
 import { useAuth } from "./useAuth";
+import { celebrationsToday } from "./celebrations.functions";
 
 export type Notification = {
   id: string;
@@ -40,34 +42,34 @@ export function missedTwoSundays(members: MemberRow[], attendance: AttendanceRow
   );
 }
 
+export function useCelebrations() {
+  return useQuery({
+    queryKey: ["celebrations-today"],
+    staleTime: 10 * 60_000,
+    queryFn: () => celebrationsToday(),
+  });
+}
+
 export function useNotifications() {
   const { isFloor } = useAuth();
   const membersQuery = useMembers();
   const attendanceQuery = useAttendance(lastSundays(3).at(-1));
+  const celebrationsQuery = useCelebrations();
   const members = membersQuery.data ?? [];
   const attendance = attendanceQuery.data ?? [];
 
-  const now = new Date();
   const items: Notification[] = [];
 
-  for (const m of members) {
-    if (m.birth_month === now.getMonth() + 1 && m.birth_day === now.getDate()) {
-      items.push({
-        id: `bday-${m.id}`,
-        kind: "birthday",
-        title: `Birthday today: ${m.full_name}`,
-        body: "Send a birthday blessing.",
-        memberId: m.id,
-      });
-    }
-  }
-  for (const m of anniversariesToday(members)) {
+  for (const c of celebrationsQuery.data ?? []) {
     items.push({
-      id: `anniv-${m.id}`,
-      kind: "anniversary",
-      title: `Wedding anniversary today: ${m.full_name}`,
-      body: "Celebrate with the family.",
-      memberId: m.id,
+      id: c.id,
+      kind: c.kind,
+      title:
+        c.kind === "birthday"
+          ? `Birthday today: ${c.name}`
+          : `Wedding anniversary today: ${c.name}`,
+      body: c.kind === "birthday" ? "Send a birthday blessing." : "Celebrate with the family.",
+      memberId: c.memberId,
     });
   }
   if (!isFloor) {
