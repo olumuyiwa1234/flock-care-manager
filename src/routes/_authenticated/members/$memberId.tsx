@@ -280,7 +280,7 @@ function MemberDetail() {
         )}
       </section>
 
-      {isFullAccess && m.user_id && m.user_id !== auth?.userId && (
+      {isFullAccess && m.user_id !== auth?.userId && (
         <section className="mt-6">
           <Button
             variant="outline"
