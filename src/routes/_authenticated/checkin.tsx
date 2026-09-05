@@ -92,6 +92,10 @@ function CheckIn() {
   const withinPremises = geo?.allowed ?? false;
 
   async function saveAttendance(memberId: string) {
+    if (!todayService) {
+      toast.error("No service is scheduled today — check-in is closed.");
+      return;
+    }
     setSaving(true);
     const { error } = await supabase.from("attendance").upsert(
       {
@@ -162,20 +166,16 @@ function CheckIn() {
       <div className="space-y-5">
         <div className="rounded-2xl border border-border bg-card p-4">
           <Label className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
-            Service type
+            Today's service
           </Label>
-          <Select value={serviceType} onValueChange={setServiceType}>
-            <SelectTrigger className="mt-2">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              {SERVICE_TYPES.map((s) => (
-                <SelectItem key={s} value={s}>
-                  {s}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+          {todayService ? (
+            <p className="mt-2 text-base font-semibold text-foreground">{todayService}</p>
+          ) : (
+            <p className="mt-2 text-sm text-muted-foreground">
+              No service is scheduled today. Check-in opens on Sundays (Sunday Service),
+              Tuesdays (Digging Deep) and Thursdays (Faith Clinic).
+            </p>
+          )}
         </div>
 
         <div className="flex flex-col items-center gap-4 pt-2">
