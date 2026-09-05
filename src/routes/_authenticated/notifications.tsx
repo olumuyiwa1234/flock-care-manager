@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { Bell, Cake, Heart, TriangleAlert } from "lucide-react";
+import { Bell, Cake, Heart, TriangleAlert, UserPlus } from "lucide-react";
 import { AppShell, EmptyState } from "@/components/AppShell";
 import { useNotifications } from "@/lib/useNotifications";
 import { useAuth } from "@/lib/useAuth";
@@ -16,7 +16,7 @@ export const Route = createFileRoute("/_authenticated/notifications")({
   component: Notifications,
 });
 
-const icons = { birthday: Cake, anniversary: Heart, absent: TriangleAlert };
+const icons = { birthday: Cake, anniversary: Heart, absent: TriangleAlert, signup: UserPlus };
 
 function Notifications() {
   const { items, loading } = useNotifications();

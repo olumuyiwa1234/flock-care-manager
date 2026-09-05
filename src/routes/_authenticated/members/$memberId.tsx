@@ -116,10 +116,12 @@ function MemberDetail() {
   }
 
   async function deleteAccount() {
-    if (!m?.user_id) return;
+    if (!m) return;
     setDeleting(true);
     try {
-      await deleteUserAccount({ data: { userId: m.user_id } });
+      await deleteUserAccount({
+        data: m.user_id ? { userId: m.user_id, memberId: m.id } : { memberId: m.id },
+      });
       await queryClient.invalidateQueries({ queryKey: ["member", memberId] });
       await queryClient.invalidateQueries({ queryKey: ["members"] });
       toast.success("Account and all records deleted");
@@ -278,7 +280,7 @@ function MemberDetail() {
         )}
       </section>
 
-      {isFullAccess && m.user_id && m.user_id !== auth?.userId && (
+      {isFullAccess && m.user_id !== auth?.userId && (
         <section className="mt-6">
           <Button
             variant="outline"

@@ -3,10 +3,11 @@ import { useMembers, useAttendance, type MemberRow, type AttendanceRow } from ".
 import { lastSundays } from "./shepherd";
 import { useAuth } from "./useAuth";
 import { celebrationsToday } from "./celebrations.functions";
+import { recentSignups } from "./signups.functions";
 
 export type Notification = {
   id: string;
-  kind: "birthday" | "anniversary" | "absent";
+  kind: "birthday" | "anniversary" | "absent" | "signup";
   title: string;
   body: string;
   memberId: string;
@@ -26,12 +27,14 @@ export function anniversariesToday(members: MemberRow[]) {
   );
 }
 
+/** Members absent from the last two consecutive Sunday Services. */
 export function missedTwoSundays(members: MemberRow[], attendance: AttendanceRow[]) {
   const [s1, s2] = lastSundays(2);
   const attended = new Set(
     attendance
       .filter(
         (a) =>
+          a.service_type === "Sunday Service" &&
           (a.service_date === s1 || a.service_date === s2) &&
           (a.status === "Present" || a.status === "Late"),
       )
@@ -51,10 +54,19 @@ export function useCelebrations() {
 }
 
 export function useNotifications() {
-  const { isFloor } = useAuth();
+  const { role, approved, isFullAccess, isFollowUp } = useAuth();
+  // Absentee and new-account alerts go only to Pastorate, IT Infrastructure,
+  // Follow-up and HODs.
+  const isCareTeam = isFullAccess || isFollowUp || (approved && role === "hod");
   const membersQuery = useMembers();
   const attendanceQuery = useAttendance(lastSundays(3).at(-1));
   const celebrationsQuery = useCelebrations();
+  const signupsQuery = useQuery({
+    queryKey: ["recent-signups"],
+    enabled: isCareTeam,
+    staleTime: 5 * 60_000,
+    queryFn: () => recentSignups(),
+  });
   const members = membersQuery.data ?? [];
   const attendance = attendanceQuery.data ?? [];
 
@@ -72,17 +84,33 @@ export function useNotifications() {
       memberId: c.memberId,
     });
   }
-  if (!isFloor) {
+
+  if (isCareTeam) {
+    for (const s of signupsQuery.data ?? []) {
+      items.push({
+        id: s.id,
+        kind: "signup",
+        title: `New account: ${s.name}`,
+        body: s.department ? `Registered under ${s.department}.` : "Just registered on Shepherd.",
+        memberId: s.memberId,
+      });
+    }
     for (const m of missedTwoSundays(members, attendance)) {
       items.push({
         id: `absent-${m.id}`,
         kind: "absent",
-        title: `${m.full_name} missed two Sundays`,
+        title: `${m.full_name} missed two Sunday Services`,
         body: "Assign a follow-up contact.",
         memberId: m.id,
       });
     }
   }
 
-  return { items, loading: membersQuery.isLoading || attendanceQuery.isLoading, members, attendance };
+  return {
+    items,
+    loading: membersQuery.isLoading || attendanceQuery.isLoading,
+    members,
+    attendance,
+    isCareTeam,
+  };
 }
