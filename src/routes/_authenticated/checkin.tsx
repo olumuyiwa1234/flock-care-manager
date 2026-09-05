@@ -14,13 +14,6 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { toast } from "sonner";
 import { todaysService, todayISO } from "@/lib/shepherd";
 import { useMembers } from "@/lib/queries";
@@ -51,7 +44,7 @@ function CheckIn() {
   const [locating, setLocating] = useState(true);
   const [step, setStep] = useState<Step>("idle");
   const todayService = useMemo(() => todaysService(), []);
-  const [serviceType, setServiceType] = useState<string>(todayService ?? "");
+  const serviceType = todayService ?? "";
   const [selectedMember, setSelectedMember] = useState<string>("");
   const [saving, setSaving] = useState(false);
 
@@ -181,10 +174,10 @@ function CheckIn() {
         <div className="flex flex-col items-center gap-4 pt-2">
           <button
             type="button"
-            disabled={!withinPremises || locating || saving}
+            disabled={!todayService || !withinPremises || locating || saving}
             onClick={startCheckIn}
             className={`grid size-52 place-items-center rounded-full text-primary-foreground transition ${
-              withinPremises && !locating
+              todayService && withinPremises && !locating
                 ? "bg-sky-gradient shadow-float animate-pulse-ring active:scale-95"
                 : "cursor-not-allowed bg-muted text-muted-foreground"
             }`}
