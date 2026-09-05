@@ -298,7 +298,8 @@ function MemberDetail() {
           <AlertDialogHeader>
             <AlertDialogTitle>Delete this account?</AlertDialogTitle>
             <AlertDialogDescription>
-              This permanently deletes {m.full_name}'s sign-in account. This action cannot be undone.
+              This permanently wipes {m.full_name} from the database — profile, attendance and
+              follow-up records included. This action cannot be undone.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
