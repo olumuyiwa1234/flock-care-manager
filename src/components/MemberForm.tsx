@@ -256,30 +256,17 @@ export function MemberForm({
         </Select>
       </Field>
 
-      <div className="grid grid-cols-2 gap-3">
-        <Field label="Anniversary month">
-          <Select value={draft.anniversary_month} onValueChange={(v) => set("anniversary_month", v)}>
-            <SelectTrigger>
-              <SelectValue placeholder="Month" />
-            </SelectTrigger>
-            <SelectContent>
-              {MONTHS.map((m, i) => (
-                <SelectItem key={m} value={String(i + 1)}>
-                  {m}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </Field>
-        <Field label="Anniversary day">
-          <Input
-            value={draft.anniversary_day}
-            onChange={(e) => set("anniversary_day", e.target.value)}
-            inputMode="numeric"
-            placeholder="14"
-          />
-        </Field>
-      </div>
+      <Field label="Wedding anniversary">
+        <MonthDayPicker
+          month={draft.anniversary_month ? Number(draft.anniversary_month) : null}
+          day={draft.anniversary_day ? Number(draft.anniversary_day) : null}
+          onChange={(m, d) => {
+            set("anniversary_month", m ? String(m) : "");
+            set("anniversary_day", d ? String(d) : "");
+          }}
+          placeholder="Pick anniversary"
+        />
+      </Field>
 
       <div className="grid grid-cols-2 gap-3">
         <Field label="Department (optional)">
