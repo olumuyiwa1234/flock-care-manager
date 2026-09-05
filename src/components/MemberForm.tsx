@@ -78,7 +78,14 @@ export function MemberForm({
   submitLabel?: string;
   onSaved?: (member: { id: string; full_name: string; member_code: string }) => void;
 }) {
-  const [draft, setDraft] = useState<MemberDraft>({ ...empty, ...initial });
+  const [draft, setDraft] = useState<MemberDraft>(() => ({
+    ...empty,
+    ...initial,
+    birth_month: initial?.birth_month ? String(initial.birth_month) : "",
+    birth_day: initial?.birth_day ? String(initial.birth_day) : "",
+    anniversary_month: initial?.anniversary_month ? String(initial.anniversary_month) : "",
+    anniversary_day: initial?.anniversary_day ? String(initial.anniversary_day) : "",
+  }));
   const [photoPath, setPhotoPath] = useState<string | null>(initial?.photo_url ?? null);
   const [saving, setSaving] = useState(false);
 
