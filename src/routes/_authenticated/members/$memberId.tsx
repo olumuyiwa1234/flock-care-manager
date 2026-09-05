@@ -120,11 +120,11 @@ function MemberDetail() {
     setDeleting(true);
     try {
       await deleteUserAccount({ data: { userId: m.user_id } });
-      await supabase.from("members").update({ user_id: null }).eq("id", m.id);
       await queryClient.invalidateQueries({ queryKey: ["member", memberId] });
       await queryClient.invalidateQueries({ queryKey: ["members"] });
-      toast.success("Account deleted");
+      toast.success("Account and all records deleted");
       setConfirmDelete(false);
+      void navigate({ to: "/members" });
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Could not delete account");
     } finally {
