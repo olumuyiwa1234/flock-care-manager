@@ -24,7 +24,11 @@ export const FELLOWSHIPS = [
   "Elders Fellowship",
 ] as const;
 
-export const SERVICE_TYPES = ["Sunday Service", "Midweek Service", "Special Program"] as const;
+export const SERVICE_TYPES = [
+  "Sunday Service",
+  "Digging Deep (Tuesday)",
+  "Faith Clinic (Thursday)",
+] as const;
 export const ATTENDANCE_STATUSES = ["Present", "Absent", "Late"] as const;
 export const GENDERS = ["Male", "Female"] as const;
 export const MARITAL_STATUSES = ["Single", "Married", "Widowed", "Divorced"] as const;
