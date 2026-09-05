@@ -288,7 +288,7 @@ function MemberDetail() {
             <Trash2 className="mr-2 size-4" /> Delete account
           </Button>
           <p className="mt-2 text-center text-xs text-muted-foreground">
-            Removes this member's sign-in account. Their member record stays.
+            Permanently removes this person, their profile, attendance and follow-up records.
           </p>
         </section>
       )}
@@ -298,7 +298,8 @@ function MemberDetail() {
           <AlertDialogHeader>
             <AlertDialogTitle>Delete this account?</AlertDialogTitle>
             <AlertDialogDescription>
-              This permanently deletes {m.full_name}'s sign-in account. This action cannot be undone.
+              This permanently wipes {m.full_name} from the database — profile, attendance and
+              follow-up records included. This action cannot be undone.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
