@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Eye, EyeOff } from "lucide-react";
 import { Textarea } from "@/components/ui/textarea";
+import { MonthDayPicker } from "@/components/MonthDayPicker";
 import {
   Select,
   SelectContent,
@@ -299,21 +300,14 @@ function AuthPage() {
                 </Field>
               </div>
 
-              <div className="grid grid-cols-2 gap-3">
-                <Field label="Birth month">
-                  <Select value={birthMonth} onValueChange={setBirthMonth}>
-                    <SelectTrigger><SelectValue placeholder="Month" /></SelectTrigger>
-                    <SelectContent>
-                      {MONTHS.map((m, i) => (
-                        <SelectItem key={m} value={String(i + 1)}>{m}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </Field>
-                <Field label="Birth day">
-                  <Input value={birthDay} onChange={(e) => setBirthDay(e.target.value)} inputMode="numeric" placeholder="14" />
-                </Field>
-              </div>
+              <Field label="Birthday">
+                <MonthDayPicker
+                  month={birthMonth ? Number(birthMonth) : null}
+                  day={birthDay ? Number(birthDay) : null}
+                  onChange={(m, d) => { setBirthMonth(m ? String(m) : ""); setBirthDay(d ? String(d) : ""); }}
+                  placeholder="Pick your birthday"
+                />
+              </Field>
 
               <Field label="Age bracket">
                 <Select value={bracket} onValueChange={setBracket}>
