@@ -366,7 +366,7 @@ function AuthPage() {
               </Field>
 
               {subRoleOptions.length > 0 && (
-                <Field label={role === "hod" ? "Department led" : "Sub-role"}>
+                <Field label={role === "hod" ? "Department Lead" : "Sub-role"}>
                   <Select value={subRole} onValueChange={setSubRole}>
                     <SelectTrigger><SelectValue placeholder="Select" /></SelectTrigger>
                     <SelectContent>
