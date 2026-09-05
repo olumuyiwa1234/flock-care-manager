@@ -20,7 +20,6 @@ import {
   DEPARTMENTS,
   GENDERS,
   MARITAL_STATUSES,
-  MONTHS,
   ROLE_LABELS,
   SUB_ROLES,
   type AppRole,
@@ -320,21 +319,14 @@ function AuthPage() {
                 </Select>
               </Field>
 
-              <div className="grid grid-cols-2 gap-3">
-                <Field label="Anniversary month">
-                  <Select value={annivMonth} onValueChange={setAnnivMonth}>
-                    <SelectTrigger><SelectValue placeholder="Month" /></SelectTrigger>
-                    <SelectContent>
-                      {MONTHS.map((m, i) => (
-                        <SelectItem key={m} value={String(i + 1)}>{m}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </Field>
-                <Field label="Anniversary day">
-                  <Input value={annivDay} onChange={(e) => setAnnivDay(e.target.value)} inputMode="numeric" placeholder="14" />
-                </Field>
-              </div>
+              <Field label="Wedding anniversary">
+                <MonthDayPicker
+                  month={annivMonth ? Number(annivMonth) : null}
+                  day={annivDay ? Number(annivDay) : null}
+                  onChange={(m, d) => { setAnnivMonth(m ? String(m) : ""); setAnnivDay(d ? String(d) : ""); }}
+                  placeholder="Pick anniversary"
+                />
+              </Field>
 
               <div className="grid grid-cols-2 gap-3">
                 <Field label="Department (optional)">
