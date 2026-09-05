@@ -18,6 +18,7 @@ import { Route as AuthenticatedCheckinRouteImport } from './routes/_authenticate
 import { Route as AuthenticatedChildrenRouteImport } from './routes/_authenticated/children'
 import { Route as AuthenticatedContactPastorRouteImport } from './routes/_authenticated/contact-pastor'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
+import { Route as AuthenticatedFeedbackRouteImport } from './routes/_authenticated/feedback'
 import { Route as AuthenticatedFollowupRouteImport } from './routes/_authenticated/followup'
 import { Route as AuthenticatedHomeRouteImport } from './routes/_authenticated/home'
 import { Route as AuthenticatedNotificationsRouteImport } from './routes/_authenticated/notifications'
@@ -25,7 +26,6 @@ import { Route as AuthenticatedProfileRouteImport } from './routes/_authenticate
 import { Route as AuthenticatedReportsRouteImport } from './routes/_authenticated/reports'
 import { Route as AuthenticatedRolesRouteImport } from './routes/_authenticated/roles'
 import { Route as AuthenticatedSettingsRouteImport } from './routes/_authenticated/settings'
-import { Route as AuthenticatedSuggestionsRouteImport } from './routes/_authenticated/suggestions'
 import { Route as AuthenticatedMembersIndexRouteImport } from './routes/_authenticated/members/index'
 import { Route as AuthenticatedMembersMemberIdRouteImport } from './routes/_authenticated/members/$memberId'
 import { Route as AuthenticatedMembersNewRouteImport } from './routes/_authenticated/members/new'
@@ -75,6 +75,11 @@ const AuthenticatedDashboardRoute = AuthenticatedDashboardRouteImport.update({
   path: '/dashboard',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedFeedbackRoute = AuthenticatedFeedbackRouteImport.update({
+  id: '/feedback',
+  path: '/feedback',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedFollowupRoute = AuthenticatedFollowupRouteImport.update({
   id: '/followup',
   path: '/followup',
@@ -111,12 +116,6 @@ const AuthenticatedSettingsRoute = AuthenticatedSettingsRouteImport.update({
   path: '/settings',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
-const AuthenticatedSuggestionsRoute =
-  AuthenticatedSuggestionsRouteImport.update({
-    id: '/suggestions',
-    path: '/suggestions',
-    getParentRoute: () => AuthenticatedRouteRoute,
-  } as any)
 const AuthenticatedMembersIndexRoute =
   AuthenticatedMembersIndexRouteImport.update({
     id: '/members/',
@@ -144,6 +143,7 @@ export interface FileRoutesByFullPath {
   '/children': typeof AuthenticatedChildrenRoute
   '/contact-pastor': typeof AuthenticatedContactPastorRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
+  '/feedback': typeof AuthenticatedFeedbackRoute
   '/followup': typeof AuthenticatedFollowupRoute
   '/home': typeof AuthenticatedHomeRoute
   '/notifications': typeof AuthenticatedNotificationsRoute
@@ -151,7 +151,6 @@ export interface FileRoutesByFullPath {
   '/reports': typeof AuthenticatedReportsRoute
   '/roles': typeof AuthenticatedRolesRoute
   '/settings': typeof AuthenticatedSettingsRoute
-  '/suggestions': typeof AuthenticatedSuggestionsRoute
   '/members/$memberId': typeof AuthenticatedMembersMemberIdRoute
   '/members/new': typeof AuthenticatedMembersNewRoute
   '/members/': typeof AuthenticatedMembersIndexRoute
@@ -165,6 +164,7 @@ export interface FileRoutesByTo {
   '/children': typeof AuthenticatedChildrenRoute
   '/contact-pastor': typeof AuthenticatedContactPastorRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
+  '/feedback': typeof AuthenticatedFeedbackRoute
   '/followup': typeof AuthenticatedFollowupRoute
   '/home': typeof AuthenticatedHomeRoute
   '/notifications': typeof AuthenticatedNotificationsRoute
@@ -172,7 +172,6 @@ export interface FileRoutesByTo {
   '/reports': typeof AuthenticatedReportsRoute
   '/roles': typeof AuthenticatedRolesRoute
   '/settings': typeof AuthenticatedSettingsRoute
-  '/suggestions': typeof AuthenticatedSuggestionsRoute
   '/members/$memberId': typeof AuthenticatedMembersMemberIdRoute
   '/members/new': typeof AuthenticatedMembersNewRoute
   '/members': typeof AuthenticatedMembersIndexRoute
@@ -188,6 +187,7 @@ export interface FileRoutesById {
   '/_authenticated/children': typeof AuthenticatedChildrenRoute
   '/_authenticated/contact-pastor': typeof AuthenticatedContactPastorRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
+  '/_authenticated/feedback': typeof AuthenticatedFeedbackRoute
   '/_authenticated/followup': typeof AuthenticatedFollowupRoute
   '/_authenticated/home': typeof AuthenticatedHomeRoute
   '/_authenticated/notifications': typeof AuthenticatedNotificationsRoute
@@ -195,7 +195,6 @@ export interface FileRoutesById {
   '/_authenticated/reports': typeof AuthenticatedReportsRoute
   '/_authenticated/roles': typeof AuthenticatedRolesRoute
   '/_authenticated/settings': typeof AuthenticatedSettingsRoute
-  '/_authenticated/suggestions': typeof AuthenticatedSuggestionsRoute
   '/_authenticated/members/$memberId': typeof AuthenticatedMembersMemberIdRoute
   '/_authenticated/members/new': typeof AuthenticatedMembersNewRoute
   '/_authenticated/members/': typeof AuthenticatedMembersIndexRoute
@@ -211,6 +210,7 @@ export interface FileRouteTypes {
     | '/children'
     | '/contact-pastor'
     | '/dashboard'
+    | '/feedback'
     | '/followup'
     | '/home'
     | '/notifications'
@@ -218,7 +218,6 @@ export interface FileRouteTypes {
     | '/reports'
     | '/roles'
     | '/settings'
-    | '/suggestions'
     | '/members/$memberId'
     | '/members/new'
     | '/members/'
@@ -232,6 +231,7 @@ export interface FileRouteTypes {
     | '/children'
     | '/contact-pastor'
     | '/dashboard'
+    | '/feedback'
     | '/followup'
     | '/home'
     | '/notifications'
@@ -239,7 +239,6 @@ export interface FileRouteTypes {
     | '/reports'
     | '/roles'
     | '/settings'
-    | '/suggestions'
     | '/members/$memberId'
     | '/members/new'
     | '/members'
@@ -254,6 +253,7 @@ export interface FileRouteTypes {
     | '/_authenticated/children'
     | '/_authenticated/contact-pastor'
     | '/_authenticated/dashboard'
+    | '/_authenticated/feedback'
     | '/_authenticated/followup'
     | '/_authenticated/home'
     | '/_authenticated/notifications'
@@ -261,7 +261,6 @@ export interface FileRouteTypes {
     | '/_authenticated/reports'
     | '/_authenticated/roles'
     | '/_authenticated/settings'
-    | '/_authenticated/suggestions'
     | '/_authenticated/members/$memberId'
     | '/_authenticated/members/new'
     | '/_authenticated/members/'
@@ -338,6 +337,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedDashboardRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/feedback': {
+      id: '/_authenticated/feedback'
+      path: '/feedback'
+      fullPath: '/feedback'
+      preLoaderRoute: typeof AuthenticatedFeedbackRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/followup': {
       id: '/_authenticated/followup'
       path: '/followup'
@@ -387,13 +393,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedSettingsRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
-    '/_authenticated/suggestions': {
-      id: '/_authenticated/suggestions'
-      path: '/suggestions'
-      fullPath: '/suggestions'
-      preLoaderRoute: typeof AuthenticatedSuggestionsRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
     '/_authenticated/members/': {
       id: '/_authenticated/members/'
       path: '/members'
@@ -425,6 +424,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedChildrenRoute: typeof AuthenticatedChildrenRoute
   AuthenticatedContactPastorRoute: typeof AuthenticatedContactPastorRoute
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
+  AuthenticatedFeedbackRoute: typeof AuthenticatedFeedbackRoute
   AuthenticatedFollowupRoute: typeof AuthenticatedFollowupRoute
   AuthenticatedHomeRoute: typeof AuthenticatedHomeRoute
   AuthenticatedNotificationsRoute: typeof AuthenticatedNotificationsRoute
@@ -432,7 +432,6 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedReportsRoute: typeof AuthenticatedReportsRoute
   AuthenticatedRolesRoute: typeof AuthenticatedRolesRoute
   AuthenticatedSettingsRoute: typeof AuthenticatedSettingsRoute
-  AuthenticatedSuggestionsRoute: typeof AuthenticatedSuggestionsRoute
   AuthenticatedMembersMemberIdRoute: typeof AuthenticatedMembersMemberIdRoute
   AuthenticatedMembersNewRoute: typeof AuthenticatedMembersNewRoute
   AuthenticatedMembersIndexRoute: typeof AuthenticatedMembersIndexRoute
@@ -445,6 +444,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedChildrenRoute: AuthenticatedChildrenRoute,
   AuthenticatedContactPastorRoute: AuthenticatedContactPastorRoute,
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
+  AuthenticatedFeedbackRoute: AuthenticatedFeedbackRoute,
   AuthenticatedFollowupRoute: AuthenticatedFollowupRoute,
   AuthenticatedHomeRoute: AuthenticatedHomeRoute,
   AuthenticatedNotificationsRoute: AuthenticatedNotificationsRoute,
@@ -452,7 +452,6 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedReportsRoute: AuthenticatedReportsRoute,
   AuthenticatedRolesRoute: AuthenticatedRolesRoute,
   AuthenticatedSettingsRoute: AuthenticatedSettingsRoute,
-  AuthenticatedSuggestionsRoute: AuthenticatedSuggestionsRoute,
   AuthenticatedMembersMemberIdRoute: AuthenticatedMembersMemberIdRoute,
   AuthenticatedMembersNewRoute: AuthenticatedMembersNewRoute,
   AuthenticatedMembersIndexRoute: AuthenticatedMembersIndexRoute,
