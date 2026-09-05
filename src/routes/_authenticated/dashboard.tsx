@@ -54,9 +54,9 @@ function Dashboard() {
         <StatTile label="Anniversaries today" value={annivs.length} />
       </div>
 
-      {!isFloor && (
+      {isCareTeam && (
         <section className="mt-6">
-          <h2 className="mb-3 text-base font-semibold">Missed two consecutive Sundays</h2>
+          <h2 className="mb-3 text-base font-semibold">Missed two consecutive Sunday Services</h2>
           {missed.length === 0 ? (
             <p className="rounded-2xl border border-dashed border-border bg-card p-5 text-sm text-muted-foreground">
               Everyone has been present recently. 🎉
