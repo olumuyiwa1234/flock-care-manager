@@ -319,7 +319,7 @@ function AuthPage() {
                 </Select>
               </Field>
 
-              <Field label="Wedding anniversary">
+              <Field label="Wedding anniversary (optional)">
                 <MonthDayPicker
                   month={annivMonth ? Number(annivMonth) : null}
                   day={annivDay ? Number(annivDay) : null}
