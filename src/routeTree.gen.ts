@@ -21,6 +21,7 @@ import { Route as AuthenticatedDashboardRouteImport } from './routes/_authentica
 import { Route as AuthenticatedFeedbackRouteImport } from './routes/_authenticated/feedback'
 import { Route as AuthenticatedFollowupRouteImport } from './routes/_authenticated/followup'
 import { Route as AuthenticatedHomeRouteImport } from './routes/_authenticated/home'
+import { Route as AuthenticatedInboxRouteImport } from './routes/_authenticated/inbox'
 import { Route as AuthenticatedNotificationsRouteImport } from './routes/_authenticated/notifications'
 import { Route as AuthenticatedProfileRouteImport } from './routes/_authenticated/profile'
 import { Route as AuthenticatedReportsRouteImport } from './routes/_authenticated/reports'
@@ -90,6 +91,11 @@ const AuthenticatedHomeRoute = AuthenticatedHomeRouteImport.update({
   path: '/home',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedInboxRoute = AuthenticatedInboxRouteImport.update({
+  id: '/inbox',
+  path: '/inbox',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedNotificationsRoute =
   AuthenticatedNotificationsRouteImport.update({
     id: '/notifications',
@@ -146,6 +152,7 @@ export interface FileRoutesByFullPath {
   '/feedback': typeof AuthenticatedFeedbackRoute
   '/followup': typeof AuthenticatedFollowupRoute
   '/home': typeof AuthenticatedHomeRoute
+  '/inbox': typeof AuthenticatedInboxRoute
   '/notifications': typeof AuthenticatedNotificationsRoute
   '/profile': typeof AuthenticatedProfileRoute
   '/reports': typeof AuthenticatedReportsRoute
@@ -167,6 +174,7 @@ export interface FileRoutesByTo {
   '/feedback': typeof AuthenticatedFeedbackRoute
   '/followup': typeof AuthenticatedFollowupRoute
   '/home': typeof AuthenticatedHomeRoute
+  '/inbox': typeof AuthenticatedInboxRoute
   '/notifications': typeof AuthenticatedNotificationsRoute
   '/profile': typeof AuthenticatedProfileRoute
   '/reports': typeof AuthenticatedReportsRoute
@@ -190,6 +198,7 @@ export interface FileRoutesById {
   '/_authenticated/feedback': typeof AuthenticatedFeedbackRoute
   '/_authenticated/followup': typeof AuthenticatedFollowupRoute
   '/_authenticated/home': typeof AuthenticatedHomeRoute
+  '/_authenticated/inbox': typeof AuthenticatedInboxRoute
   '/_authenticated/notifications': typeof AuthenticatedNotificationsRoute
   '/_authenticated/profile': typeof AuthenticatedProfileRoute
   '/_authenticated/reports': typeof AuthenticatedReportsRoute
@@ -213,6 +222,7 @@ export interface FileRouteTypes {
     | '/feedback'
     | '/followup'
     | '/home'
+    | '/inbox'
     | '/notifications'
     | '/profile'
     | '/reports'
@@ -234,6 +244,7 @@ export interface FileRouteTypes {
     | '/feedback'
     | '/followup'
     | '/home'
+    | '/inbox'
     | '/notifications'
     | '/profile'
     | '/reports'
@@ -256,6 +267,7 @@ export interface FileRouteTypes {
     | '/_authenticated/feedback'
     | '/_authenticated/followup'
     | '/_authenticated/home'
+    | '/_authenticated/inbox'
     | '/_authenticated/notifications'
     | '/_authenticated/profile'
     | '/_authenticated/reports'
@@ -358,6 +370,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedHomeRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/inbox': {
+      id: '/_authenticated/inbox'
+      path: '/inbox'
+      fullPath: '/inbox'
+      preLoaderRoute: typeof AuthenticatedInboxRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/notifications': {
       id: '/_authenticated/notifications'
       path: '/notifications'
@@ -427,6 +446,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedFeedbackRoute: typeof AuthenticatedFeedbackRoute
   AuthenticatedFollowupRoute: typeof AuthenticatedFollowupRoute
   AuthenticatedHomeRoute: typeof AuthenticatedHomeRoute
+  AuthenticatedInboxRoute: typeof AuthenticatedInboxRoute
   AuthenticatedNotificationsRoute: typeof AuthenticatedNotificationsRoute
   AuthenticatedProfileRoute: typeof AuthenticatedProfileRoute
   AuthenticatedReportsRoute: typeof AuthenticatedReportsRoute
@@ -447,6 +467,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedFeedbackRoute: AuthenticatedFeedbackRoute,
   AuthenticatedFollowupRoute: AuthenticatedFollowupRoute,
   AuthenticatedHomeRoute: AuthenticatedHomeRoute,
+  AuthenticatedInboxRoute: AuthenticatedInboxRoute,
   AuthenticatedNotificationsRoute: AuthenticatedNotificationsRoute,
   AuthenticatedProfileRoute: AuthenticatedProfileRoute,
   AuthenticatedReportsRoute: AuthenticatedReportsRoute,
