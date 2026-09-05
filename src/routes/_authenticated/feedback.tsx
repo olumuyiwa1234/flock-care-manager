@@ -30,7 +30,7 @@ type FeedbackRow = {
 };
 
 function Feedback() {
-  const { auth, isStaff } = useAuth();
+  const { auth, isPastor } = useAuth();
   const queryClient = useQueryClient();
   const [text, setText] = useState("");
   const [busy, setBusy] = useState(false);
@@ -90,7 +90,7 @@ function Feedback() {
       </div>
 
       <h2 className="mb-2 mt-6 text-base font-semibold">
-        {isStaff ? "All feedback" : "Your feedback"}
+        {isPastor ? "All feedback" : "Your feedback"}
       </h2>
       {listQuery.isLoading ? (
         <p className="text-sm text-muted-foreground">Loading…</p>
