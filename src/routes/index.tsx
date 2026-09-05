@@ -65,9 +65,6 @@ function Landing() {
           <Button asChild size="lg" variant="secondary" className="w-full text-base">
             <Link to="/auth">Get started</Link>
           </Button>
-          <p className="text-center text-xs opacity-70">
-            Have the church access code? Enter it when you register for full access.
-          </p>
         </div>
       </div>
     </div>

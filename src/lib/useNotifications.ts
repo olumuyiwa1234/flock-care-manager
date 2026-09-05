@@ -1,6 +1,8 @@
+import { useQuery } from "@tanstack/react-query";
 import { useMembers, useAttendance, type MemberRow, type AttendanceRow } from "./queries";
 import { lastSundays } from "./shepherd";
 import { useAuth } from "./useAuth";
+import { celebrationsToday } from "./celebrations.functions";
 
 export type Notification = {
   id: string;

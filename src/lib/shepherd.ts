@@ -53,6 +53,8 @@ export const DEPARTMENTS = [
   "IT",
   "Greeters",
   "Prayer",
+  "Sunday School",
+  "Security",
 ] as const;
 
 /** Departments a HOD can lead — includes Children (child members have no phones). */
