@@ -3,6 +3,7 @@ import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 
 export type Celebration = {
   id: string;
+  memberId: string;
   name: string;
   kind: "birthday" | "anniversary";
 };
@@ -27,10 +28,10 @@ export const celebrationsToday = createServerFn({ method: "GET" })
     const out: Celebration[] = [];
     for (const m of data ?? []) {
       if (m.birth_month === month && m.birth_day === day) {
-        out.push({ id: `bday-${m.id}`, name: m.full_name, kind: "birthday" });
+        out.push({ id: `bday-${m.id}`, memberId: m.id, name: m.full_name, kind: "birthday" });
       }
       if (m.anniversary_month === month && m.anniversary_day === day) {
-        out.push({ id: `anniv-${m.id}`, name: m.full_name, kind: "anniversary" });
+        out.push({ id: `anniv-${m.id}`, memberId: m.id, name: m.full_name, kind: "anniversary" });
       }
     }
     return out;
