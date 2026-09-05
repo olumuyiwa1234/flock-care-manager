@@ -22,7 +22,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { toast } from "sonner";
-import { SERVICE_TYPES, todayISO } from "@/lib/shepherd";
+import { todaysService, todayISO } from "@/lib/shepherd";
 import { useMembers } from "@/lib/queries";
 import { checkGeofence, type GeofenceResult } from "@/lib/geofence.functions";
 import { useAuth } from "@/lib/useAuth";
@@ -50,7 +50,8 @@ function CheckIn() {
   const [geoError, setGeoError] = useState<string | null>(null);
   const [locating, setLocating] = useState(true);
   const [step, setStep] = useState<Step>("idle");
-  const [serviceType, setServiceType] = useState<string>(SERVICE_TYPES[0]);
+  const todayService = useMemo(() => todaysService(), []);
+  const [serviceType, setServiceType] = useState<string>(todayService ?? "");
   const [selectedMember, setSelectedMember] = useState<string>("");
   const [saving, setSaving] = useState(false);
 
