@@ -288,7 +288,7 @@ function MemberDetail() {
             <Trash2 className="mr-2 size-4" /> Delete account
           </Button>
           <p className="mt-2 text-center text-xs text-muted-foreground">
-            Removes this member's sign-in account. Their member record stays.
+            Permanently removes this person, their profile, attendance and follow-up records.
           </p>
         </section>
       )}
