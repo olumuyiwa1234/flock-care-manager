@@ -29,6 +29,19 @@ export const SERVICE_TYPES = [
   "Digging Deep (Tuesday)",
   "Faith Clinic (Thursday)",
 ] as const;
+
+/** Day of week (0 = Sunday) each service is held on. */
+export const SERVICE_DAY: Record<(typeof SERVICE_TYPES)[number], number> = {
+  "Sunday Service": 0,
+  "Digging Deep (Tuesday)": 2,
+  "Faith Clinic (Thursday)": 4,
+};
+
+/** The service held today, or null when no service is scheduled today. */
+export function todaysService(): (typeof SERVICE_TYPES)[number] | null {
+  const day = new Date().getDay();
+  return SERVICE_TYPES.find((s) => SERVICE_DAY[s] === day) ?? null;
+}
 export const ATTENDANCE_STATUSES = ["Present", "Absent", "Late"] as const;
 export const GENDERS = ["Male", "Female"] as const;
 export const MARITAL_STATUSES = ["Single", "Married", "Widowed", "Divorced"] as const;
