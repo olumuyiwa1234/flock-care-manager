@@ -256,7 +256,7 @@ export function MemberForm({
         </Select>
       </Field>
 
-      <Field label="Wedding anniversary">
+      <Field label="Wedding anniversary (optional)">
         <MonthDayPicker
           month={draft.anniversary_month ? Number(draft.anniversary_month) : null}
           day={draft.anniversary_day ? Number(draft.anniversary_day) : null}

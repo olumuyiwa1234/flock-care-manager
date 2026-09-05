@@ -19,9 +19,10 @@ interface Props {
   day: number | null;
   onChange: (month: number | null, day: number | null) => void;
   placeholder?: string;
+  allowClear?: boolean;
 }
 
-export function MonthDayPicker({ month, day, onChange, placeholder = "Pick a date" }: Props) {
+export function MonthDayPicker({ month, day, onChange, placeholder = "Pick a date", allowClear = true }: Props) {
   const [open, setOpen] = useState(false);
   const [view, setView] = useState<"month" | "day">("month");
   const [selMonth, setSelMonth] = useState<number | null>(month);
@@ -64,7 +65,17 @@ export function MonthDayPicker({ month, day, onChange, placeholder = "Pick a dat
                 <ChevronLeft className="h-4 w-4" />
               </button>
               <span className="text-sm font-semibold">{selMonth ? MONTHS[selMonth - 1] : ""}</span>
-              <span className="w-6" />
+              {allowClear && month && day ? (
+                <button
+                  type="button"
+                  onClick={() => { onChange(null, null); setOpen(false); }}
+                  className="text-xs text-destructive hover:underline"
+                >
+                  Clear
+                </button>
+              ) : (
+                <span className="w-8" />
+              )}
             </div>
             <div className="grid grid-cols-7 gap-1 text-center text-[11px] text-muted-foreground mb-1">
               {["S", "M", "T", "W", "T", "F", "S"].map((d, i) => <div key={i}>{d}</div>)}
