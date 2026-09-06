@@ -85,8 +85,8 @@ function AuthPage() {
   const [marital, setMarital] = useState("");
   const [departments, setDepartments] = useState<string[]>([]);
   const [membershipYear, setMembershipYear] = useState(String(new Date().getFullYear()));
-  const [role, setRole] = useState<AppRole>("member");
-  const [subRole, setSubRole] = useState("");
+  const [roles, setRoles] = useState<AppRole[]>(["member"]);
+  const [subRoles, setSubRoles] = useState<Record<string, string[]>>({});
   const [photoFile, setPhotoFile] = useState<File | null>(null);
 
   useEffect(() => {
