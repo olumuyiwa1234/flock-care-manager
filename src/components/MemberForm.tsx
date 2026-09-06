@@ -269,19 +269,13 @@ export function MemberForm({
       </Field>
 
       <div className="grid grid-cols-2 gap-3">
-        <Field label="Department (optional)">
-          <Select value={draft.department} onValueChange={(v) => set("department", v)}>
-            <SelectTrigger>
-              <SelectValue placeholder="None" />
-            </SelectTrigger>
-            <SelectContent>
-              {DEPARTMENTS.map((d) => (
-                <SelectItem key={d} value={d}>
-                  {d}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+        <Field label="Departments (optional)">
+          <MultiSelect
+            options={DEPARTMENTS}
+            value={draft.department ? draft.department.split(",").map((d) => d.trim()).filter(Boolean) : []}
+            onChange={(v) => set("department", v.join(", "))}
+            placeholder="None"
+          />
         </Field>
         <Field label="Membership year">
           <Input
