@@ -388,45 +388,48 @@ function AuthPage() {
               </Field>
 
               {isWorker && (
-              <Field label="Your roles">
-                <MultiSelect
-                  options={ROLE_OPTIONS.map((r) => ROLE_LABELS[r])}
-                  value={roles.map((r) => ROLE_LABELS[r])}
-                  onChange={(labels) => {
-                    const next = ROLE_OPTIONS.filter((r) => labels.includes(ROLE_LABELS[r]));
-                    setRoles(next);
-                    setSubRoles((prev) => {
-                      const kept: Record<string, string[]> = {};
-                      next.forEach((r) => {
-                        if (prev[r]) kept[r] = prev[r];
-                      });
-                      return kept;
-                    });
-                  }}
-                  placeholder="Select roles"
-                />
-              </Field>
-
-              {roles
-                .filter((r) => optionsFor(r).length > 0)
-                .map((r) => (
-                  <Field
-                    key={r}
-                    label={r === "hod" ? "Department Lead" : `${ROLE_LABELS[r]} sub-role`}
-                  >
+                <>
+                  <Field label="Your roles">
                     <MultiSelect
-                      options={optionsFor(r)}
-                      value={subRoles[r] ?? []}
-                      onChange={(v) => setSubRoles((prev) => ({ ...prev, [r]: v }))}
-                      placeholder="Select"
+                      options={ROLE_OPTIONS.map((r) => ROLE_LABELS[r])}
+                      value={roles.map((r) => ROLE_LABELS[r])}
+                      onChange={(labels) => {
+                        const next = ROLE_OPTIONS.filter((r) => labels.includes(ROLE_LABELS[r]));
+                        setRoles(next);
+                        setSubRoles((prev) => {
+                          const kept: Record<string, string[]> = {};
+                          next.forEach((r) => {
+                            if (prev[r]) kept[r] = prev[r];
+                          });
+                          return kept;
+                        });
+                      }}
+                      placeholder="Select roles"
                     />
                   </Field>
-                ))}
 
-              {needsApproval && (
-                <p className="text-xs text-muted-foreground">
-                  Leadership accounts need a pastor's approval before full access is granted.
-                </p>
+                  {roles
+                    .filter((r) => optionsFor(r).length > 0)
+                    .map((r) => (
+                      <Field
+                        key={r}
+                        label={r === "hod" ? "Department Lead" : `${ROLE_LABELS[r]} sub-role`}
+                      >
+                        <MultiSelect
+                          options={optionsFor(r)}
+                          value={subRoles[r] ?? []}
+                          onChange={(v) => setSubRoles((prev) => ({ ...prev, [r]: v }))}
+                          placeholder="Select"
+                        />
+                      </Field>
+                    ))}
+
+                  {needsApproval && (
+                    <p className="text-xs text-muted-foreground">
+                      Leadership accounts need a pastor's approval before full access is granted.
+                    </p>
+                  )}
+                </>
               )}
             </>
           )}
