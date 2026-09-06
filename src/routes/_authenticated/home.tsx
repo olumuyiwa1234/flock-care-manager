@@ -2,6 +2,7 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import {
   BarChart3,
   Baby,
+  Cake,
   Bell,
   CalendarDays,
   ClipboardList,
@@ -42,6 +43,7 @@ const tiles = [
   { to: "/children", label: "Children", icon: Baby, staffOnly: true, childrenOnly: true },
   { to: "/attendance", label: "Attendance", icon: ClipboardList, staffOnly: true },
   { to: "/followup", label: "Follow-up", icon: HeartHandshake, staffOnly: true },
+  { to: "/celebrations", label: "Celebration", icon: Cake, staffOnly: true },
   { to: "/reports", label: "Reports", icon: BarChart3, staffOnly: true },
   { to: "/dashboard", label: "Dashboard", icon: LayoutDashboard, staffOnly: true },
   { to: "/approvals", label: "Approvals", icon: ShieldCheck, staffOnly: true, pastorOnly: true },
