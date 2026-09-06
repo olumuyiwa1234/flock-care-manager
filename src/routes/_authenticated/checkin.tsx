@@ -126,6 +126,7 @@ function CheckIn() {
       return;
     }
     await queryClient.invalidateQueries({ queryKey: ["attendance"] });
+    if (memberId === ownMember?.id) setCheckedIn(true);
     setStep("done");
     toast.success("Attendance saved");
   }
