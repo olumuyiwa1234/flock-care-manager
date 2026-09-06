@@ -84,11 +84,17 @@ function AuthPage() {
   const [annivMonth, setAnnivMonth] = useState("");
   const [annivDay, setAnnivDay] = useState("");
   const [marital, setMarital] = useState("");
+  const [status, setStatus] = useState<"Member" | "Worker">("Member");
   const [departments, setDepartments] = useState<string[]>([]);
   const [membershipYear, setMembershipYear] = useState(String(new Date().getFullYear()));
   const [roles, setRoles] = useState<AppRole[]>(["member"]);
   const [subRoles, setSubRoles] = useState<Record<string, string[]>>({});
   const [photoFile, setPhotoFile] = useState<File | null>(null);
+
+  const isWorker = status === "Worker";
+  const effectiveRoles: AppRole[] = isWorker ? roles : ["member"];
+  const effectiveSubRoles = isWorker ? subRoles : {};
+  const effectiveDepartments = isWorker ? departments : [];
 
   useEffect(() => {
     void supabase.auth.getSession().then(({ data }) => {
@@ -109,9 +115,9 @@ function AuthPage() {
     );
   }
 
-  const allSubRoles = roles.flatMap((r) => subRoles[r] ?? []);
-  const isPastor = (subRoles["pastorate"] ?? []).includes("Pastor");
-  const needsApproval = !(roles.every((r) => r === "member") || isPastor);
+  const allSubRoles = effectiveRoles.flatMap((r) => effectiveSubRoles[r] ?? []);
+  const isPastor = (effectiveSubRoles["pastorate"] ?? []).includes("Pastor");
+  const needsApproval = !(effectiveRoles.every((r) => r === "member") || isPastor);
 
 
   async function uploadPhoto(userId: string) {
@@ -145,14 +151,14 @@ function AuthPage() {
       return;
     }
 
-    if (roles.length === 0) {
+    if (effectiveRoles.length === 0) {
       setBusy(false);
       toast.error("Please select at least one role");
       return;
     }
 
-    const missing = roles.find(
-      (r) => optionsFor(r).length > 0 && (subRoles[r] ?? []).length === 0,
+    const missing = effectiveRoles.find(
+      (r) => optionsFor(r).length > 0 && (effectiveSubRoles[r] ?? []).length === 0,
     );
     if (missing) {
       setBusy(false);
@@ -160,9 +166,9 @@ function AuthPage() {
       return;
     }
 
-    const departmentValue = roles.includes("hod")
-      ? Array.from(new Set([...(subRoles["hod"] ?? []), ...departments])).join(", ")
-      : departments.join(", ");
+    const departmentValue = effectiveRoles.includes("hod")
+      ? Array.from(new Set([...(effectiveSubRoles["hod"] ?? []), ...effectiveDepartments])).join(", ")
+      : effectiveDepartments.join(", ");
 
     savePendingMember({
       full_name: fullName.trim(),
@@ -189,8 +195,8 @@ function AuthPage() {
         data: {
           full_name: fullName.trim(),
           phone,
-          role: roles.find((r) => r !== "member") ?? "member",
-          roles,
+          role: effectiveRoles.find((r) => r !== "member") ?? "member",
+          roles: effectiveRoles,
           sub_role: allSubRoles.length > 0 ? allSubRoles.join(", ") : null,
           department: departmentValue || null,
         },
@@ -349,7 +355,20 @@ function AuthPage() {
                 />
               </Field>
 
-              <div className="grid grid-cols-2 gap-3">
+              <Field label="Status">
+                <Select
+                  value={status}
+                  onValueChange={(v) => setStatus(v as "Member" | "Worker")}
+                >
+                  <SelectTrigger><SelectValue placeholder="Select status" /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="Member">Member</SelectItem>
+                    <SelectItem value="Worker">Worker</SelectItem>
+                  </SelectContent>
+                </Select>
+              </Field>
+
+              {isWorker && (
                 <Field label="Departments (optional)">
                   <MultiSelect
                     options={DEPARTMENTS}
@@ -358,54 +377,59 @@ function AuthPage() {
                     placeholder="None"
                   />
                 </Field>
-                <Field label="Membership year">
-                  <Input
-                    value={membershipYear}
-                    onChange={(e) => setMembershipYear(e.target.value)}
-                    inputMode="numeric"
-                  />
-                </Field>
-              </div>
+              )}
 
-              <Field label="Your roles">
-                <MultiSelect
-                  options={ROLE_OPTIONS.map((r) => ROLE_LABELS[r])}
-                  value={roles.map((r) => ROLE_LABELS[r])}
-                  onChange={(labels) => {
-                    const next = ROLE_OPTIONS.filter((r) => labels.includes(ROLE_LABELS[r]));
-                    setRoles(next);
-                    setSubRoles((prev) => {
-                      const kept: Record<string, string[]> = {};
-                      next.forEach((r) => {
-                        if (prev[r]) kept[r] = prev[r];
-                      });
-                      return kept;
-                    });
-                  }}
-                  placeholder="Select roles"
+              <Field label="Membership year">
+                <Input
+                  value={membershipYear}
+                  onChange={(e) => setMembershipYear(e.target.value)}
+                  inputMode="numeric"
                 />
               </Field>
 
-              {roles
-                .filter((r) => optionsFor(r).length > 0)
-                .map((r) => (
-                  <Field
-                    key={r}
-                    label={r === "hod" ? "Department Lead" : `${ROLE_LABELS[r]} sub-role`}
-                  >
+              {isWorker && (
+                <>
+                  <Field label="Your roles">
                     <MultiSelect
-                      options={optionsFor(r)}
-                      value={subRoles[r] ?? []}
-                      onChange={(v) => setSubRoles((prev) => ({ ...prev, [r]: v }))}
-                      placeholder="Select"
+                      options={ROLE_OPTIONS.map((r) => ROLE_LABELS[r])}
+                      value={roles.map((r) => ROLE_LABELS[r])}
+                      onChange={(labels) => {
+                        const next = ROLE_OPTIONS.filter((r) => labels.includes(ROLE_LABELS[r]));
+                        setRoles(next);
+                        setSubRoles((prev) => {
+                          const kept: Record<string, string[]> = {};
+                          next.forEach((r) => {
+                            if (prev[r]) kept[r] = prev[r];
+                          });
+                          return kept;
+                        });
+                      }}
+                      placeholder="Select roles"
                     />
                   </Field>
-                ))}
 
-              {needsApproval && (
-                <p className="text-xs text-muted-foreground">
-                  Leadership accounts need a pastor's approval before full access is granted.
-                </p>
+                  {roles
+                    .filter((r) => optionsFor(r).length > 0)
+                    .map((r) => (
+                      <Field
+                        key={r}
+                        label={r === "hod" ? "Department Lead" : `${ROLE_LABELS[r]} sub-role`}
+                      >
+                        <MultiSelect
+                          options={optionsFor(r)}
+                          value={subRoles[r] ?? []}
+                          onChange={(v) => setSubRoles((prev) => ({ ...prev, [r]: v }))}
+                          placeholder="Select"
+                        />
+                      </Field>
+                    ))}
+
+                  {needsApproval && (
+                    <p className="text-xs text-muted-foreground">
+                      Leadership accounts need a pastor's approval before full access is granted.
+                    </p>
+                  )}
+                </>
               )}
             </>
           )}
