@@ -208,13 +208,15 @@ function CheckIn() {
                 <Check className="size-14" strokeWidth={2.5} />
               )}
               <span className="text-lg font-semibold">
-                {!todayService
-                  ? "No service today"
-                  : locating
-                    ? "Locating…"
-                    : withinPremises
-                      ? "Check In"
-                      : "Out of range"}
+                {checkedIn
+                  ? "Checked in"
+                  : !todayService
+                    ? "No service today"
+                    : locating
+                      ? "Locating…"
+                      : withinPremises
+                        ? "Check In"
+                        : "Out of range"}
               </span>
             </span>
           </button>
