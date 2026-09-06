@@ -188,9 +188,10 @@ function AuthPage() {
         data: {
           full_name: fullName.trim(),
           phone,
-          role,
-          sub_role: subRole || null,
-          department: role === "hod" ? subRole : department || null,
+          role: roles.find((r) => r !== "member") ?? "member",
+          roles,
+          sub_role: allSubRoles.length > 0 ? allSubRoles.join(", ") : null,
+          department: departmentValue || null,
         },
       },
     });
