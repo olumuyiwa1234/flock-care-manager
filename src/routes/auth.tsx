@@ -102,9 +102,15 @@ function AuthPage() {
       .catch(() => setPastorTaken(false));
   }, []);
 
-  const subRoleOptions = (SUB_ROLES[role] as readonly string[]).filter(
-    (s) => !(role === "pastorate" && s === "Pastor" && pastorTaken),
-  );
+  function optionsFor(r: AppRole) {
+    return (SUB_ROLES[r] as readonly string[]).filter(
+      (s) => !(r === "pastorate" && s === "Pastor" && pastorTaken),
+    );
+  }
+
+  const allSubRoles = roles.flatMap((r) => subRoles[r] ?? []);
+  const isPastor = (subRoles["pastorate"] ?? []).includes("Pastor");
+  const needsApproval = !(roles.every((r) => r === "member") || isPastor);
 
 
   async function uploadPhoto(userId: string) {
