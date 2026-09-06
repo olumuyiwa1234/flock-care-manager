@@ -14,6 +14,7 @@ import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AuthenticatedApprovalsRouteImport } from './routes/_authenticated/approvals'
 import { Route as AuthenticatedAttendanceRouteImport } from './routes/_authenticated/attendance'
+import { Route as AuthenticatedCelebrationsRouteImport } from './routes/_authenticated/celebrations'
 import { Route as AuthenticatedCheckinRouteImport } from './routes/_authenticated/checkin'
 import { Route as AuthenticatedChildrenRouteImport } from './routes/_authenticated/children'
 import { Route as AuthenticatedContactPastorRouteImport } from './routes/_authenticated/contact-pastor'
@@ -55,6 +56,12 @@ const AuthenticatedAttendanceRoute = AuthenticatedAttendanceRouteImport.update({
   path: '/attendance',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedCelebrationsRoute =
+  AuthenticatedCelebrationsRouteImport.update({
+    id: '/celebrations',
+    path: '/celebrations',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedCheckinRoute = AuthenticatedCheckinRouteImport.update({
   id: '/checkin',
   path: '/checkin',
@@ -145,6 +152,7 @@ export interface FileRoutesByFullPath {
   '/auth': typeof AuthRoute
   '/approvals': typeof AuthenticatedApprovalsRoute
   '/attendance': typeof AuthenticatedAttendanceRoute
+  '/celebrations': typeof AuthenticatedCelebrationsRoute
   '/checkin': typeof AuthenticatedCheckinRoute
   '/children': typeof AuthenticatedChildrenRoute
   '/contact-pastor': typeof AuthenticatedContactPastorRoute
@@ -167,6 +175,7 @@ export interface FileRoutesByTo {
   '/auth': typeof AuthRoute
   '/approvals': typeof AuthenticatedApprovalsRoute
   '/attendance': typeof AuthenticatedAttendanceRoute
+  '/celebrations': typeof AuthenticatedCelebrationsRoute
   '/checkin': typeof AuthenticatedCheckinRoute
   '/children': typeof AuthenticatedChildrenRoute
   '/contact-pastor': typeof AuthenticatedContactPastorRoute
@@ -191,6 +200,7 @@ export interface FileRoutesById {
   '/auth': typeof AuthRoute
   '/_authenticated/approvals': typeof AuthenticatedApprovalsRoute
   '/_authenticated/attendance': typeof AuthenticatedAttendanceRoute
+  '/_authenticated/celebrations': typeof AuthenticatedCelebrationsRoute
   '/_authenticated/checkin': typeof AuthenticatedCheckinRoute
   '/_authenticated/children': typeof AuthenticatedChildrenRoute
   '/_authenticated/contact-pastor': typeof AuthenticatedContactPastorRoute
@@ -215,6 +225,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/approvals'
     | '/attendance'
+    | '/celebrations'
     | '/checkin'
     | '/children'
     | '/contact-pastor'
@@ -237,6 +248,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/approvals'
     | '/attendance'
+    | '/celebrations'
     | '/checkin'
     | '/children'
     | '/contact-pastor'
@@ -260,6 +272,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/_authenticated/approvals'
     | '/_authenticated/attendance'
+    | '/_authenticated/celebrations'
     | '/_authenticated/checkin'
     | '/_authenticated/children'
     | '/_authenticated/contact-pastor'
@@ -319,6 +332,13 @@ declare module '@tanstack/react-router' {
       path: '/attendance'
       fullPath: '/attendance'
       preLoaderRoute: typeof AuthenticatedAttendanceRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/celebrations': {
+      id: '/_authenticated/celebrations'
+      path: '/celebrations'
+      fullPath: '/celebrations'
+      preLoaderRoute: typeof AuthenticatedCelebrationsRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/checkin': {
@@ -439,6 +459,7 @@ declare module '@tanstack/react-router' {
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedApprovalsRoute: typeof AuthenticatedApprovalsRoute
   AuthenticatedAttendanceRoute: typeof AuthenticatedAttendanceRoute
+  AuthenticatedCelebrationsRoute: typeof AuthenticatedCelebrationsRoute
   AuthenticatedCheckinRoute: typeof AuthenticatedCheckinRoute
   AuthenticatedChildrenRoute: typeof AuthenticatedChildrenRoute
   AuthenticatedContactPastorRoute: typeof AuthenticatedContactPastorRoute
@@ -460,6 +481,7 @@ interface AuthenticatedRouteRouteChildren {
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedApprovalsRoute: AuthenticatedApprovalsRoute,
   AuthenticatedAttendanceRoute: AuthenticatedAttendanceRoute,
+  AuthenticatedCelebrationsRoute: AuthenticatedCelebrationsRoute,
   AuthenticatedCheckinRoute: AuthenticatedCheckinRoute,
   AuthenticatedChildrenRoute: AuthenticatedChildrenRoute,
   AuthenticatedContactPastorRoute: AuthenticatedContactPastorRoute,
