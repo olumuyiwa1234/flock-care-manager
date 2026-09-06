@@ -144,11 +144,24 @@ function AuthPage() {
       return;
     }
 
-    if (subRoleOptions.length > 0 && !subRole) {
+    if (roles.length === 0) {
       setBusy(false);
-      toast.error("Please select your sub-role");
+      toast.error("Please select at least one role");
       return;
     }
+
+    const missing = roles.find(
+      (r) => optionsFor(r).length > 0 && (subRoles[r] ?? []).length === 0,
+    );
+    if (missing) {
+      setBusy(false);
+      toast.error(`Please select your ${missing === "hod" ? "department lead" : "sub-role"}`);
+      return;
+    }
+
+    const departmentValue = roles.includes("hod")
+      ? Array.from(new Set([...(subRoles["hod"] ?? []), ...departments])).join(", ")
+      : departments.join(", ");
 
     savePendingMember({
       full_name: fullName.trim(),
