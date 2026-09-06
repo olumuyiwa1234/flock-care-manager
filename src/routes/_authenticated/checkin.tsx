@@ -79,11 +79,15 @@ function CheckIn() {
         const { Geolocation } = await import("@capacitor/geolocation");
         const pos = await Geolocation.getCurrentPosition({
           enableHighAccuracy: true,
-          timeout: 10000,
+          timeout: 15000,
         });
         if (cancelled) return;
         const result = await checkGeofence({
-          data: { lat: pos.coords.latitude, lng: pos.coords.longitude },
+          data: {
+            lat: pos.coords.latitude,
+            lng: pos.coords.longitude,
+            accuracy: pos.coords.accuracy ?? undefined,
+          },
         });
         if (cancelled) return;
         setGeo(result);
