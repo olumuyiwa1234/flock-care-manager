@@ -47,11 +47,30 @@ function CheckIn() {
   const serviceType = todayService ?? "";
   const [selectedMember, setSelectedMember] = useState<string>("");
   const [saving, setSaving] = useState(false);
+  const [checkedIn, setCheckedIn] = useState(false);
 
   const ownMember = useMemo(
     () => members.find((m) => m.user_id === auth?.userId) ?? null,
     [members, auth?.userId],
   );
+
+  useEffect(() => {
+    if (!ownMember || !todayService) return;
+    let cancelled = false;
+    supabase
+      .from("attendance")
+      .select("id")
+      .eq("member_id", ownMember.id)
+      .eq("service_date", todayISO())
+      .eq("service_type", todayService)
+      .maybeSingle()
+      .then(({ data }) => {
+        if (!cancelled && data) setCheckedIn(true);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [ownMember, todayService]);
 
   useEffect(() => {
     let cancelled = false;
