@@ -165,6 +165,19 @@ function AuthPage() {
       return;
     }
 
+    if (phone.trim()) {
+      try {
+        const { exists } = await checkPhoneExists({ data: { phone: phone.trim() } });
+        if (exists) {
+          setBusy(false);
+          toast.error("This phone number is already linked to another account. Please use a different number.");
+          return;
+        }
+      } catch {
+        // If the check fails, allow signup to proceed rather than blocking the user.
+      }
+    }
+
     const departmentValue = effectiveRoles.includes("hod")
       ? Array.from(new Set([...(effectiveSubRoles["hod"] ?? []), ...effectiveDepartments])).join(", ")
       : effectiveDepartments.join(", ");
