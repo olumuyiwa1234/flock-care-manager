@@ -87,7 +87,7 @@ function AuthPage() {
   const [status, setStatus] = useState<"Member" | "Worker">("Member");
   const [departments, setDepartments] = useState<string[]>([]);
   const [membershipYear, setMembershipYear] = useState(String(new Date().getFullYear()));
-  const [roles, setRoles] = useState<AppRole[]>(["member"]);
+  const [roles, setRoles] = useState<AppRole[]>([]);
   const [subRoles, setSubRoles] = useState<Record<string, string[]>>({});
   const [photoFile, setPhotoFile] = useState<File | null>(null);
 
