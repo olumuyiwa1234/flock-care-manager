@@ -45,7 +45,6 @@ export const Route = createFileRoute("/auth")({
 });
 
 const ROLE_OPTIONS: AppRole[] = [
-  "member",
   "pastorate",
   "hod",
   "group_leader",
