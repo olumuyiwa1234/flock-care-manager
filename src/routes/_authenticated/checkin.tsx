@@ -47,11 +47,30 @@ function CheckIn() {
   const serviceType = todayService ?? "";
   const [selectedMember, setSelectedMember] = useState<string>("");
   const [saving, setSaving] = useState(false);
+  const [checkedIn, setCheckedIn] = useState(false);
 
   const ownMember = useMemo(
     () => members.find((m) => m.user_id === auth?.userId) ?? null,
     [members, auth?.userId],
   );
+
+  useEffect(() => {
+    if (!ownMember || !todayService) return;
+    let cancelled = false;
+    supabase
+      .from("attendance")
+      .select("id")
+      .eq("member_id", ownMember.id)
+      .eq("service_date", todayISO())
+      .eq("service_type", todayService)
+      .maybeSingle()
+      .then(({ data }) => {
+        if (!cancelled && data) setCheckedIn(true);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [ownMember, todayService]);
 
   useEffect(() => {
     let cancelled = false;
@@ -107,6 +126,7 @@ function CheckIn() {
       return;
     }
     await queryClient.invalidateQueries({ queryKey: ["attendance"] });
+    if (memberId === ownMember?.id) setCheckedIn(true);
     setStep("done");
     toast.success("Attendance saved");
   }
@@ -146,6 +166,10 @@ function CheckIn() {
   }
 
   async function startCheckIn() {
+    if (checkedIn) {
+      toast.info("You've already checked in for today's service.");
+      return;
+    }
     setSaving(true);
     const memberId = await ensureOwnMember();
     setSaving(false);
@@ -174,10 +198,10 @@ function CheckIn() {
         <div className="flex flex-col items-center gap-4 pt-2">
           <button
             type="button"
-            disabled={!todayService || !withinPremises || locating || saving}
+            disabled={!todayService || !withinPremises || locating || saving || checkedIn}
             onClick={startCheckIn}
             className={`grid size-52 place-items-center rounded-full text-primary-foreground transition ${
-              todayService && withinPremises && !locating
+              todayService && withinPremises && !locating && !checkedIn
                 ? "bg-sky-gradient shadow-float animate-pulse-ring active:scale-95"
                 : "cursor-not-allowed bg-muted text-muted-foreground"
             }`}
@@ -189,13 +213,15 @@ function CheckIn() {
                 <Check className="size-14" strokeWidth={2.5} />
               )}
               <span className="text-lg font-semibold">
-                {!todayService
-                  ? "No service today"
-                  : locating
-                    ? "Locating…"
-                    : withinPremises
-                      ? "Check In"
-                      : "Out of range"}
+                {checkedIn
+                  ? "Checked in"
+                  : !todayService
+                    ? "No service today"
+                    : locating
+                      ? "Locating…"
+                      : withinPremises
+                        ? "Check In"
+                        : "Out of range"}
               </span>
             </span>
           </button>
