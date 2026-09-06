@@ -7,6 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Eye, EyeOff } from "lucide-react";
 import { Textarea } from "@/components/ui/textarea";
 import { MonthDayPicker } from "@/components/MonthDayPicker";
+import { MultiSelect } from "@/components/MultiSelect";
 import {
   Select,
   SelectContent,
