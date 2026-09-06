@@ -87,7 +87,7 @@ function AuthPage() {
   const [status, setStatus] = useState<"Member" | "Worker">("Member");
   const [departments, setDepartments] = useState<string[]>([]);
   const [membershipYear, setMembershipYear] = useState(String(new Date().getFullYear()));
-  const [roles, setRoles] = useState<AppRole[]>(["member"]);
+  const [roles, setRoles] = useState<AppRole[]>([]);
   const [subRoles, setSubRoles] = useState<Record<string, string[]>>({});
   const [photoFile, setPhotoFile] = useState<File | null>(null);
 
@@ -371,7 +371,12 @@ function AuthPage() {
               <Field label="Status">
                 <Select
                   value={status}
-                  onValueChange={(v) => setStatus(v as "Member" | "Worker")}
+                  onValueChange={(v) => {
+                    const next = v as "Member" | "Worker";
+                    setStatus(next);
+                    setRoles([]);
+                    setSubRoles({});
+                  }}
                 >
                   <SelectTrigger><SelectValue placeholder="Select status" /></SelectTrigger>
                   <SelectContent>
@@ -380,6 +385,7 @@ function AuthPage() {
                   </SelectContent>
                 </Select>
               </Field>
+
 
               {isWorker && (
                 <Field label="Departments (optional)">
