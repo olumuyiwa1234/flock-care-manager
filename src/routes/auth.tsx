@@ -176,7 +176,7 @@ function AuthPage() {
       anniversary_month: annivMonth ? Number(annivMonth) : null,
       anniversary_day: annivDay ? Number(annivDay) : null,
       marital_status: marital || null,
-      department: department || null,
+      department: departmentValue || null,
       membership_year: membershipYear ? Number(membershipYear) : null,
     });
 
