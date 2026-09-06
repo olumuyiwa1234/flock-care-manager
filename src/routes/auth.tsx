@@ -355,7 +355,20 @@ function AuthPage() {
                 />
               </Field>
 
-              <div className="grid grid-cols-2 gap-3">
+              <Field label="Status">
+                <Select
+                  value={status}
+                  onValueChange={(v) => setStatus(v as "Member" | "Worker")}
+                >
+                  <SelectTrigger><SelectValue placeholder="Select status" /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="Member">Member</SelectItem>
+                    <SelectItem value="Worker">Worker</SelectItem>
+                  </SelectContent>
+                </Select>
+              </Field>
+
+              {isWorker && (
                 <Field label="Departments (optional)">
                   <MultiSelect
                     options={DEPARTMENTS}
@@ -364,15 +377,17 @@ function AuthPage() {
                     placeholder="None"
                   />
                 </Field>
-                <Field label="Membership year">
-                  <Input
-                    value={membershipYear}
-                    onChange={(e) => setMembershipYear(e.target.value)}
-                    inputMode="numeric"
-                  />
-                </Field>
-              </div>
+              )}
 
+              <Field label="Membership year">
+                <Input
+                  value={membershipYear}
+                  onChange={(e) => setMembershipYear(e.target.value)}
+                  inputMode="numeric"
+                />
+              </Field>
+
+              {isWorker && (
               <Field label="Your roles">
                 <MultiSelect
                   options={ROLE_OPTIONS.map((r) => ROLE_LABELS[r])}
