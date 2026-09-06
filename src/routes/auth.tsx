@@ -349,15 +349,13 @@ function AuthPage() {
               </Field>
 
               <div className="grid grid-cols-2 gap-3">
-                <Field label="Department (optional)">
-                  <Select value={department} onValueChange={setDepartment}>
-                    <SelectTrigger><SelectValue placeholder="None" /></SelectTrigger>
-                    <SelectContent>
-                      {DEPARTMENTS.map((d) => (
-                        <SelectItem key={d} value={d}>{d}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                <Field label="Departments (optional)">
+                  <MultiSelect
+                    options={DEPARTMENTS}
+                    value={departments}
+                    onChange={setDepartments}
+                    placeholder="None"
+                  />
                 </Field>
                 <Field label="Membership year">
                   <Input
@@ -368,37 +366,42 @@ function AuthPage() {
                 </Field>
               </div>
 
-              <Field label="Your role">
-                <Select
-                  value={role}
-                  onValueChange={(v) => {
-                    setRole(v as AppRole);
-                    setSubRole("");
+              <Field label="Your roles">
+                <MultiSelect
+                  options={ROLE_OPTIONS.map((r) => ROLE_LABELS[r])}
+                  value={roles.map((r) => ROLE_LABELS[r])}
+                  onChange={(labels) => {
+                    const next = ROLE_OPTIONS.filter((r) => labels.includes(ROLE_LABELS[r]));
+                    setRoles(next);
+                    setSubRoles((prev) => {
+                      const kept: Record<string, string[]> = {};
+                      next.forEach((r) => {
+                        if (prev[r]) kept[r] = prev[r];
+                      });
+                      return kept;
+                    });
                   }}
-                >
-                  <SelectTrigger><SelectValue /></SelectTrigger>
-                  <SelectContent>
-                    {ROLE_OPTIONS.map((r) => (
-                      <SelectItem key={r} value={r}>{ROLE_LABELS[r]}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                  placeholder="Select roles"
+                />
               </Field>
 
-              {subRoleOptions.length > 0 && (
-                <Field label={role === "hod" ? "Department Lead" : "Sub-role"}>
-                  <Select value={subRole} onValueChange={setSubRole}>
-                    <SelectTrigger><SelectValue placeholder="Select" /></SelectTrigger>
-                    <SelectContent>
-                      {subRoleOptions.map((s) => (
-                        <SelectItem key={s} value={s}>{s}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </Field>
-              )}
+              {roles
+                .filter((r) => optionsFor(r).length > 0)
+                .map((r) => (
+                  <Field
+                    key={r}
+                    label={r === "hod" ? "Department Lead" : `${ROLE_LABELS[r]} sub-role`}
+                  >
+                    <MultiSelect
+                      options={optionsFor(r)}
+                      value={subRoles[r] ?? []}
+                      onChange={(v) => setSubRoles((prev) => ({ ...prev, [r]: v }))}
+                      placeholder="Select"
+                    />
+                  </Field>
+                ))}
 
-              {role !== "member" && !(role === "pastorate" && subRole === "Pastor") && (
+              {needsApproval && (
                 <p className="text-xs text-muted-foreground">
                   Leadership accounts need a pastor's approval before full access is granted.
                 </p>
