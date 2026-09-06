@@ -7,6 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Eye, EyeOff } from "lucide-react";
 import { Textarea } from "@/components/ui/textarea";
 import { MonthDayPicker } from "@/components/MonthDayPicker";
+import { MultiSelect } from "@/components/MultiSelect";
 import {
   Select,
   SelectContent,
@@ -83,10 +84,10 @@ function AuthPage() {
   const [annivMonth, setAnnivMonth] = useState("");
   const [annivDay, setAnnivDay] = useState("");
   const [marital, setMarital] = useState("");
-  const [department, setDepartment] = useState("");
+  const [departments, setDepartments] = useState<string[]>([]);
   const [membershipYear, setMembershipYear] = useState(String(new Date().getFullYear()));
-  const [role, setRole] = useState<AppRole>("member");
-  const [subRole, setSubRole] = useState("");
+  const [roles, setRoles] = useState<AppRole[]>(["member"]);
+  const [subRoles, setSubRoles] = useState<Record<string, string[]>>({});
   const [photoFile, setPhotoFile] = useState<File | null>(null);
 
   useEffect(() => {
@@ -102,9 +103,15 @@ function AuthPage() {
       .catch(() => setPastorTaken(false));
   }, []);
 
-  const subRoleOptions = (SUB_ROLES[role] as readonly string[]).filter(
-    (s) => !(role === "pastorate" && s === "Pastor" && pastorTaken),
-  );
+  function optionsFor(r: AppRole) {
+    return (SUB_ROLES[r] as readonly string[]).filter(
+      (s) => !(r === "pastorate" && s === "Pastor" && pastorTaken),
+    );
+  }
+
+  const allSubRoles = roles.flatMap((r) => subRoles[r] ?? []);
+  const isPastor = (subRoles["pastorate"] ?? []).includes("Pastor");
+  const needsApproval = !(roles.every((r) => r === "member") || isPastor);
 
 
   async function uploadPhoto(userId: string) {
@@ -138,11 +145,24 @@ function AuthPage() {
       return;
     }
 
-    if (subRoleOptions.length > 0 && !subRole) {
+    if (roles.length === 0) {
       setBusy(false);
-      toast.error("Please select your sub-role");
+      toast.error("Please select at least one role");
       return;
     }
+
+    const missing = roles.find(
+      (r) => optionsFor(r).length > 0 && (subRoles[r] ?? []).length === 0,
+    );
+    if (missing) {
+      setBusy(false);
+      toast.error(`Please select your ${missing === "hod" ? "department lead" : "sub-role"}`);
+      return;
+    }
+
+    const departmentValue = roles.includes("hod")
+      ? Array.from(new Set([...(subRoles["hod"] ?? []), ...departments])).join(", ")
+      : departments.join(", ");
 
     savePendingMember({
       full_name: fullName.trim(),
@@ -157,7 +177,7 @@ function AuthPage() {
       anniversary_month: annivMonth ? Number(annivMonth) : null,
       anniversary_day: annivDay ? Number(annivDay) : null,
       marital_status: marital || null,
-      department: department || null,
+      department: departmentValue || null,
       membership_year: membershipYear ? Number(membershipYear) : null,
     });
 
@@ -169,9 +189,10 @@ function AuthPage() {
         data: {
           full_name: fullName.trim(),
           phone,
-          role,
-          sub_role: subRole || null,
-          department: role === "hod" ? subRole : department || null,
+          role: roles.find((r) => r !== "member") ?? "member",
+          roles,
+          sub_role: allSubRoles.length > 0 ? allSubRoles.join(", ") : null,
+          department: departmentValue || null,
         },
       },
     });
@@ -199,7 +220,7 @@ function AuthPage() {
     }
     if (data.user) await afterSession(data.user.id);
     setBusy(false);
-    if (role !== "member" && !(role === "pastorate" && subRole === "Pastor")) {
+    if (needsApproval) {
       toast.success("Account created. A pastor will review your access request.");
     }
     navigate({ to: "/home", replace: true });
@@ -329,15 +350,13 @@ function AuthPage() {
               </Field>
 
               <div className="grid grid-cols-2 gap-3">
-                <Field label="Department (optional)">
-                  <Select value={department} onValueChange={setDepartment}>
-                    <SelectTrigger><SelectValue placeholder="None" /></SelectTrigger>
-                    <SelectContent>
-                      {DEPARTMENTS.map((d) => (
-                        <SelectItem key={d} value={d}>{d}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                <Field label="Departments (optional)">
+                  <MultiSelect
+                    options={DEPARTMENTS}
+                    value={departments}
+                    onChange={setDepartments}
+                    placeholder="None"
+                  />
                 </Field>
                 <Field label="Membership year">
                   <Input
@@ -348,37 +367,42 @@ function AuthPage() {
                 </Field>
               </div>
 
-              <Field label="Your role">
-                <Select
-                  value={role}
-                  onValueChange={(v) => {
-                    setRole(v as AppRole);
-                    setSubRole("");
+              <Field label="Your roles">
+                <MultiSelect
+                  options={ROLE_OPTIONS.map((r) => ROLE_LABELS[r])}
+                  value={roles.map((r) => ROLE_LABELS[r])}
+                  onChange={(labels) => {
+                    const next = ROLE_OPTIONS.filter((r) => labels.includes(ROLE_LABELS[r]));
+                    setRoles(next);
+                    setSubRoles((prev) => {
+                      const kept: Record<string, string[]> = {};
+                      next.forEach((r) => {
+                        if (prev[r]) kept[r] = prev[r];
+                      });
+                      return kept;
+                    });
                   }}
-                >
-                  <SelectTrigger><SelectValue /></SelectTrigger>
-                  <SelectContent>
-                    {ROLE_OPTIONS.map((r) => (
-                      <SelectItem key={r} value={r}>{ROLE_LABELS[r]}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                  placeholder="Select roles"
+                />
               </Field>
 
-              {subRoleOptions.length > 0 && (
-                <Field label={role === "hod" ? "Department Lead" : "Sub-role"}>
-                  <Select value={subRole} onValueChange={setSubRole}>
-                    <SelectTrigger><SelectValue placeholder="Select" /></SelectTrigger>
-                    <SelectContent>
-                      {subRoleOptions.map((s) => (
-                        <SelectItem key={s} value={s}>{s}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </Field>
-              )}
+              {roles
+                .filter((r) => optionsFor(r).length > 0)
+                .map((r) => (
+                  <Field
+                    key={r}
+                    label={r === "hod" ? "Department Lead" : `${ROLE_LABELS[r]} sub-role`}
+                  >
+                    <MultiSelect
+                      options={optionsFor(r)}
+                      value={subRoles[r] ?? []}
+                      onChange={(v) => setSubRoles((prev) => ({ ...prev, [r]: v }))}
+                      placeholder="Select"
+                    />
+                  </Field>
+                ))}
 
-              {role !== "member" && !(role === "pastorate" && subRole === "Pastor") && (
+              {needsApproval && (
                 <p className="text-xs text-muted-foreground">
                   Leadership accounts need a pastor's approval before full access is granted.
                 </p>
