@@ -12,7 +12,13 @@ export type GeofenceResult = {
 export const checkGeofence = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((data) =>
-    z.object({ lat: z.number().min(-90).max(90), lng: z.number().min(-180).max(180) }).parse(data),
+    z
+      .object({
+        lat: z.number().min(-90).max(90),
+        lng: z.number().min(-180).max(180),
+        accuracy: z.number().min(0).max(5000).optional(),
+      })
+      .parse(data),
   )
   .handler(async ({ data }): Promise<GeofenceResult> => {
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
@@ -38,9 +44,13 @@ export const checkGeofence = createServerFn({ method: "POST" })
         ),
       );
 
+    // Account for GPS inaccuracy: if the user could plausibly be within the
+    // radius given the phone's reported accuracy, allow check-in. Cap the
+    // buffer so a very poor fix doesn't open the geofence entirely.
+    const buffer = Math.min(data.accuracy ?? 0, 500);
     return {
       churchName: s.church_name,
       enabled: true,
-      allowed: dist <= (s.radius_meters ?? 300),
+      allowed: dist - buffer <= (s.radius_meters ?? 300),
     };
   });
