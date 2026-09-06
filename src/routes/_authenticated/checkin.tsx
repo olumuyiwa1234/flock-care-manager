@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { Check, MapPin, Loader2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
@@ -54,6 +54,52 @@ function CheckIn() {
     [members, auth?.userId],
   );
 
+  const locateMember = useCallback(async () => {
+    setLocating(true);
+    setGeoError(null);
+
+    try {
+      const { Geolocation } = await import("@capacitor/geolocation");
+      let latestResult: GeofenceResult | null = null;
+      let receivedPosition = false;
+
+      // A phone's first GPS fix is often stale or based on a nearby mast.
+      // Retry fresh fixes and accept the first one that places the member in range.
+      for (let attempt = 0; attempt < 3; attempt += 1) {
+        try {
+          const pos = await Geolocation.getCurrentPosition({
+            enableHighAccuracy: true,
+            timeout: 12000,
+            maximumAge: 0,
+          });
+          receivedPosition = true;
+          latestResult = await checkGeofence({
+            data: {
+              lat: pos.coords.latitude,
+              lng: pos.coords.longitude,
+              accuracy: pos.coords.accuracy ?? undefined,
+            },
+          });
+          if (latestResult.allowed || !latestResult.enabled) break;
+        } catch {
+          // A later attempt can still succeed when the phone is acquiring GPS.
+        }
+      }
+
+      if (!receivedPosition || !latestResult) {
+        setGeoError("Location permission denied or unavailable.");
+        setGeo(null);
+        return;
+      }
+      setGeo(latestResult);
+    } catch {
+      setGeoError("Location permission denied or unavailable.");
+      setGeo(null);
+    } finally {
+      setLocating(false);
+    }
+  }, []);
+
   useEffect(() => {
     if (!ownMember || !todayService) return;
     let cancelled = false;
@@ -74,34 +120,13 @@ function CheckIn() {
 
   useEffect(() => {
     let cancelled = false;
-    (async () => {
-      try {
-        const { Geolocation } = await import("@capacitor/geolocation");
-        const pos = await Geolocation.getCurrentPosition({
-          enableHighAccuracy: true,
-          timeout: 15000,
-        });
-        if (cancelled) return;
-        const result = await checkGeofence({
-          data: {
-            lat: pos.coords.latitude,
-            lng: pos.coords.longitude,
-            accuracy: pos.coords.accuracy ?? undefined,
-          },
-        });
-        if (cancelled) return;
-        setGeo(result);
-        setLocating(false);
-      } catch {
-        if (cancelled) return;
-        setGeoError("Location permission denied or unavailable.");
-        setLocating(false);
-      }
-    })();
+    void locateMember().then(() => {
+      if (cancelled) return;
+    });
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [locateMember]);
 
 
   const geofenceOn = geo?.enabled ?? true;
@@ -242,6 +267,11 @@ function CheckIn() {
                     : `You are outside ${geo.churchName} premises`
                   : "Checking your location…"}
           </p>
+          {!locating && geofenceOn && !withinPremises ? (
+            <Button variant="outline" onClick={() => void locateMember()}>
+              <MapPin className="mr-2 size-4" /> Check location again
+            </Button>
+          ) : null}
         </div>
       </div>
 

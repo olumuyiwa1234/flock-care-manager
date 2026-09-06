@@ -34,20 +34,17 @@ export const checkGeofence = createServerFn({ method: "POST" })
     }
 
     const toRad = (d: number) => (d * Math.PI) / 180;
-    const dist =
-      6371000 *
-      Math.acos(
-        Math.min(
-          1,
-          Math.cos(toRad(data.lat)) * Math.cos(toRad(s.latitude)) * Math.cos(toRad(s.longitude) - toRad(data.lng)) +
-            Math.sin(toRad(data.lat)) * Math.sin(toRad(s.latitude)),
-        ),
-      );
+    const latDelta = toRad(s.latitude - data.lat);
+    const lngDelta = toRad(s.longitude - data.lng);
+    const a =
+      Math.sin(latDelta / 2) ** 2 +
+      Math.cos(toRad(data.lat)) * Math.cos(toRad(s.latitude)) * Math.sin(lngDelta / 2) ** 2;
+    const dist = 6371000 * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 
-    // Account for GPS inaccuracy: if the user could plausibly be within the
-    // radius given the phone's reported accuracy, allow check-in. Cap the
-    // buffer so a very poor fix doesn't open the geofence entirely.
-    const buffer = Math.min(data.accuracy ?? 0, 500);
+    // Phones commonly under-report their error indoors. Keep a small baseline
+    // tolerance, then use the device's larger reported error when available.
+    // The cap prevents a very poor fix from opening the geofence entirely.
+    const buffer = Math.min(Math.max(data.accuracy ?? 0, 100), 500);
     return {
       churchName: s.church_name,
       enabled: true,
