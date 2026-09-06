@@ -166,6 +166,10 @@ function CheckIn() {
   }
 
   async function startCheckIn() {
+    if (checkedIn) {
+      toast.info("You've already checked in for today's service.");
+      return;
+    }
     setSaving(true);
     const memberId = await ensureOwnMember();
     setSaving(false);
