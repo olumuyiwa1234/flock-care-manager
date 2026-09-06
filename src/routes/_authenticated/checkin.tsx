@@ -193,10 +193,10 @@ function CheckIn() {
         <div className="flex flex-col items-center gap-4 pt-2">
           <button
             type="button"
-            disabled={!todayService || !withinPremises || locating || saving}
+            disabled={!todayService || !withinPremises || locating || saving || checkedIn}
             onClick={startCheckIn}
             className={`grid size-52 place-items-center rounded-full text-primary-foreground transition ${
-              todayService && withinPremises && !locating
+              todayService && withinPremises && !locating && !checkedIn
                 ? "bg-sky-gradient shadow-float animate-pulse-ring active:scale-95"
                 : "cursor-not-allowed bg-muted text-muted-foreground"
             }`}
