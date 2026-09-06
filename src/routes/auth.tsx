@@ -27,6 +27,7 @@ import {
 } from "@/lib/shepherd";
 import { savePendingMember, flushPendingMember, clearPendingMember } from "@/lib/pendingMember";
 import { pastorSeatTaken } from "@/lib/pastor.functions";
+import { checkPhoneExists } from "@/lib/phone.functions";
 
 
 export const Route = createFileRoute("/auth")({
@@ -163,6 +164,19 @@ function AuthPage() {
       setBusy(false);
       toast.error(`Please select your ${missing === "hod" ? "department lead" : "sub-role"}`);
       return;
+    }
+
+    if (phone.trim()) {
+      try {
+        const { exists } = await checkPhoneExists({ data: { phone: phone.trim() } });
+        if (exists) {
+          setBusy(false);
+          toast.error("This phone number is already linked to another account. Please use a different number.");
+          return;
+        }
+      } catch {
+        // If the check fails, allow signup to proceed rather than blocking the user.
+      }
     }
 
     const departmentValue = effectiveRoles.includes("hod")
