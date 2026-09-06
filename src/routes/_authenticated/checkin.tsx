@@ -174,7 +174,7 @@ function CheckIn() {
       return;
     }
     await queryClient.invalidateQueries({ queryKey: ["attendance"] });
-    if (memberId === ownMember?.id) setCheckedIn(true);
+    setCheckedIn(true);
     setStep("done");
     toast.success("Attendance saved");
   }
@@ -220,8 +220,17 @@ function CheckIn() {
     }
     setSaving(true);
     const memberId = await ensureOwnMember();
+    if (!memberId) {
+      setSaving(false);
+      return;
+    }
+    const already = await hasCheckedIn(memberId);
     setSaving(false);
-    if (!memberId) return;
+    if (already) {
+      setCheckedIn(true);
+      toast.info("You've already checked in for today's service.");
+      return;
+    }
     setSelectedMember(memberId);
     setStep("ask-invite");
   }
