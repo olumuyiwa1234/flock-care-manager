@@ -83,7 +83,7 @@ function AuthPage() {
   const [annivMonth, setAnnivMonth] = useState("");
   const [annivDay, setAnnivDay] = useState("");
   const [marital, setMarital] = useState("");
-  const [department, setDepartment] = useState("");
+  const [departments, setDepartments] = useState<string[]>([]);
   const [membershipYear, setMembershipYear] = useState(String(new Date().getFullYear()));
   const [role, setRole] = useState<AppRole>("member");
   const [subRole, setSubRole] = useState("");
