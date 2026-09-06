@@ -100,23 +100,42 @@ function CheckIn() {
     }
   }, []);
 
+  const hasCheckedIn = useCallback(
+    async (memberId: string) => {
+      if (!todayService) return false;
+      const { data } = await supabase
+        .from("attendance")
+        .select("id")
+        .eq("member_id", memberId)
+        .eq("service_date", todayISO())
+        .eq("service_type", todayService)
+        .limit(1);
+      return (data?.length ?? 0) > 0;
+    },
+    [todayService],
+  );
+
   useEffect(() => {
-    if (!ownMember || !todayService) return;
+    if (!auth?.userId || !todayService) return;
     let cancelled = false;
-    supabase
-      .from("attendance")
-      .select("id")
-      .eq("member_id", ownMember.id)
-      .eq("service_date", todayISO())
-      .eq("service_type", todayService)
-      .maybeSingle()
-      .then(({ data }) => {
-        if (!cancelled && data) setCheckedIn(true);
-      });
+    void (async () => {
+      let memberId = ownMember?.id ?? null;
+      if (!memberId) {
+        const { data } = await supabase
+          .from("members")
+          .select("id")
+          .eq("user_id", auth.userId)
+          .maybeSingle();
+        memberId = data?.id ?? null;
+      }
+      if (!memberId || cancelled) return;
+      const already = await hasCheckedIn(memberId);
+      if (!cancelled && already) setCheckedIn(true);
+    })();
     return () => {
       cancelled = true;
     };
-  }, [ownMember, todayService]);
+  }, [ownMember, todayService, auth?.userId, hasCheckedIn]);
 
   useEffect(() => {
     let cancelled = false;
