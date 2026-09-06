@@ -115,9 +115,9 @@ function AuthPage() {
     );
   }
 
-  const allSubRoles = roles.flatMap((r) => subRoles[r] ?? []);
-  const isPastor = (subRoles["pastorate"] ?? []).includes("Pastor");
-  const needsApproval = !(roles.every((r) => r === "member") || isPastor);
+  const allSubRoles = effectiveRoles.flatMap((r) => effectiveSubRoles[r] ?? []);
+  const isPastor = (effectiveSubRoles["pastorate"] ?? []).includes("Pastor");
+  const needsApproval = !(effectiveRoles.every((r) => r === "member") || isPastor);
 
 
   async function uploadPhoto(userId: string) {
@@ -151,14 +151,14 @@ function AuthPage() {
       return;
     }
 
-    if (roles.length === 0) {
+    if (effectiveRoles.length === 0) {
       setBusy(false);
       toast.error("Please select at least one role");
       return;
     }
 
-    const missing = roles.find(
-      (r) => optionsFor(r).length > 0 && (subRoles[r] ?? []).length === 0,
+    const missing = effectiveRoles.find(
+      (r) => optionsFor(r).length > 0 && (effectiveSubRoles[r] ?? []).length === 0,
     );
     if (missing) {
       setBusy(false);
@@ -166,9 +166,9 @@ function AuthPage() {
       return;
     }
 
-    const departmentValue = roles.includes("hod")
-      ? Array.from(new Set([...(subRoles["hod"] ?? []), ...departments])).join(", ")
-      : departments.join(", ");
+    const departmentValue = effectiveRoles.includes("hod")
+      ? Array.from(new Set([...(effectiveSubRoles["hod"] ?? []), ...effectiveDepartments])).join(", ")
+      : effectiveDepartments.join(", ");
 
     savePendingMember({
       full_name: fullName.trim(),
@@ -195,8 +195,8 @@ function AuthPage() {
         data: {
           full_name: fullName.trim(),
           phone,
-          role: roles.find((r) => r !== "member") ?? "member",
-          roles,
+          role: effectiveRoles.find((r) => r !== "member") ?? "member",
+          roles: effectiveRoles,
           sub_role: allSubRoles.length > 0 ? allSubRoles.join(", ") : null,
           department: departmentValue || null,
         },
