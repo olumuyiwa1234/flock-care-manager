@@ -84,11 +84,17 @@ function AuthPage() {
   const [annivMonth, setAnnivMonth] = useState("");
   const [annivDay, setAnnivDay] = useState("");
   const [marital, setMarital] = useState("");
+  const [status, setStatus] = useState<"Member" | "Worker">("Member");
   const [departments, setDepartments] = useState<string[]>([]);
   const [membershipYear, setMembershipYear] = useState(String(new Date().getFullYear()));
   const [roles, setRoles] = useState<AppRole[]>(["member"]);
   const [subRoles, setSubRoles] = useState<Record<string, string[]>>({});
   const [photoFile, setPhotoFile] = useState<File | null>(null);
+
+  const isWorker = status === "Worker";
+  const effectiveRoles: AppRole[] = isWorker ? roles : ["member"];
+  const effectiveSubRoles = isWorker ? subRoles : {};
+  const effectiveDepartments = isWorker ? departments : [];
 
   useEffect(() => {
     void supabase.auth.getSession().then(({ data }) => {
