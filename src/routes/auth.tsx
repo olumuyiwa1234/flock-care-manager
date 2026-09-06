@@ -219,7 +219,7 @@ function AuthPage() {
     }
     if (data.user) await afterSession(data.user.id);
     setBusy(false);
-    if (role !== "member" && !(role === "pastorate" && subRole === "Pastor")) {
+    if (needsApproval) {
       toast.success("Account created. A pastor will review your access request.");
     }
     navigate({ to: "/home", replace: true });
