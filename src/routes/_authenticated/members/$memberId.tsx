@@ -5,6 +5,7 @@ import { Pencil, Trash2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { AppShell } from "@/components/AppShell";
 import { MemberPhoto } from "@/components/MemberPhoto";
+import { PhotoDownloadButton } from "@/components/PhotoDownloadButton";
 import { MemberForm } from "@/components/MemberForm";
 import { Button } from "@/components/ui/button";
 import {
@@ -178,7 +179,10 @@ function MemberDetail() {
       }
     >
       <div className="flex items-center gap-4 rounded-2xl border border-border bg-card p-4">
-        <MemberPhoto path={m.photo_url} name={m.full_name} size={72} />
+        <div className="flex flex-col items-center">
+          <MemberPhoto path={m.photo_url} name={m.full_name} size={72} />
+          {isFullAccess && <PhotoDownloadButton path={m.photo_url} name={m.full_name} />}
+        </div>
         <div className="min-w-0">
           <p className="text-lg font-semibold">{m.full_name}</p>
           <p className="text-sm text-muted-foreground">
