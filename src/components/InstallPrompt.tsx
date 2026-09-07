@@ -54,7 +54,7 @@ export function InstallPrompt() {
           <p className="mt-1 text-xs text-muted-foreground">
             {deferred
               ? "Add Shepherd to your home screen for a full-screen app experience."
-              : "Tap the Share button, then choose “Add to Home Screen”."}
+              : "On iPhone: tap the Share button at the bottom of Safari, scroll down and choose “Add to Home Screen”, then tap Add."}
           </p>
           {deferred && (
             <button
