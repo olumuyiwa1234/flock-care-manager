@@ -144,19 +144,19 @@ function Home() {
           </span>
         </Link>
 
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-4">
           {visible
             .filter((t) => t.to !== "/checkin")
             .map(({ to, label, icon: Icon }) => (
               <Link
                 key={to}
                 to={to}
-                className="flex aspect-square flex-col justify-between rounded-3xl border border-border bg-card p-5 shadow-tile transition active:scale-[0.98]"
+                className="flex aspect-square flex-col justify-between rounded-3xl border border-border bg-card p-5 shadow-tile transition active:scale-[0.98] md:aspect-auto md:flex-row md:items-center md:gap-3 md:p-4"
               >
-                <span className="grid size-12 place-items-center rounded-2xl bg-secondary text-primary">
-                  <Icon className="size-6" />
+                <span className="grid size-12 shrink-0 place-items-center rounded-2xl bg-secondary text-primary md:size-10">
+                  <Icon className="size-6 md:size-5" />
                 </span>
-                <span className="text-lg font-semibold">{label}</span>
+                <span className="text-lg font-semibold md:text-base">{label}</span>
               </Link>
             ))}
         </div>
