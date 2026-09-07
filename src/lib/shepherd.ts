@@ -80,6 +80,7 @@ export const HOD_DEPARTMENTS = [
   "Sanitation",
   "Usher",
   "Greeters",
+  "Prayer",
   "Children",
   "Teens",
 ] as const;
