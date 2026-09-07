@@ -336,6 +336,24 @@ function MemberDetail() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      <Dialog open={photoOpen} onOpenChange={setPhotoOpen}>
+        <DialogContent className="max-w-sm border-none bg-transparent p-0 shadow-none">
+          <DialogTitle className="sr-only">{m.full_name} profile photo</DialogTitle>
+          <div className="flex flex-col items-center gap-4">
+            <MemberPhoto path={m.photo_url} name={m.full_name} size={280} />
+            <Button
+              variant="secondary"
+              size="icon"
+              className="rounded-full"
+              onClick={() => setPhotoOpen(false)}
+              aria-label="Close photo"
+            >
+              <X className="size-5" />
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </AppShell>
   );
 }
