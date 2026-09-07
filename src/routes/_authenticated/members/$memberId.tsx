@@ -1,7 +1,7 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
-import { Pencil, Trash2 } from "lucide-react";
+import { Pencil, Trash2, X } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { AppShell } from "@/components/AppShell";
 import { MemberPhoto } from "@/components/MemberPhoto";
@@ -18,6 +18,11 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { toast } from "sonner";
 import { MONTHS, formatDate } from "@/lib/shepherd";
 import type { MemberRow, AttendanceRow } from "@/lib/queries";
@@ -62,6 +67,7 @@ function MemberDetail() {
   const [editing, setEditing] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const [photoOpen, setPhotoOpen] = useState(false);
   const { isFullAccess, auth } = useAuth();
 
   const memberQuery = useQuery({
@@ -180,7 +186,14 @@ function MemberDetail() {
     >
       <div className="flex items-center gap-4 rounded-2xl border border-border bg-card p-4">
         <div className="flex flex-col items-center">
-          <MemberPhoto path={m.photo_url} name={m.full_name} size={72} />
+          <button
+            type="button"
+            onClick={() => setPhotoOpen(true)}
+            aria-label="View enlarged photo"
+            className="rounded-full outline-none ring-offset-background transition-opacity hover:opacity-90 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+          >
+            <MemberPhoto path={m.photo_url} name={m.full_name} size={72} />
+          </button>
           {isFullAccess && <PhotoDownloadButton path={m.photo_url} name={m.full_name} />}
         </div>
         <div className="min-w-0">
@@ -323,6 +336,24 @@ function MemberDetail() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      <Dialog open={photoOpen} onOpenChange={setPhotoOpen}>
+        <DialogContent className="max-w-sm border-none bg-transparent p-0 shadow-none">
+          <DialogTitle className="sr-only">{m.full_name} profile photo</DialogTitle>
+          <div className="flex flex-col items-center gap-4">
+            <MemberPhoto path={m.photo_url} name={m.full_name} size={280} />
+            <Button
+              variant="secondary"
+              size="icon"
+              className="rounded-full"
+              onClick={() => setPhotoOpen(false)}
+              aria-label="Close photo"
+            >
+              <X className="size-5" />
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </AppShell>
   );
 }
