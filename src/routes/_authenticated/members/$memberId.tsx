@@ -67,6 +67,7 @@ function MemberDetail() {
   const [editing, setEditing] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const [photoOpen, setPhotoOpen] = useState(false);
   const { isFullAccess, auth } = useAuth();
 
   const memberQuery = useQuery({
