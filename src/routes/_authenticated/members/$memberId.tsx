@@ -186,7 +186,14 @@ function MemberDetail() {
     >
       <div className="flex items-center gap-4 rounded-2xl border border-border bg-card p-4">
         <div className="flex flex-col items-center">
-          <MemberPhoto path={m.photo_url} name={m.full_name} size={72} />
+          <button
+            type="button"
+            onClick={() => setPhotoOpen(true)}
+            aria-label="View enlarged photo"
+            className="rounded-full outline-none ring-offset-background transition-opacity hover:opacity-90 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+          >
+            <MemberPhoto path={m.photo_url} name={m.full_name} size={72} />
+          </button>
           {isFullAccess && <PhotoDownloadButton path={m.photo_url} name={m.full_name} />}
         </div>
         <div className="min-w-0">
