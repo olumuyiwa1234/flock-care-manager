@@ -151,9 +151,14 @@ function RootComponent() {
     return () => data.subscription.unsubscribe();
   }, [router, queryClient]);
 
+  useEffect(() => {
+    void registerAppServiceWorker();
+  }, []);
+
   return (
     <QueryClientProvider client={queryClient}>
       <Outlet />
+      <InstallPrompt />
       <Toaster position="top-center" richColors />
     </QueryClientProvider>
   );
