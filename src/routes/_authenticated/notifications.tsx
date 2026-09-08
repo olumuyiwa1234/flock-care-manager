@@ -58,13 +58,26 @@ function Notifications() {
             );
             const className = "flex items-start gap-3 rounded-2xl border border-border bg-card p-4";
             return (
-              <li key={n.id}>
-                {isFloor ? (
-                  <div className={className}>{inner}</div>
+              <li key={n.id} className="rounded-2xl border border-border bg-card">
+                {isFloor || !n.memberId ? (
+                  <div className="flex items-start gap-3 p-4">{inner}</div>
                 ) : (
-                  <Link to="/members/$memberId" params={{ memberId: n.memberId }} className={className}>
+                  <Link
+                    to="/members/$memberId"
+                    params={{ memberId: n.memberId }}
+                    className={`${className} border-0 bg-transparent`}
+                  >
                     {inner}
                   </Link>
+                )}
+                {n.celebrant && (
+                  <div className="flex justify-end px-4 pb-4">
+                    <GreetingDialog
+                      memberId={n.celebrant.memberId}
+                      name={n.celebrant.name}
+                      occasion={n.celebrant.occasion}
+                    />
+                  </div>
                 )}
               </li>
             );
