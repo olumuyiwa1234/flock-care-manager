@@ -42,6 +42,7 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
 }
 
 function AddChild() {
+  const { isChildrenLeader, isStaff } = useAuth();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [fullName, setFullName] = useState("");
