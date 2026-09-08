@@ -233,7 +233,7 @@ function MemberDetail() {
       <section className="mt-5">
         <div className="mb-2 flex items-center justify-between">
           <h2 className="text-base font-semibold">Attendance history</h2>
-          <Button variant="ghost" size="sm" onClick={() => navigate({ to: "/followup" })}>
+          <Button variant="ghost" size="sm" onClick={() => navigate({ to: "/followup", search: { memberId } })}>
             Log follow-up
           </Button>
         </div>
@@ -274,7 +274,11 @@ function MemberDetail() {
         {(followUpsQuery.data ?? []).length === 0 ? (
           <p className="rounded-2xl border border-dashed border-border bg-card p-5 text-sm text-muted-foreground">
             No follow-up recorded yet.{" "}
-            <Link to="/followup" className="font-medium text-primary underline-offset-4 hover:underline">
+            <Link
+              to="/followup"
+              search={{ memberId: m.id }}
+              className="font-medium text-primary underline-offset-4 hover:underline"
+            >
               Add one
             </Link>
             .

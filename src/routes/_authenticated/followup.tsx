@@ -1,5 +1,5 @@
-import { createFileRoute } from "@tanstack/react-router";
-import { useState } from "react";
+import { createFileRoute, useSearch } from "@tanstack/react-router";
+import { useEffect, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { AppShell, EmptyState } from "@/components/AppShell";
@@ -20,6 +20,9 @@ import { useMembers } from "@/lib/queries";
 import { useAuth } from "@/lib/useAuth";
 
 export const Route = createFileRoute("/_authenticated/followup")({
+  validateSearch: (search: Record<string, unknown>) => ({
+    memberId: typeof search["memberId"] === "string" ? search["memberId"] : undefined,
+  }),
   head: () => ({
     meta: [
       { title: "Follow-up — Shepherd" },
@@ -35,12 +38,17 @@ function FollowUp() {
   const { auth, isFloor } = useAuth();
   const queryClient = useQueryClient();
   const { data: members = [] } = useMembers();
-  const [memberId, setMemberId] = useState("");
+  const search = useSearch({ from: "/_authenticated/followup" });
+  const [memberId, setMemberId] = useState(search.memberId ?? "");
   const [method, setMethod] = useState<string>(CONTACT_METHODS[0]);
   const [situation, setSituation] = useState<string>("None");
   const [contactedOn, setContactedOn] = useState(todayISO());
   const [notes, setNotes] = useState("");
   const [saving, setSaving] = useState(false);
+
+  useEffect(() => {
+    if (search.memberId) setMemberId(search.memberId);
+  }, [search.memberId]);
 
   const list = useQuery({
     queryKey: ["follow-ups"],
