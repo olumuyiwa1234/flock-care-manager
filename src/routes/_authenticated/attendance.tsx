@@ -122,11 +122,14 @@ function AttendancePage() {
 
       {isLoading ? (
         <p className="text-sm text-muted-foreground">Loading…</p>
-      ) : members.length === 0 ? (
-        <EmptyState title="No members yet" hint="Add members before recording attendance." />
+      ) : filtered.length === 0 ? (
+        <EmptyState
+          title={members.length === 0 ? "No members yet" : "No members match"}
+          hint={members.length === 0 ? "Add members before recording attendance." : "Try a different search."}
+        />
       ) : (
         <ul className="space-y-2">
-          {members.map((m) => {
+          {filtered.map((m) => {
             const status = statusByMember.get(m.id);
             return (
               <li key={m.id} className="rounded-2xl border border-border bg-card p-3">
