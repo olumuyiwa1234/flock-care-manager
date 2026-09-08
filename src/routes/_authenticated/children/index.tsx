@@ -1,4 +1,4 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { Check, Plus, X } from "lucide-react";
@@ -38,6 +38,7 @@ export const Route = createFileRoute("/_authenticated/children/")({
 
 function ChildrenAttendance() {
   const { auth, isChildrenLeader, isStaff } = useAuth();
+  const navigate = useNavigate();
   const queryClient = useQueryClient();
   const today = todayISO();
   const { data: members = [], isLoading } = useMembers();
@@ -94,10 +95,15 @@ function ChildrenAttendance() {
       subtitle="Mark present or absent"
       back="/home"
       action={
-        <Button asChild size="icon" variant="secondary" className="rounded-full">
-          <Link to="/children/new" aria-label="Add child">
-            <Plus className="size-5" />
-          </Link>
+        <Button
+          type="button"
+          size="icon"
+          variant="secondary"
+          className="relative z-40 shrink-0 rounded-full touch-manipulation"
+          aria-label="Add child"
+          onClick={() => void navigate({ to: "/children/new" })}
+        >
+          <Plus className="size-5" />
         </Button>
       }
     >
