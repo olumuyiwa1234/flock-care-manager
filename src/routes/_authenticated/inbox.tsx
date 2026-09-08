@@ -1,7 +1,11 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useQuery } from "@tanstack/react-query";
+import { useState } from "react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { AppShell, EmptyState } from "@/components/AppShell";
+import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
+import { toast } from "sonner";
 import { formatDate } from "@/lib/shepherd";
 import { useAuth } from "@/lib/useAuth";
 import { Lightbulb, MessageSquareHeart } from "lucide-react";
@@ -21,13 +25,17 @@ export const Route = createFileRoute("/_authenticated/inbox")({
   component: Inbox,
 });
 
+type Reply = { id: string; author: string; body: string; createdAt: string };
+
 type Item = {
   id: string;
+  rowId: string;
   kind: "feedback" | "message";
   author: string;
   subject: string | null;
   body: string;
   createdAt: string;
+  replies: Reply[];
 };
 
 function dayKey(iso: string) {
@@ -35,7 +43,11 @@ function dayKey(iso: string) {
 }
 
 function Inbox() {
-  const { isPastor } = useAuth();
+  const { isPastor, auth } = useAuth();
+  const queryClient = useQueryClient();
+  const [replyFor, setReplyFor] = useState<string | null>(null);
+  const [replyText, setReplyText] = useState("");
+  const [busy, setBusy] = useState(false);
 
   const query = useQuery({
     queryKey: ["pastor-inbox"],
@@ -48,33 +60,77 @@ function Inbox() {
           .order("created_at", { ascending: false }),
         supabase
           .from("pastor_messages")
-          .select("id, author_name, subject, message, created_at")
+          .select("id, author_name, subject, message, created_at, parent_id")
           .order("created_at", { ascending: false }),
       ]);
       if (fb.error) throw fb.error;
       if (pm.error) throw pm.error;
 
+      const messages = pm.data ?? [];
+      const repliesOf = (id: string): Reply[] =>
+        messages
+          .filter((r) => r.parent_id === id)
+          .sort((a, b) => a.created_at.localeCompare(b.created_at))
+          .map((r) => ({
+            id: r.id,
+            author: r.author_name || "Member",
+            body: r.message,
+            createdAt: r.created_at,
+          }));
+
       const items: Item[] = [
         ...(fb.data ?? []).map((r) => ({
           id: `f-${r.id}`,
+          rowId: r.id,
           kind: "feedback" as const,
           author: r.author_name || "Member",
           subject: null,
           body: r.content,
           createdAt: r.created_at,
+          replies: [] as Reply[],
         })),
-        ...(pm.data ?? []).map((r) => ({
-          id: `m-${r.id}`,
-          kind: "message" as const,
-          author: r.author_name || "Member",
-          subject: r.subject,
-          body: r.message,
-          createdAt: r.created_at,
-        })),
+        ...messages
+          .filter((r) => !r.parent_id)
+          .map((r) => ({
+            id: `m-${r.id}`,
+            rowId: r.id,
+            kind: "message" as const,
+            author: r.author_name || "Member",
+            subject: r.subject,
+            body: r.message,
+            createdAt: r.created_at,
+            replies: repliesOf(r.id),
+          })),
       ];
       return items.sort((a, b) => b.createdAt.localeCompare(a.createdAt));
     },
   });
+
+  async function sendReply(parentId: string) {
+    const body = replyText.trim();
+    if (!body) {
+      toast.error("Please write your reply first");
+      return;
+    }
+    if (!auth) return;
+    setBusy(true);
+    const { error } = await supabase.from("pastor_messages").insert({
+      user_id: auth.userId,
+      author_name: auth.fullName || "Pastor",
+      message: body.slice(0, 2000),
+      parent_id: parentId,
+    });
+    setBusy(false);
+    if (error) {
+      toast.error(error.message);
+      return;
+    }
+    setReplyText("");
+    setReplyFor(null);
+    await queryClient.invalidateQueries({ queryKey: ["pastor-inbox"] });
+    await queryClient.invalidateQueries({ queryKey: ["pastor-messages"] });
+    toast.success("Reply sent");
+  }
 
   if (!isPastor) {
     return (
@@ -130,6 +186,66 @@ function Inbox() {
                               <p className="mt-1 whitespace-pre-wrap text-sm text-muted-foreground">
                                 {i.body}
                               </p>
+
+                              {i.replies.length > 0 && (
+                                <ul className="mt-2 space-y-2 border-l-2 border-border pl-3">
+                                  {i.replies.map((r) => (
+                                    <li key={r.id}>
+                                      <div className="flex items-center justify-between text-xs text-muted-foreground">
+                                        <span className="font-medium text-foreground">{r.author}</span>
+                                        <span>{formatDate(r.createdAt)}</span>
+                                      </div>
+                                      <p className="whitespace-pre-wrap text-sm text-muted-foreground">
+                                        {r.body}
+                                      </p>
+                                    </li>
+                                  ))}
+                                </ul>
+                              )}
+
+                              {i.kind === "message" &&
+                                (replyFor === i.rowId ? (
+                                  <div className="mt-2 space-y-2">
+                                    <Textarea
+                                      value={replyText}
+                                      onChange={(e) => setReplyText(e.target.value)}
+                                      rows={3}
+                                      maxLength={2000}
+                                      placeholder="Write your reply…"
+                                    />
+                                    <div className="flex gap-2">
+                                      <Button
+                                        size="sm"
+                                        onClick={() => void sendReply(i.rowId)}
+                                        disabled={busy}
+                                      >
+                                        {busy ? "Sending…" : "Send reply"}
+                                      </Button>
+                                      <Button
+                                        size="sm"
+                                        variant="ghost"
+                                        onClick={() => {
+                                          setReplyFor(null);
+                                          setReplyText("");
+                                        }}
+                                      >
+                                        Cancel
+                                      </Button>
+                                    </div>
+                                  </div>
+                                ) : (
+                                  <Button
+                                    size="sm"
+                                    variant="ghost"
+                                    className="mt-1 px-0"
+                                    onClick={() => {
+                                      setReplyFor(i.rowId);
+                                      setReplyText("");
+                                    }}
+                                  >
+                                    Reply
+                                  </Button>
+                                ))}
                             </li>
                           ))}
                       </ul>
