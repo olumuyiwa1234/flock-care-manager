@@ -15,7 +15,7 @@ export const ROLE_LABELS: Record<AppRole, string> = {
   follow_up: "Follow-up",
 };
 
-export const PASTORATE_SUB_ROLES = ["Pastor", "Minister"] as const;
+export const PASTORATE_SUB_ROLES = ["Pastor", "Parish Coordinator", "Minister"] as const;
 
 export const FELLOWSHIPS = [
   "Men's Fellowship",
