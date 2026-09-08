@@ -141,6 +141,7 @@ function MyProfile() {
         anniversary_day: annivDay ? Number(annivDay) : null,
         marital_status: marital || null,
         department: department || null,
+        status: status === "Worker" ? "Worker" : "Member",
         membership_year: membershipYear ? Number(membershipYear) : null,
       })
       .eq("user_id", userId);
