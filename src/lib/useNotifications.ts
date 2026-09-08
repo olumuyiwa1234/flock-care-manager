@@ -73,6 +73,19 @@ export function useNotifications() {
 
   const items: Notification[] = [];
 
+  for (const g of greetingsQuery.data ?? []) {
+    items.push({
+      id: `greeting-${g.id}`,
+      kind: "greeting",
+      title:
+        g.occasion === "anniversary"
+          ? `${g.senderName} sent you an anniversary message`
+          : `${g.senderName} sent you a birthday message`,
+      body: g.message,
+      memberId: "",
+    });
+  }
+
   for (const c of celebrationsQuery.data ?? []) {
     items.push({
       id: c.id,
@@ -83,6 +96,7 @@ export function useNotifications() {
           : `Wedding anniversary today: ${c.name}`,
       body: c.kind === "birthday" ? "Send a birthday blessing." : "Celebrate with the family.",
       memberId: c.memberId,
+      celebrant: { memberId: c.memberId, name: c.name, occasion: c.kind },
     });
   }
 
