@@ -191,6 +191,16 @@ function MyProfile() {
             </div>
           </div>
 
+          <Field label="Status">
+            <Select value={status} onValueChange={setStatus}>
+              <SelectTrigger><SelectValue placeholder="Select" /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="Member">Member</SelectItem>
+                <SelectItem value="Worker">Worker</SelectItem>
+              </SelectContent>
+            </Select>
+          </Field>
+
           <Field label="Full name">
             <Input value={fullName} onChange={(e) => setFullName(e.target.value)} />
           </Field>
