@@ -50,7 +50,6 @@ const ROLE_OPTIONS: AppRole[] = [
   "hod",
   "group_leader",
   "it_infrastructure",
-  "follow_up",
 ];
 
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
