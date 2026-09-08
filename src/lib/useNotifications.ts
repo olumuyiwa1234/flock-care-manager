@@ -7,10 +7,11 @@ import { recentSignups } from "./signups.functions";
 
 export type Notification = {
   id: string;
-  kind: "birthday" | "anniversary" | "absent" | "signup";
+  kind: "birthday" | "anniversary" | "absent" | "signup" | "greeting";
   title: string;
   body: string;
   memberId: string;
+  celebrant?: { memberId: string; name: string; occasion: "birthday" | "anniversary" };
 };
 
 export function birthdaysToday(members: MemberRow[]) {
