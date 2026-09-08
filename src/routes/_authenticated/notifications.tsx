@@ -17,7 +17,13 @@ export const Route = createFileRoute("/_authenticated/notifications")({
   component: Notifications,
 });
 
-const icons = { birthday: Cake, anniversary: Heart, absent: TriangleAlert, signup: UserPlus };
+const icons = {
+  birthday: Cake,
+  anniversary: Heart,
+  absent: TriangleAlert,
+  signup: UserPlus,
+  greeting: MailOpen,
+};
 
 function Notifications() {
   const { items, loading } = useNotifications();
