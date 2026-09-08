@@ -6,6 +6,7 @@ import { AppShell, EmptyState } from "@/components/AppShell";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/lib/useAuth";
 import { allCelebrations, type CelebrationEntry } from "@/lib/celebrations.functions";
+import { GreetingDialog } from "@/components/GreetingDialog";
 
 export const Route = createFileRoute("/_authenticated/celebrations")({
   head: () => ({
