@@ -105,6 +105,19 @@ function MemberDetail() {
     },
   });
 
+  const childrenQuery = useQuery({
+    queryKey: ["member-children", memberId],
+    enabled: isFullAccess,
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("members")
+        .select("id, full_name, photo_url, age_bracket")
+        .or(`parent_id.eq.${memberId},parent2_id.eq.${memberId}`)
+        .order("full_name", { ascending: true });
+      return (data ?? []) as Pick<MemberRow, "id" | "full_name" | "photo_url" | "age_bracket">[];
+    },
+  });
+
   const m = memberQuery.data;
 
   if (memberQuery.isLoading) {
@@ -229,6 +242,37 @@ function MemberDetail() {
           }
         />
       </section>
+
+      {isFullAccess && (
+        <section className="mt-5">
+          <h2 className="mb-2 text-base font-semibold">Children</h2>
+          {(childrenQuery.data ?? []).length === 0 ? (
+            <p className="rounded-2xl border border-dashed border-border bg-card p-5 text-sm text-muted-foreground">
+              No children linked to this member.
+            </p>
+          ) : (
+            <ul className="space-y-2">
+              {(childrenQuery.data ?? []).map((c) => (
+                <li key={c.id}>
+                  <button
+                    type="button"
+                    onClick={() => navigate({ to: "/members/$memberId", params: { memberId: c.id } })}
+                    className="flex w-full items-center gap-3 rounded-2xl border border-border bg-card p-3 text-left transition-colors hover:bg-muted/50"
+                  >
+                    <MemberPhoto path={c.photo_url} name={c.full_name} size={40} />
+                    <span className="min-w-0">
+                      <span className="block truncate text-sm font-medium">{c.full_name}</span>
+                      {c.age_bracket && (
+                        <span className="block text-xs text-muted-foreground">{c.age_bracket}</span>
+                      )}
+                    </span>
+                  </button>
+                </li>
+              ))}
+            </ul>
+          )}
+        </section>
+      )}
 
       <section className="mt-5">
         <div className="mb-2 flex items-center justify-between">
