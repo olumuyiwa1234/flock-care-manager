@@ -39,7 +39,7 @@ function FollowUp() {
   const queryClient = useQueryClient();
   const { data: members = [] } = useMembers();
   const search = useSearch({ from: "/_authenticated/followup" });
-  const [memberId, setMemberId] = useState(search.memberId);
+  const [memberId, setMemberId] = useState(search.memberId ?? "");
   const [method, setMethod] = useState<string>(CONTACT_METHODS[0]);
   const [situation, setSituation] = useState<string>("None");
   const [contactedOn, setContactedOn] = useState(todayISO());
