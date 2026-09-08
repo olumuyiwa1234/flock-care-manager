@@ -49,13 +49,11 @@ function inPeriod(entry: CelebrationEntry, period: Period, now: Date) {
 }
 
 function Celebrations() {
-  const { isFloor } = useAuth();
   const [kind, setKind] = useState<Kind>("all");
   const [period, setPeriod] = useState<Period>("month");
 
   const query = useQuery({
     queryKey: ["celebrations-all"],
-    enabled: !isFloor,
     queryFn: () => allCelebrations(),
   });
 
