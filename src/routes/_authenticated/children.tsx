@@ -89,7 +89,18 @@ function ChildrenAttendance() {
   }
 
   return (
-    <AppShell title="Children" subtitle="Mark present or absent" back="/home">
+    <AppShell
+      title="Children"
+      subtitle="Mark present or absent"
+      back="/home"
+      action={
+        <Button asChild size="icon" variant="secondary" className="rounded-full">
+          <Link to="/children/new" aria-label="Add child">
+            <Plus className="size-5" />
+          </Link>
+        </Button>
+      }
+    >
       <div className="space-y-4">
         <div className="rounded-2xl border border-border bg-card p-4">
           <Label className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
@@ -112,7 +123,7 @@ function ChildrenAttendance() {
         {isLoading && <p className="text-sm text-muted-foreground">Loading children…</p>}
         {!isLoading && children.length === 0 && (
           <p className="text-sm text-muted-foreground">
-            No members in the Under 18 age bracket yet.
+            No members in the 0–12 age bracket yet. Tap + to add a child.
           </p>
         )}
 
