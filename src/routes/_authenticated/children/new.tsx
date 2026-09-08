@@ -17,7 +17,7 @@ import {
 import { toast } from "sonner";
 import { GENDERS } from "@/lib/shepherd";
 import { useAuth } from "@/lib/useAuth";
-import { ParentPicker, type ParentSelection } from "@/components/ParentPicker";
+import { ParentPicker, type ParentSelections } from "@/components/ParentPicker";
 
 export const Route = createFileRoute("/_authenticated/children/new")({
   head: () => ({
@@ -178,10 +178,10 @@ function AddChild() {
           </Field>
         </div>
 
-        <Field label="Parent name (optional)">
-          <ParentPicker value={parent} onChange={setParent} />
+        <Field label="Parent name(s) (optional — up to 2)">
+          <ParentPicker value={parents} onChange={setParents} />
           <p className="text-xs text-muted-foreground">
-            Match this child to a registered parent so the parent can be contacted about missed
+            Match this child to up to two registered parents so they can be contacted about missed
             services.
           </p>
         </Field>
