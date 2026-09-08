@@ -69,6 +69,11 @@ export function useNotifications() {
     staleTime: 5 * 60_000,
     queryFn: () => recentSignups(),
   });
+  const greetingsQuery = useQuery({
+    queryKey: ["my-greetings"],
+    staleTime: 60_000,
+    queryFn: () => myGreetings(),
+  });
   const members = membersQuery.data ?? [];
   const attendance = attendanceQuery.data ?? [];
 
