@@ -15,6 +15,7 @@ import { Toaster } from "@/components/ui/sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { InstallPrompt } from "@/components/InstallPrompt";
 import { AnnouncementPopup } from "@/components/AnnouncementPopup";
+import { ProfileCompletionPrompt } from "@/components/ProfileCompletionPrompt";
 import { registerAppServiceWorker } from "@/lib/pwa";
 
 function NotFoundComponent() {
@@ -161,6 +162,7 @@ function RootComponent() {
       <Outlet />
       <InstallPrompt />
       <AnnouncementPopup />
+      <ProfileCompletionPrompt />
       <Toaster position="top-center" richColors />
     </QueryClientProvider>
   );
