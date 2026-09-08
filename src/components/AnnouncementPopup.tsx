@@ -57,7 +57,7 @@ export function AnnouncementPopup() {
   }
 
   return (
-    <div className="pointer-events-none fixed inset-x-0 bottom-0 z-[60] flex justify-center px-4 pb-6 sm:items-end">
+    <div className="pointer-events-none fixed inset-0 z-[60] flex items-center justify-center p-4">
       <div className="pointer-events-auto w-full max-w-sm rounded-3xl border border-border bg-card p-4 shadow-float">
         <div className="flex items-start gap-3">
           <span className="grid size-10 shrink-0 place-items-center rounded-2xl bg-secondary text-primary">
