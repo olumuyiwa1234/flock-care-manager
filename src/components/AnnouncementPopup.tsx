@@ -68,9 +68,7 @@ export function AnnouncementPopup() {
             <p className="mt-1 max-h-40 overflow-y-auto whitespace-pre-wrap text-sm text-muted-foreground">
               {data.body}
             </p>
-            <p className="mt-2 text-xs text-muted-foreground">
-              {data.author_name || "Church leadership"} · {formatDate(data.created_at)}
-            </p>
+            <p className="mt-2 text-xs text-muted-foreground">{formatDate(data.created_at)}</p>
           </div>
           <button
             type="button"
