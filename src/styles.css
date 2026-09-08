@@ -106,7 +106,7 @@
     color: var(--color-foreground);
     font-family: var(--font-sans);
     -webkit-font-smoothing: antialiased;
-    padding-top: env(safe-area-inset-top);
+    overflow-x: hidden;
   }
 
   h1,
@@ -129,6 +129,20 @@
 
 @utility text-balance-tight {
   text-wrap: balance;
+}
+
+@utility pt-safe {
+  padding-top: env(safe-area-inset-top);
+}
+
+/* Pages sit in a narrow phone-width column; widen them to fill desktop screens. */
+@media (min-width: 1024px) {
+  main.mx-auto.max-w-xl {
+    max-width: 80rem;
+  }
+  div.mx-auto.max-w-xl {
+    max-width: 64rem;
+  }
 }
 
 @keyframes pulse-ring {
