@@ -46,6 +46,10 @@ function FollowUp() {
   const [notes, setNotes] = useState("");
   const [saving, setSaving] = useState(false);
 
+  useEffect(() => {
+    if (search.memberId) setMemberId(search.memberId);
+  }, [search.memberId]);
+
   const list = useQuery({
     queryKey: ["follow-ups"],
     queryFn: async () => {
