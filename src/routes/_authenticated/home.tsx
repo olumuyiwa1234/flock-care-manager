@@ -57,7 +57,7 @@ const tiles = [
 ];
 
 function Home() {
-  const { auth, isFloor, role, isChildrenLeader, isAdmin, isPastor, pending } = useAuth();
+  const { auth, isFloor, role, isChildrenLeader, isTeensLeader, isAdmin, isPastor, pending } = useAuth();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const { items } = useNotifications();
@@ -74,6 +74,7 @@ function Home() {
     (t) =>
       (!t.staffOnly || !isFloor) &&
       (!("childrenOnly" in t) || isChildrenLeader || isAdmin) &&
+      (!("teensOnly" in t) || isTeensLeader || isAdmin) &&
       (!("pastorOnly" in t) || isPastor),
   );
 
