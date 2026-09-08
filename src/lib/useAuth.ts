@@ -89,5 +89,6 @@ export function useAuth() {
     isAdmin: isFullAccess,
     isPastor: approved && role === "pastorate",
     isChildrenLeader,
+    isTeensLeader,
   };
 }
