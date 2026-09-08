@@ -105,6 +105,19 @@ function MemberDetail() {
     },
   });
 
+  const childrenQuery = useQuery({
+    queryKey: ["member-children", memberId],
+    enabled: isFullAccess,
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("members")
+        .select("id, full_name, photo_url, age_bracket")
+        .or(`parent_id.eq.${memberId},parent2_id.eq.${memberId}`)
+        .order("full_name", { ascending: true });
+      return (data ?? []) as Pick<MemberRow, "id" | "full_name" | "photo_url" | "age_bracket">[];
+    },
+  });
+
   const m = memberQuery.data;
 
   if (memberQuery.isLoading) {
