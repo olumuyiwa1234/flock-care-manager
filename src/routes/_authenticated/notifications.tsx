@@ -1,8 +1,9 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { Bell, Cake, Heart, TriangleAlert, UserPlus } from "lucide-react";
+import { Bell, Cake, Heart, MailOpen, TriangleAlert, UserPlus } from "lucide-react";
 import { AppShell, EmptyState } from "@/components/AppShell";
 import { useNotifications } from "@/lib/useNotifications";
 import { useAuth } from "@/lib/useAuth";
+import { GreetingDialog } from "@/components/GreetingDialog";
 
 export const Route = createFileRoute("/_authenticated/notifications")({
   head: () => ({
