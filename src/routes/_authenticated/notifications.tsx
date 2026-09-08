@@ -1,8 +1,9 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { Bell, Cake, Heart, TriangleAlert, UserPlus } from "lucide-react";
+import { Bell, Cake, Heart, MailOpen, TriangleAlert, UserPlus } from "lucide-react";
 import { AppShell, EmptyState } from "@/components/AppShell";
 import { useNotifications } from "@/lib/useNotifications";
 import { useAuth } from "@/lib/useAuth";
+import { GreetingDialog } from "@/components/GreetingDialog";
 
 export const Route = createFileRoute("/_authenticated/notifications")({
   head: () => ({
@@ -16,7 +17,13 @@ export const Route = createFileRoute("/_authenticated/notifications")({
   component: Notifications,
 });
 
-const icons = { birthday: Cake, anniversary: Heart, absent: TriangleAlert, signup: UserPlus };
+const icons = {
+  birthday: Cake,
+  anniversary: Heart,
+  absent: TriangleAlert,
+  signup: UserPlus,
+  greeting: MailOpen,
+};
 
 function Notifications() {
   const { items, loading } = useNotifications();
@@ -51,13 +58,26 @@ function Notifications() {
             );
             const className = "flex items-start gap-3 rounded-2xl border border-border bg-card p-4";
             return (
-              <li key={n.id}>
-                {isFloor ? (
-                  <div className={className}>{inner}</div>
+              <li key={n.id} className="rounded-2xl border border-border bg-card">
+                {isFloor || !n.memberId ? (
+                  <div className="flex items-start gap-3 p-4">{inner}</div>
                 ) : (
-                  <Link to="/members/$memberId" params={{ memberId: n.memberId }} className={className}>
+                  <Link
+                    to="/members/$memberId"
+                    params={{ memberId: n.memberId }}
+                    className={`${className} border-0 bg-transparent`}
+                  >
                     {inner}
                   </Link>
+                )}
+                {n.celebrant && (
+                  <div className="flex justify-end px-4 pb-4">
+                    <GreetingDialog
+                      memberId={n.celebrant.memberId}
+                      name={n.celebrant.name}
+                      occasion={n.celebrant.occasion}
+                    />
+                  </div>
                 )}
               </li>
             );

@@ -4,13 +4,15 @@ import { lastSundays } from "./shepherd";
 import { useAuth } from "./useAuth";
 import { celebrationsToday } from "./celebrations.functions";
 import { recentSignups } from "./signups.functions";
+import { myGreetings } from "./greetings.functions";
 
 export type Notification = {
   id: string;
-  kind: "birthday" | "anniversary" | "absent" | "signup";
+  kind: "birthday" | "anniversary" | "absent" | "signup" | "greeting";
   title: string;
   body: string;
   memberId: string;
+  celebrant?: { memberId: string; name: string; occasion: "birthday" | "anniversary" };
 };
 
 export function birthdaysToday(members: MemberRow[]) {
@@ -67,10 +69,28 @@ export function useNotifications() {
     staleTime: 5 * 60_000,
     queryFn: () => recentSignups(),
   });
+  const greetingsQuery = useQuery({
+    queryKey: ["my-greetings"],
+    staleTime: 60_000,
+    queryFn: () => myGreetings(),
+  });
   const members = membersQuery.data ?? [];
   const attendance = attendanceQuery.data ?? [];
 
   const items: Notification[] = [];
+
+  for (const g of greetingsQuery.data ?? []) {
+    items.push({
+      id: `greeting-${g.id}`,
+      kind: "greeting",
+      title:
+        g.occasion === "anniversary"
+          ? `${g.senderName} sent you an anniversary message`
+          : `${g.senderName} sent you a birthday message`,
+      body: g.message,
+      memberId: "",
+    });
+  }
 
   for (const c of celebrationsQuery.data ?? []) {
     items.push({
@@ -82,6 +102,7 @@ export function useNotifications() {
           : `Wedding anniversary today: ${c.name}`,
       body: c.kind === "birthday" ? "Send a birthday blessing." : "Celebrate with the family.",
       memberId: c.memberId,
+      celebrant: { memberId: c.memberId, name: c.name, occasion: c.kind },
     });
   }
 
