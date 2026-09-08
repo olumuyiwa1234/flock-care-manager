@@ -99,7 +99,7 @@ function TeensAttendance() {
           type="button"
           size="icon"
           variant="secondary"
-          className="relative z-40 shrink-0 rounded-full touch-manipulation"
+          className="relative z-40 size-10 shrink-0 rounded-full touch-manipulation"
           aria-label="Add teenager"
           onClick={() => void navigate({ to: "/teens/new" })}
         >
