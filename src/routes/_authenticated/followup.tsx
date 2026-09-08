@@ -38,7 +38,8 @@ function FollowUp() {
   const { auth, isFloor } = useAuth();
   const queryClient = useQueryClient();
   const { data: members = [] } = useMembers();
-  const [memberId, setMemberId] = useState("");
+  const search = useSearch({ from: "/_authenticated/followup" });
+  const [memberId, setMemberId] = useState(search.memberId);
   const [method, setMethod] = useState<string>(CONTACT_METHODS[0]);
   const [situation, setSituation] = useState<string>("None");
   const [contactedOn, setContactedOn] = useState(todayISO());
