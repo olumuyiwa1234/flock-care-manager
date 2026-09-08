@@ -4,6 +4,7 @@ import { lastSundays } from "./shepherd";
 import { useAuth } from "./useAuth";
 import { celebrationsToday } from "./celebrations.functions";
 import { recentSignups } from "./signups.functions";
+import { myGreetings } from "./greetings.functions";
 
 export type Notification = {
   id: string;
