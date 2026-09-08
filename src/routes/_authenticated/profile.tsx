@@ -83,6 +83,7 @@ function MyProfile() {
   const [annivDay, setAnnivDay] = useState("");
   const [marital, setMarital] = useState("");
   const [department, setDepartment] = useState("");
+  const [status, setStatus] = useState("Member");
   const [membershipYear, setMembershipYear] = useState("");
   const [saving, setSaving] = useState(false);
 
