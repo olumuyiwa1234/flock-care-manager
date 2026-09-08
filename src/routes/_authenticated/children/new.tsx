@@ -53,6 +53,16 @@ function AddChild() {
   const [photoPath, setPhotoPath] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
 
+  if (!isChildrenLeader && !isStaff) {
+    return (
+      <AppShell title="Add child" back="/children">
+        <p className="text-sm text-muted-foreground">
+          Only the children department leader can add child records.
+        </p>
+      </AppShell>
+    );
+  }
+
   async function uploadPhoto(file: File) {
     const ext = file.name.split(".").pop() ?? "jpg";
     const { data: userData } = await supabase.auth.getUser();
