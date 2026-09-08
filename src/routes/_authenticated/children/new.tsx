@@ -17,6 +17,7 @@ import {
 import { toast } from "sonner";
 import { GENDERS } from "@/lib/shepherd";
 import { useAuth } from "@/lib/useAuth";
+import { ParentPicker, type ParentSelection } from "@/components/ParentPicker";
 
 export const Route = createFileRoute("/_authenticated/children/new")({
   head: () => ({
@@ -51,6 +52,7 @@ function AddChild() {
   const [birthDay, setBirthDay] = useState<number | null>(null);
   const [membershipYear, setMembershipYear] = useState(String(new Date().getFullYear()));
   const [photoPath, setPhotoPath] = useState<string | null>(null);
+  const [parent, setParent] = useState<ParentSelection>(null);
   const [saving, setSaving] = useState(false);
 
   if (!isChildrenLeader && !isStaff) {
@@ -108,6 +110,7 @@ function AddChild() {
         department: "Children",
         membership_year: membershipYear ? Number(membershipYear) : null,
         photo_url: photoPath,
+        parent_id: parent?.id ?? null,
         created_by: createdBy,
       })
       .select("id, full_name, member_code")
@@ -173,6 +176,14 @@ function AddChild() {
             />
           </Field>
         </div>
+
+        <Field label="Parent name (optional)">
+          <ParentPicker value={parent} onChange={setParent} />
+          <p className="text-xs text-muted-foreground">
+            Match this child to a registered parent so the parent can be contacted about missed
+            services.
+          </p>
+        </Field>
 
         <Field label="Birthday">
           <MonthDayPicker
