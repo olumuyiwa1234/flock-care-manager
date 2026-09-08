@@ -150,6 +150,25 @@ function AuthPage() {
       return;
     }
 
+    const required: Array<[string, unknown]> = [
+      ["your full name", fullName.trim()],
+      ["a photo", photoFile],
+      ["your phone number", phone.trim()],
+      ["your gender", gender],
+      ["your marital status", marital],
+      ["your birthday", birthMonth && birthDay],
+      ["your age bracket", bracket],
+      ["your membership year", membershipYear.trim()],
+    ];
+    if (isWorker) required.push(["your department", departments.length > 0]);
+    if (marital === "Married") required.push(["your wedding anniversary", annivMonth && annivDay]);
+    const blank = required.find(([, v]) => !v);
+    if (blank) {
+      setBusy(false);
+      toast.error(`Please provide ${blank[0]}`);
+      return;
+    }
+
     if (effectiveRoles.length === 0) {
       setBusy(false);
       toast.error("Please select at least one role");
@@ -303,15 +322,16 @@ function AuthPage() {
                 <Input
                   type="file"
                   accept="image/*"
+                  required
                   onChange={(e) => setPhotoFile(e.target.files?.[0] ?? null)}
                 />
               </Field>
 
               <Field label="Phone number">
-                <Input value={phone} onChange={(e) => setPhone(e.target.value)} inputMode="tel" />
+                <Input value={phone} onChange={(e) => setPhone(e.target.value)} inputMode="tel" required />
               </Field>
 
-              <Field label="Home address">
+              <Field label="Home address (optional)">
                 <Textarea value={address} onChange={(e) => setAddress(e.target.value)} rows={2} />
               </Field>
 
@@ -358,7 +378,7 @@ function AuthPage() {
                 </Select>
               </Field>
 
-              <Field label="Wedding anniversary (optional)">
+              <Field label={marital === "Married" ? "Wedding anniversary" : "Wedding anniversary (optional)"}>
                 <MonthDayPicker
                   month={annivMonth ? Number(annivMonth) : null}
                   day={annivDay ? Number(annivDay) : null}
@@ -387,7 +407,7 @@ function AuthPage() {
 
 
               {isWorker && (
-                <Field label="Departments (optional)">
+                <Field label="Departments">
                   <MultiSelect
                     options={DEPARTMENTS}
                     value={departments}
@@ -402,6 +422,7 @@ function AuthPage() {
                   value={membershipYear}
                   onChange={(e) => setMembershipYear(e.target.value)}
                   inputMode="numeric"
+                  required
                 />
               </Field>
 
