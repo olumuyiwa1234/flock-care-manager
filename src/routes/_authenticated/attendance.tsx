@@ -76,6 +76,16 @@ function AttendancePage() {
 
   const presentCount = [...statusByMember.values()].filter((s) => s !== "Absent").length;
 
+  const term = q.trim().toLowerCase();
+  const filtered = members.filter((m) => {
+    if (!term) return true;
+    return (
+      m.full_name.toLowerCase().includes(term) ||
+      m.member_code.toLowerCase().includes(term) ||
+      (m.phone ?? "").toLowerCase().includes(term)
+    );
+  });
+
   return (
     <AppShell title="Attendance" subtitle={`${presentCount} marked present`}>
       <div className="mb-4 grid grid-cols-2 gap-3 rounded-2xl border border-border bg-card p-4">
