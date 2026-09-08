@@ -21,7 +21,7 @@ import { useAuth } from "@/lib/useAuth";
 
 export const Route = createFileRoute("/_authenticated/followup")({
   validateSearch: (search: Record<string, unknown>) => ({
-    memberId: typeof search.memberId === "string" ? search.memberId : "",
+    memberId: typeof search["memberId"] === "string" ? search["memberId"] : undefined,
   }),
   head: () => ({
     meta: [
