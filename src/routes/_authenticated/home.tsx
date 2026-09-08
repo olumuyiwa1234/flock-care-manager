@@ -41,6 +41,7 @@ const tiles = [
   { to: "/checkin", label: "Check In", icon: CalendarDays, staffOnly: false },
   { to: "/members", label: "Members", icon: Users, staffOnly: true },
   { to: "/children", label: "Children", icon: Baby, staffOnly: true, childrenOnly: true },
+  { to: "/teens", label: "Teens", icon: Users, staffOnly: true, teensOnly: true },
   { to: "/attendance", label: "Attendance", icon: ClipboardList, staffOnly: true },
   { to: "/followup", label: "Follow-up", icon: HeartHandshake, staffOnly: true },
   { to: "/celebrations", label: "Celebration", icon: Cake, staffOnly: true },
