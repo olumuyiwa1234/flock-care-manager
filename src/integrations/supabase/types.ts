@@ -250,6 +250,7 @@ export type Database = {
           marital_status: string | null
           member_code: string
           membership_year: number | null
+          natural_group: string | null
           parent_id: string | null
           parent2_id: string | null
           phone: string | null
@@ -277,6 +278,7 @@ export type Database = {
           marital_status?: string | null
           member_code?: string
           membership_year?: number | null
+          natural_group?: string | null
           parent_id?: string | null
           parent2_id?: string | null
           phone?: string | null
@@ -304,6 +306,7 @@ export type Database = {
           marital_status?: string | null
           member_code?: string
           membership_year?: number | null
+          natural_group?: string | null
           parent_id?: string | null
           parent2_id?: string | null
           phone?: string | null
