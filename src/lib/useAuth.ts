@@ -63,8 +63,12 @@ export function useAuth() {
   const isFollowUp = approved && role === "follow_up";
   const isClusterLeader = approved && (role === "hod" || role === "group_leader");
   const isMemberOnly = !approved || role === "member";
-  const isChildrenLeader =
-    approved && role === "hod" && (auth?.subRole ?? "").toLowerCase() === "children";
+  const subRoles = (auth?.subRole ?? "")
+    .split(",")
+    .map((s) => s.trim().toLowerCase())
+    .filter(Boolean);
+  const isChildrenLeader = approved && role === "hod" && subRoles.includes("children");
+  const isTeensLeader = approved && role === "hod" && subRoles.includes("teens");
 
   return {
     auth,
@@ -85,5 +89,6 @@ export function useAuth() {
     isAdmin: isFullAccess,
     isPastor: approved && role === "pastorate",
     isChildrenLeader,
+    isTeensLeader,
   };
 }

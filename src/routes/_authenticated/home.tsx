@@ -41,6 +41,7 @@ const tiles = [
   { to: "/checkin", label: "Check In", icon: CalendarDays, staffOnly: false },
   { to: "/members", label: "Members", icon: Users, staffOnly: true },
   { to: "/children", label: "Children", icon: Baby, staffOnly: true, childrenOnly: true },
+  { to: "/teens", label: "Teens", icon: Users, staffOnly: true, teensOnly: true },
   { to: "/attendance", label: "Attendance", icon: ClipboardList, staffOnly: true },
   { to: "/followup", label: "Follow-up", icon: HeartHandshake, staffOnly: true },
   { to: "/celebrations", label: "Celebration", icon: Cake, staffOnly: true },
@@ -56,7 +57,7 @@ const tiles = [
 ];
 
 function Home() {
-  const { auth, isFloor, role, isChildrenLeader, isAdmin, isPastor, pending } = useAuth();
+  const { auth, isFloor, role, isChildrenLeader, isTeensLeader, isAdmin, isPastor, pending } = useAuth();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const { items } = useNotifications();
@@ -73,6 +74,7 @@ function Home() {
     (t) =>
       (!t.staffOnly || !isFloor) &&
       (!("childrenOnly" in t) || isChildrenLeader || isAdmin) &&
+      (!("teensOnly" in t) || isTeensLeader || isAdmin) &&
       (!("pastorOnly" in t) || isPastor),
   );
 
