@@ -46,7 +46,7 @@ function ChildrenAttendance() {
   const [busy, setBusy] = useState<string | null>(null);
 
   const children = useMemo(
-    () => members.filter((m) => m.age_bracket === "Under 18"),
+    () => members.filter((m) => m.age_bracket === "0-12"),
     [members],
   );
 
