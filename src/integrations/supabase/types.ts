@@ -147,6 +147,7 @@ export type Database = {
           marital_status: string | null
           member_code: string
           membership_year: number | null
+          parent_id: string | null
           phone: string | null
           photo_url: string | null
           user_id: string | null
@@ -171,6 +172,7 @@ export type Database = {
           marital_status?: string | null
           member_code?: string
           membership_year?: number | null
+          parent_id?: string | null
           phone?: string | null
           photo_url?: string | null
           user_id?: string | null
@@ -195,6 +197,7 @@ export type Database = {
           marital_status?: string | null
           member_code?: string
           membership_year?: number | null
+          parent_id?: string | null
           phone?: string | null
           photo_url?: string | null
           user_id?: string | null
@@ -203,6 +206,13 @@ export type Database = {
           {
             foreignKeyName: "members_invited_by_fkey"
             columns: ["invited_by"]
+            isOneToOne: false
+            referencedRelation: "members"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "members_parent_id_fkey"
+            columns: ["parent_id"]
             isOneToOne: false
             referencedRelation: "members"
             referencedColumns: ["id"]
