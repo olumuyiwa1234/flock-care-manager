@@ -254,6 +254,7 @@ export type Database = {
           parent2_id: string | null
           phone: string | null
           photo_url: string | null
+          status: string
           user_id: string | null
         }
         Insert: {
@@ -280,6 +281,7 @@ export type Database = {
           parent2_id?: string | null
           phone?: string | null
           photo_url?: string | null
+          status?: string
           user_id?: string | null
         }
         Update: {
@@ -306,6 +308,7 @@ export type Database = {
           parent2_id?: string | null
           phone?: string | null
           photo_url?: string | null
+          status?: string
           user_id?: string | null
         }
         Relationships: [
