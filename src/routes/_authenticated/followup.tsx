@@ -1,5 +1,5 @@
-import { createFileRoute } from "@tanstack/react-router";
-import { useState } from "react";
+import { createFileRoute, useSearch } from "@tanstack/react-router";
+import { useEffect, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { AppShell, EmptyState } from "@/components/AppShell";
@@ -20,6 +20,9 @@ import { useMembers } from "@/lib/queries";
 import { useAuth } from "@/lib/useAuth";
 
 export const Route = createFileRoute("/_authenticated/followup")({
+  validateSearch: (search: Record<string, unknown>) => ({
+    memberId: typeof search.memberId === "string" ? search.memberId : "",
+  }),
   head: () => ({
     meta: [
       { title: "Follow-up — Shepherd" },
