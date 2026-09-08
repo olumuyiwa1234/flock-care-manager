@@ -108,11 +108,21 @@ export function useNotifications() {
 
   if (isCareTeam) {
     for (const s of signupsQuery.data ?? []) {
+      const joinedAt = new Date(s.createdAt).toLocaleString("en-NG", {
+        weekday: "short",
+        year: "numeric",
+        month: "short",
+        day: "numeric",
+        hour: "2-digit",
+        minute: "2-digit",
+      });
       items.push({
         id: s.id,
         kind: "signup",
         title: `New account: ${s.name}`,
-        body: s.department ? `Registered under ${s.department}.` : "Just registered on Shepherd.",
+        body: s.department
+          ? `Registered under ${s.department} on ${joinedAt}.`
+          : `Joined Shepherd on ${joinedAt}.`,
         memberId: s.memberId,
       });
     }
