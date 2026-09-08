@@ -97,7 +97,12 @@ function Members() {
     if (fMarital !== ALL && m.marital_status !== fMarital) return false;
     if (fGender !== ALL && m.gender !== fGender) return false;
     if (fStatus !== ALL) {
-      const isWorker = m.user_id ? workerIds.has(m.user_id) : false;
+      const stored = (m as { status?: string | null }).status;
+      const isWorker = stored
+        ? stored === "Worker"
+        : m.user_id
+          ? workerIds.has(m.user_id)
+          : false;
       if (fStatus === "Worker" && !isWorker) return false;
       if (fStatus === "Member" && isWorker) return false;
     }

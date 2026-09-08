@@ -83,6 +83,7 @@ function MyProfile() {
   const [annivDay, setAnnivDay] = useState("");
   const [marital, setMarital] = useState("");
   const [department, setDepartment] = useState("");
+  const [status, setStatus] = useState("Member");
   const [membershipYear, setMembershipYear] = useState("");
   const [saving, setSaving] = useState(false);
 
@@ -100,6 +101,7 @@ function MyProfile() {
     setAnnivDay(m.anniversary_day ? String(m.anniversary_day) : "");
     setMarital(m.marital_status ?? "");
     setDepartment(m.department ?? "");
+    setStatus((m as { status?: string | null }).status ?? "Member");
     setMembershipYear(m.membership_year ? String(m.membership_year) : "");
   }, [m]);
 
@@ -139,6 +141,7 @@ function MyProfile() {
         anniversary_day: annivDay ? Number(annivDay) : null,
         marital_status: marital || null,
         department: department || null,
+        status: status === "Worker" ? "Worker" : "Member",
         membership_year: membershipYear ? Number(membershipYear) : null,
       })
       .eq("user_id", userId);
@@ -187,6 +190,16 @@ function MyProfile() {
               </label>
             </div>
           </div>
+
+          <Field label="Status">
+            <Select value={status} onValueChange={setStatus}>
+              <SelectTrigger><SelectValue placeholder="Select" /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="Member">Member</SelectItem>
+                <SelectItem value="Worker">Worker</SelectItem>
+              </SelectContent>
+            </Select>
+          </Field>
 
           <Field label="Full name">
             <Input value={fullName} onChange={(e) => setFullName(e.target.value)} />
