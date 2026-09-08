@@ -145,6 +145,7 @@ function MyProfile() {
         marital_status: marital || null,
         department: department || null,
         status: status === "Worker" ? "Worker" : "Member",
+        natural_group: naturalGroup || null,
         membership_year: membershipYear ? Number(membershipYear) : null,
       })
       .eq("user_id", userId);
@@ -200,6 +201,17 @@ function MyProfile() {
               <SelectContent>
                 <SelectItem value="Member">Member</SelectItem>
                 <SelectItem value="Worker">Worker</SelectItem>
+              </SelectContent>
+            </Select>
+          </Field>
+
+          <Field label="Natural group">
+            <Select value={naturalGroup} onValueChange={setNaturalGroup}>
+              <SelectTrigger><SelectValue placeholder="Select" /></SelectTrigger>
+              <SelectContent>
+                {FELLOWSHIPS.map((f) => (
+                  <SelectItem key={f} value={f}>{f}</SelectItem>
+                ))}
               </SelectContent>
             </Select>
           </Field>
