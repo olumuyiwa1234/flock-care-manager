@@ -144,3 +144,15 @@
 @utility animate-pulse-ring {
   animation: pulse-ring 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
 }
+
+/* Hide the Lovable editor badge in preview/published surfaces. */
+#lovable-badge,
+#lovable-badge-cta,
+#lovable-badge-close,
+#lovable-badge-text,
+#lovable-badge-divider {
+  display: none !important;
+  visibility: hidden !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+}
