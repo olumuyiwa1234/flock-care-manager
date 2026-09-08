@@ -14,7 +14,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { toast } from "sonner";
-import { SERVICE_TYPES, initials, todayISO } from "@/lib/shepherd";
+import { SERVICE_TYPES, initials, todayISO, todaysService } from "@/lib/shepherd";
 import { useAttendance, useMembers } from "@/lib/queries";
 import { useAuth } from "@/lib/useAuth";
 
@@ -43,7 +43,8 @@ function ChildrenAttendance() {
   const today = todayISO();
   const { data: members = [], isLoading } = useMembers();
   const { data: attendance = [] } = useAttendance(today);
-  const [serviceType, setServiceType] = useState<string>(SERVICE_TYPES[0]);
+  const activeService = todaysService();
+  const [serviceType, setServiceType] = useState<string>(activeService ?? SERVICE_TYPES[0]);
   const [busy, setBusy] = useState<string | null>(null);
 
   const children = useMemo(
@@ -58,6 +59,10 @@ function ChildrenAttendance() {
     )?.status ?? null;
 
   async function mark(memberId: string, status: "Present" | "Absent") {
+    if (!activeService) {
+      toast.error("No service is scheduled today. Attendance can only be marked on a service day.");
+      return;
+    }
     setBusy(memberId);
     const { error } = await supabase.from("attendance").upsert(
       {
@@ -112,18 +117,24 @@ function ChildrenAttendance() {
           <Label className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
             Service type
           </Label>
-          <Select value={serviceType} onValueChange={setServiceType}>
+          <Select value={serviceType} onValueChange={setServiceType} disabled={!activeService}>
             <SelectTrigger className="mt-2">
-              <SelectValue />
+              <SelectValue placeholder="No service today" />
             </SelectTrigger>
             <SelectContent>
-              {SERVICE_TYPES.map((s) => (
+              {(activeService ? [activeService] : []).map((s) => (
                 <SelectItem key={s} value={s}>
                   {s}
                 </SelectItem>
               ))}
             </SelectContent>
           </Select>
+          {!activeService && (
+            <p className="mt-2 text-xs text-muted-foreground">
+              No service is scheduled today. Attendance can only be marked on Sundays (Sunday
+              Service), Tuesdays (Digging Deep) and Thursdays (Faith Clinic).
+            </p>
+          )}
         </div>
 
         {isLoading && <p className="text-sm text-muted-foreground">Loading children…</p>}
@@ -156,7 +167,7 @@ function ChildrenAttendance() {
                   variant={status === "Present" ? "default" : "outline"}
                   className="rounded-full"
                   aria-label={`Mark ${c.full_name} present`}
-                  disabled={busy === c.id}
+                  disabled={busy === c.id || !activeService}
                   onClick={() => void mark(c.id, "Present")}
                 >
                   <Check className="size-4" />
@@ -166,7 +177,7 @@ function ChildrenAttendance() {
                   variant={status === "Absent" ? "destructive" : "outline"}
                   className="rounded-full"
                   aria-label={`Mark ${c.full_name} absent`}
-                  disabled={busy === c.id}
+                  disabled={busy === c.id || !activeService}
                   onClick={() => void mark(c.id, "Absent")}
                 >
                   <X className="size-4" />
