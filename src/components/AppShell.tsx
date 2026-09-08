@@ -18,7 +18,10 @@ export function AppShell({
   const router = useRouter();
   return (
     <div className="min-h-screen bg-background">
-      <header className="sticky top-0 z-30 bg-sky-gradient px-4 pb-5 pt-5 text-primary-foreground shadow-tile">
+      <header
+        className="sticky top-0 z-30 bg-sky-gradient px-4 pb-5 pt-5 text-primary-foreground shadow-tile"
+        style={{ paddingTop: "calc(1.5rem + env(safe-area-inset-top))" }}
+      >
         <div className="mx-auto flex max-w-xl items-center gap-3">
           {back !== false && (
             <button
@@ -27,7 +30,7 @@ export function AppShell({
               onClick={() => {
                 if (typeof back === "string") router.navigate({ to: back });
               }}
-              className="grid size-9 shrink-0 place-items-center rounded-full bg-primary-foreground/15 transition hover:bg-primary-foreground/25"
+              className="grid size-10 shrink-0 place-items-center rounded-full bg-primary-foreground/15 transition hover:bg-primary-foreground/25"
             >
               <ChevronLeft className="size-5" />
             </button>
