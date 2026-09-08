@@ -28,6 +28,7 @@ import { Route as AuthenticatedProfileRouteImport } from './routes/_authenticate
 import { Route as AuthenticatedReportsRouteImport } from './routes/_authenticated/reports'
 import { Route as AuthenticatedRolesRouteImport } from './routes/_authenticated/roles'
 import { Route as AuthenticatedSettingsRouteImport } from './routes/_authenticated/settings'
+import { Route as AuthenticatedChildrenNewRouteImport } from './routes/_authenticated/children/new'
 import { Route as AuthenticatedMembersIndexRouteImport } from './routes/_authenticated/members/index'
 import { Route as AuthenticatedMembersMemberIdRouteImport } from './routes/_authenticated/members/$memberId'
 import { Route as AuthenticatedMembersNewRouteImport } from './routes/_authenticated/members/new'
@@ -129,6 +130,12 @@ const AuthenticatedSettingsRoute = AuthenticatedSettingsRouteImport.update({
   path: '/settings',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedChildrenNewRoute =
+  AuthenticatedChildrenNewRouteImport.update({
+    id: '/new',
+    path: '/new',
+    getParentRoute: () => AuthenticatedChildrenRoute,
+  } as any)
 const AuthenticatedMembersIndexRoute =
   AuthenticatedMembersIndexRouteImport.update({
     id: '/members/',
@@ -154,7 +161,7 @@ export interface FileRoutesByFullPath {
   '/attendance': typeof AuthenticatedAttendanceRoute
   '/celebrations': typeof AuthenticatedCelebrationsRoute
   '/checkin': typeof AuthenticatedCheckinRoute
-  '/children': typeof AuthenticatedChildrenRoute
+  '/children': typeof AuthenticatedChildrenRouteWithChildren
   '/contact-pastor': typeof AuthenticatedContactPastorRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/feedback': typeof AuthenticatedFeedbackRoute
@@ -166,6 +173,7 @@ export interface FileRoutesByFullPath {
   '/reports': typeof AuthenticatedReportsRoute
   '/roles': typeof AuthenticatedRolesRoute
   '/settings': typeof AuthenticatedSettingsRoute
+  '/children/new': typeof AuthenticatedChildrenNewRoute
   '/members/$memberId': typeof AuthenticatedMembersMemberIdRoute
   '/members/new': typeof AuthenticatedMembersNewRoute
   '/members/': typeof AuthenticatedMembersIndexRoute
@@ -177,7 +185,7 @@ export interface FileRoutesByTo {
   '/attendance': typeof AuthenticatedAttendanceRoute
   '/celebrations': typeof AuthenticatedCelebrationsRoute
   '/checkin': typeof AuthenticatedCheckinRoute
-  '/children': typeof AuthenticatedChildrenRoute
+  '/children': typeof AuthenticatedChildrenRouteWithChildren
   '/contact-pastor': typeof AuthenticatedContactPastorRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/feedback': typeof AuthenticatedFeedbackRoute
@@ -189,6 +197,7 @@ export interface FileRoutesByTo {
   '/reports': typeof AuthenticatedReportsRoute
   '/roles': typeof AuthenticatedRolesRoute
   '/settings': typeof AuthenticatedSettingsRoute
+  '/children/new': typeof AuthenticatedChildrenNewRoute
   '/members/$memberId': typeof AuthenticatedMembersMemberIdRoute
   '/members/new': typeof AuthenticatedMembersNewRoute
   '/members': typeof AuthenticatedMembersIndexRoute
@@ -202,7 +211,7 @@ export interface FileRoutesById {
   '/_authenticated/attendance': typeof AuthenticatedAttendanceRoute
   '/_authenticated/celebrations': typeof AuthenticatedCelebrationsRoute
   '/_authenticated/checkin': typeof AuthenticatedCheckinRoute
-  '/_authenticated/children': typeof AuthenticatedChildrenRoute
+  '/_authenticated/children': typeof AuthenticatedChildrenRouteWithChildren
   '/_authenticated/contact-pastor': typeof AuthenticatedContactPastorRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
   '/_authenticated/feedback': typeof AuthenticatedFeedbackRoute
@@ -214,6 +223,7 @@ export interface FileRoutesById {
   '/_authenticated/reports': typeof AuthenticatedReportsRoute
   '/_authenticated/roles': typeof AuthenticatedRolesRoute
   '/_authenticated/settings': typeof AuthenticatedSettingsRoute
+  '/_authenticated/children/new': typeof AuthenticatedChildrenNewRoute
   '/_authenticated/members/$memberId': typeof AuthenticatedMembersMemberIdRoute
   '/_authenticated/members/new': typeof AuthenticatedMembersNewRoute
   '/_authenticated/members/': typeof AuthenticatedMembersIndexRoute
@@ -239,6 +249,7 @@ export interface FileRouteTypes {
     | '/reports'
     | '/roles'
     | '/settings'
+    | '/children/new'
     | '/members/$memberId'
     | '/members/new'
     | '/members/'
@@ -262,6 +273,7 @@ export interface FileRouteTypes {
     | '/reports'
     | '/roles'
     | '/settings'
+    | '/children/new'
     | '/members/$memberId'
     | '/members/new'
     | '/members'
@@ -286,6 +298,7 @@ export interface FileRouteTypes {
     | '/_authenticated/reports'
     | '/_authenticated/roles'
     | '/_authenticated/settings'
+    | '/_authenticated/children/new'
     | '/_authenticated/members/$memberId'
     | '/_authenticated/members/new'
     | '/_authenticated/members/'
@@ -432,6 +445,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedSettingsRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/children/new': {
+      id: '/_authenticated/children/new'
+      path: '/new'
+      fullPath: '/children/new'
+      preLoaderRoute: typeof AuthenticatedChildrenNewRouteImport
+      parentRoute: typeof AuthenticatedChildrenRoute
+    }
     '/_authenticated/members/': {
       id: '/_authenticated/members/'
       path: '/members'
@@ -456,12 +476,25 @@ declare module '@tanstack/react-router' {
   }
 }
 
+interface AuthenticatedChildrenRouteChildren {
+  AuthenticatedChildrenNewRoute: typeof AuthenticatedChildrenNewRoute
+}
+
+const AuthenticatedChildrenRouteChildren: AuthenticatedChildrenRouteChildren = {
+  AuthenticatedChildrenNewRoute: AuthenticatedChildrenNewRoute,
+}
+
+const AuthenticatedChildrenRouteWithChildren =
+  AuthenticatedChildrenRoute._addFileChildren(
+    AuthenticatedChildrenRouteChildren,
+  )
+
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedApprovalsRoute: typeof AuthenticatedApprovalsRoute
   AuthenticatedAttendanceRoute: typeof AuthenticatedAttendanceRoute
   AuthenticatedCelebrationsRoute: typeof AuthenticatedCelebrationsRoute
   AuthenticatedCheckinRoute: typeof AuthenticatedCheckinRoute
-  AuthenticatedChildrenRoute: typeof AuthenticatedChildrenRoute
+  AuthenticatedChildrenRoute: typeof AuthenticatedChildrenRouteWithChildren
   AuthenticatedContactPastorRoute: typeof AuthenticatedContactPastorRoute
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
   AuthenticatedFeedbackRoute: typeof AuthenticatedFeedbackRoute
@@ -483,7 +516,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedAttendanceRoute: AuthenticatedAttendanceRoute,
   AuthenticatedCelebrationsRoute: AuthenticatedCelebrationsRoute,
   AuthenticatedCheckinRoute: AuthenticatedCheckinRoute,
-  AuthenticatedChildrenRoute: AuthenticatedChildrenRoute,
+  AuthenticatedChildrenRoute: AuthenticatedChildrenRouteWithChildren,
   AuthenticatedContactPastorRoute: AuthenticatedContactPastorRoute,
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
   AuthenticatedFeedbackRoute: AuthenticatedFeedbackRoute,
