@@ -83,7 +83,10 @@ function Home() {
 
   return (
     <div className="min-h-screen bg-background">
-      <header className="bg-sky-gradient px-5 pb-10 pt-8 text-primary-foreground">
+      <header
+        className="bg-sky-gradient px-5 pb-10 pt-8 text-primary-foreground"
+        style={{ paddingTop: "calc(2rem + env(safe-area-inset-top))" }}
+      >
         <div className="mx-auto max-w-xl">
           <div className="flex items-start justify-between gap-3">
             <div>

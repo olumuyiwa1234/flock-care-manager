@@ -294,7 +294,10 @@ function AuthPage() {
 
   return (
     <div className="min-h-screen bg-background">
-      <div className="bg-sky-gradient px-6 pb-10 pt-12 text-primary-foreground">
+      <div
+        className="bg-sky-gradient px-6 pb-10 pt-12 text-primary-foreground"
+        style={{ paddingTop: "calc(3rem + env(safe-area-inset-top))" }}
+      >
         <div className="mx-auto max-w-xl">
           <Link to="/" className="text-sm font-medium uppercase tracking-[0.3em] opacity-70">
             Shepherd

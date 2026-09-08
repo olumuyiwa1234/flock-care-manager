@@ -34,7 +34,10 @@ function Landing() {
 
   return (
     <div className="min-h-screen bg-sky-gradient text-primary-foreground">
-      <div className="mx-auto flex min-h-screen max-w-xl flex-col justify-between px-6 py-12">
+      <div
+        className="mx-auto flex min-h-screen max-w-xl flex-col justify-between px-6 py-12"
+        style={{ paddingTop: "calc(3rem + env(safe-area-inset-top))" }}
+      >
         <div>
           <p className="text-sm font-medium uppercase tracking-[0.3em] opacity-70">Shepherd</p>
           <h1 className="mt-6 text-balance-tight text-4xl font-semibold leading-tight">
