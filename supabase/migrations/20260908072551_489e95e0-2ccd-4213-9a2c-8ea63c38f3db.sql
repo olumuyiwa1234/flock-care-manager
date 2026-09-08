@@ -1,0 +1,1 @@
+ALTER TABLE public.members ADD COLUMN parent2_id UUID REFERENCES public.members(id);

@@ -148,6 +148,7 @@ export type Database = {
           member_code: string
           membership_year: number | null
           parent_id: string | null
+          parent2_id: string | null
           phone: string | null
           photo_url: string | null
           user_id: string | null
@@ -173,6 +174,7 @@ export type Database = {
           member_code?: string
           membership_year?: number | null
           parent_id?: string | null
+          parent2_id?: string | null
           phone?: string | null
           photo_url?: string | null
           user_id?: string | null
@@ -198,6 +200,7 @@ export type Database = {
           member_code?: string
           membership_year?: number | null
           parent_id?: string | null
+          parent2_id?: string | null
           phone?: string | null
           photo_url?: string | null
           user_id?: string | null
@@ -213,6 +216,13 @@ export type Database = {
           {
             foreignKeyName: "members_parent_id_fkey"
             columns: ["parent_id"]
+            isOneToOne: false
+            referencedRelation: "members"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "members_parent2_id_fkey"
+            columns: ["parent2_id"]
             isOneToOne: false
             referencedRelation: "members"
             referencedColumns: ["id"]
