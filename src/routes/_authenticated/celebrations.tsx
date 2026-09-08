@@ -139,13 +139,14 @@ function Celebrations() {
                   <HeartHandshake className="size-5" />
                 )}
               </span>
-              <div className="min-w-0">
+              <div className="min-w-0 flex-1">
                 <p className="truncate font-semibold">{c.name}</p>
                 <p className="text-sm text-muted-foreground">
                   {c.kind === "birthday" ? "Birthday" : "Wedding anniversary"} ·{" "}
                   {MONTHS[c.month - 1]} {c.day}
                 </p>
               </div>
+              <GreetingDialog memberId={c.memberId} name={c.name} occasion={c.kind} />
             </li>
           ))}
         </ul>
