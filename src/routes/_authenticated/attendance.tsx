@@ -100,6 +100,16 @@ function AttendancePage() {
         </div>
       </div>
 
+      <div className="relative mb-3">
+        <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+        <Input
+          className="pl-9"
+          placeholder="Search by name or member ID"
+          value={q}
+          onChange={(e) => setQ(e.target.value)}
+        />
+      </div>
+
       {isLoading ? (
         <p className="text-sm text-muted-foreground">Loading…</p>
       ) : members.length === 0 ? (
