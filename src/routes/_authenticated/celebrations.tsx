@@ -4,7 +4,6 @@ import { useQuery } from "@tanstack/react-query";
 import { Cake, HeartHandshake } from "lucide-react";
 import { AppShell, EmptyState } from "@/components/AppShell";
 import { Button } from "@/components/ui/button";
-import { useAuth } from "@/lib/useAuth";
 import { allCelebrations, type CelebrationEntry } from "@/lib/celebrations.functions";
 import { GreetingDialog } from "@/components/GreetingDialog";
 
@@ -49,13 +48,11 @@ function inPeriod(entry: CelebrationEntry, period: Period, now: Date) {
 }
 
 function Celebrations() {
-  const { isFloor } = useAuth();
   const [kind, setKind] = useState<Kind>("all");
   const [period, setPeriod] = useState<Period>("month");
 
   const query = useQuery({
     queryKey: ["celebrations-all"],
-    enabled: !isFloor,
     queryFn: () => allCelebrations(),
   });
 
@@ -66,16 +63,6 @@ function Celebrations() {
     );
     return rows.sort((a, b) => a.month - b.month || a.day - b.day || a.name.localeCompare(b.name));
   }, [query.data, kind, period, now]);
-
-  if (isFloor) {
-    return (
-      <AppShell title="Celebrations" subtitle="Leaders only" back="/home">
-        <p className="text-sm text-muted-foreground">
-          Only church leaders can view the celebrations list.
-        </p>
-      </AppShell>
-    );
-  }
 
   return (
     <AppShell title="Celebrations" subtitle="Birthdays and wedding anniversaries" back="/home">

@@ -9,7 +9,8 @@ export type GreetingRow = {
   createdAt: string;
 };
 
-const LEADER_ROLES = ["pastorate", "it_infrastructure", "hod", "group_leader", "follow_up"];
+// WhatsApp phone access: Pastor, Parish Coordinator (both pastorate) and Admin.
+const WHATSAPP_ROLES = ["pastorate", "it_infrastructure"];
 
 /** Send a birthday / anniversary greeting to a celebrant. Any signed-in user may send. */
 export const sendGreeting = createServerFn({ method: "POST" })
@@ -86,7 +87,7 @@ export const celebrantPhone = createServerFn({ method: "GET" })
 
     const ok =
       profile?.approval_status === "approved" &&
-      (roleRows ?? []).some((r) => LEADER_ROLES.includes(r.role as string));
+      (roleRows ?? []).some((r) => WHATSAPP_ROLES.includes(r.role as string));
     if (!ok) return { phone: null };
 
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
