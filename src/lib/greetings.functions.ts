@@ -9,7 +9,8 @@ export type GreetingRow = {
   createdAt: string;
 };
 
-const LEADER_ROLES = ["pastorate", "it_infrastructure", "hod", "group_leader", "follow_up"];
+// WhatsApp phone access: Pastor, Parish Coordinator (both pastorate) and Admin.
+const WHATSAPP_ROLES = ["pastorate", "it_infrastructure"];
 
 /** Send a birthday / anniversary greeting to a celebrant. Any signed-in user may send. */
 export const sendGreeting = createServerFn({ method: "POST" })

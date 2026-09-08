@@ -4,7 +4,6 @@ import { useQuery } from "@tanstack/react-query";
 import { Cake, HeartHandshake } from "lucide-react";
 import { AppShell, EmptyState } from "@/components/AppShell";
 import { Button } from "@/components/ui/button";
-import { useAuth } from "@/lib/useAuth";
 import { allCelebrations, type CelebrationEntry } from "@/lib/celebrations.functions";
 import { GreetingDialog } from "@/components/GreetingDialog";
 
