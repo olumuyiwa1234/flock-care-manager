@@ -19,6 +19,7 @@ import { toast } from "sonner";
 import {
   AGE_BRACKETS,
   DEPARTMENTS,
+  FELLOWSHIPS,
   GENDERS,
   MARITAL_STATUSES,
   MONTHS,
@@ -84,6 +85,7 @@ function MyProfile() {
   const [marital, setMarital] = useState("");
   const [department, setDepartment] = useState("");
   const [status, setStatus] = useState("Member");
+  const [naturalGroup, setNaturalGroup] = useState("");
   const [membershipYear, setMembershipYear] = useState("");
   const [saving, setSaving] = useState(false);
 
@@ -102,6 +104,7 @@ function MyProfile() {
     setMarital(m.marital_status ?? "");
     setDepartment(m.department ?? "");
     setStatus((m as { status?: string | null }).status ?? "Member");
+    setNaturalGroup((m as { natural_group?: string | null }).natural_group ?? "");
     setMembershipYear(m.membership_year ? String(m.membership_year) : "");
   }, [m]);
 
@@ -142,6 +145,7 @@ function MyProfile() {
         marital_status: marital || null,
         department: department || null,
         status: status === "Worker" ? "Worker" : "Member",
+        natural_group: naturalGroup || null,
         membership_year: membershipYear ? Number(membershipYear) : null,
       })
       .eq("user_id", userId);
@@ -197,6 +201,17 @@ function MyProfile() {
               <SelectContent>
                 <SelectItem value="Member">Member</SelectItem>
                 <SelectItem value="Worker">Worker</SelectItem>
+              </SelectContent>
+            </Select>
+          </Field>
+
+          <Field label="Natural group">
+            <Select value={naturalGroup} onValueChange={setNaturalGroup}>
+              <SelectTrigger><SelectValue placeholder="Select" /></SelectTrigger>
+              <SelectContent>
+                {FELLOWSHIPS.map((f) => (
+                  <SelectItem key={f} value={f}>{f}</SelectItem>
+                ))}
               </SelectContent>
             </Select>
           </Field>
