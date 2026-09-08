@@ -11,7 +11,7 @@ export const ROLE_LABELS: Record<AppRole, string> = {
   hod: "HOD",
   group_leader: "Natural Group Leader",
   member: "Member",
-  it_infrastructure: "IT Infrastructure",
+  it_infrastructure: "Admin",
   follow_up: "Follow-up",
 };
 

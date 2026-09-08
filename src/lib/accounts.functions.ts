@@ -31,7 +31,7 @@ export const deleteUserAccount = createServerFn({ method: "POST" })
       (r) => r.role === "pastorate" || r.role === "it_infrastructure",
     );
     if (!isFullAccess) {
-      throw new Error("Only Pastorate and IT Infrastructure can delete accounts.");
+      throw new Error("Only Pastorate and Admin can delete accounts.");
     }
 
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");

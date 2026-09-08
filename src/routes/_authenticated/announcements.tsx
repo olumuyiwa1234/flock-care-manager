@@ -55,7 +55,7 @@ function Announcements() {
       <AppShell title="Announcement" back="/home">
         <EmptyState
           title="Not available"
-          hint="Only the Pastor and IT Infrastructure can send announcements."
+          hint="Only the Pastor and Admin can send announcements."
         />
       </AppShell>
     );
