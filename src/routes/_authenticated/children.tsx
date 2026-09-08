@@ -1,7 +1,7 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
-import { Check, X } from "lucide-react";
+import { Check, Plus, X } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { AppShell } from "@/components/AppShell";
 import { Button } from "@/components/ui/button";
