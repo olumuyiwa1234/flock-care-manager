@@ -52,7 +52,7 @@ function AddChild() {
   const [birthDay, setBirthDay] = useState<number | null>(null);
   const [membershipYear, setMembershipYear] = useState(String(new Date().getFullYear()));
   const [photoPath, setPhotoPath] = useState<string | null>(null);
-  const [parent, setParent] = useState<ParentSelection>(null);
+  const [parents, setParents] = useState<ParentSelections>([]);
   const [saving, setSaving] = useState(false);
 
   if (!isChildrenLeader && !isStaff) {
@@ -110,7 +110,8 @@ function AddChild() {
         department: "Children",
         membership_year: membershipYear ? Number(membershipYear) : null,
         photo_url: photoPath,
-        parent_id: parent?.id ?? null,
+        parent_id: parents[0]?.id ?? null,
+        parent2_id: parents[1]?.id ?? null,
         created_by: createdBy,
       })
       .select("id, full_name, member_code")
