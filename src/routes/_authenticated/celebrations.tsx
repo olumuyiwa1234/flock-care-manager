@@ -65,16 +65,6 @@ function Celebrations() {
     return rows.sort((a, b) => a.month - b.month || a.day - b.day || a.name.localeCompare(b.name));
   }, [query.data, kind, period, now]);
 
-  if (isFloor) {
-    return (
-      <AppShell title="Celebrations" subtitle="Leaders only" back="/home">
-        <p className="text-sm text-muted-foreground">
-          Only church leaders can view the celebrations list.
-        </p>
-      </AppShell>
-    );
-  }
-
   return (
     <AppShell title="Celebrations" subtitle="Birthdays and wedding anniversaries" back="/home">
       <div className="mb-4 space-y-3">

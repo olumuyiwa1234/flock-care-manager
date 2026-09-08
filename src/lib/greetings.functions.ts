@@ -86,7 +86,7 @@ export const celebrantPhone = createServerFn({ method: "GET" })
 
     const ok =
       profile?.approval_status === "approved" &&
-      (roleRows ?? []).some((r) => LEADER_ROLES.includes(r.role as string));
+      (roleRows ?? []).some((r) => WHATSAPP_ROLES.includes(r.role as string));
     if (!ok) return { phone: null };
 
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
