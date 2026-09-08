@@ -13,6 +13,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Search } from "lucide-react";
 import { toast } from "sonner";
 import { ATTENDANCE_STATUSES, SERVICE_TYPES, todayISO } from "@/lib/shepherd";
 import { useAttendance, useMembers } from "@/lib/queries";
@@ -35,6 +36,7 @@ function AttendancePage() {
   const queryClient = useQueryClient();
   const [date, setDate] = useState(todayISO());
   const [serviceType, setServiceType] = useState<string>(SERVICE_TYPES[0]);
+  const [q, setQ] = useState("");
   const { data: members = [] } = useMembers();
   const { data: records = [], isLoading } = useAttendance(date);
 
@@ -74,6 +76,16 @@ function AttendancePage() {
 
   const presentCount = [...statusByMember.values()].filter((s) => s !== "Absent").length;
 
+  const term = q.trim().toLowerCase();
+  const filtered = members.filter((m) => {
+    if (!term) return true;
+    return (
+      m.full_name.toLowerCase().includes(term) ||
+      m.member_code.toLowerCase().includes(term) ||
+      (m.phone ?? "").toLowerCase().includes(term)
+    );
+  });
+
   return (
     <AppShell title="Attendance" subtitle={`${presentCount} marked present`}>
       <div className="mb-4 grid grid-cols-2 gap-3 rounded-2xl border border-border bg-card p-4">
@@ -98,13 +110,26 @@ function AttendancePage() {
         </div>
       </div>
 
+      <div className="relative mb-3">
+        <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+        <Input
+          className="pl-9"
+          placeholder="Search by name or member ID"
+          value={q}
+          onChange={(e) => setQ(e.target.value)}
+        />
+      </div>
+
       {isLoading ? (
         <p className="text-sm text-muted-foreground">Loading…</p>
-      ) : members.length === 0 ? (
-        <EmptyState title="No members yet" hint="Add members before recording attendance." />
+      ) : filtered.length === 0 ? (
+        <EmptyState
+          title={members.length === 0 ? "No members yet" : "No members match"}
+          hint={members.length === 0 ? "Add members before recording attendance." : "Try a different search."}
+        />
       ) : (
         <ul className="space-y-2">
-          {members.map((m) => {
+          {filtered.map((m) => {
             const status = statusByMember.get(m.id);
             return (
               <li key={m.id} className="rounded-2xl border border-border bg-card p-3">
