@@ -14,6 +14,7 @@ import { reportLovableError } from "../lib/lovable-error-reporting";
 import { Toaster } from "@/components/ui/sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { InstallPrompt } from "@/components/InstallPrompt";
+import { AnnouncementPopup } from "@/components/AnnouncementPopup";
 import { registerAppServiceWorker } from "@/lib/pwa";
 
 function NotFoundComponent() {
@@ -159,6 +160,7 @@ function RootComponent() {
     <QueryClientProvider client={queryClient}>
       <Outlet />
       <InstallPrompt />
+      <AnnouncementPopup />
       <Toaster position="top-center" richColors />
     </QueryClientProvider>
   );

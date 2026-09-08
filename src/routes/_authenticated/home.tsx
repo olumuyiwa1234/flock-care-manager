@@ -13,6 +13,7 @@ import {
   ShieldCheck,
   Lightbulb,
   Inbox,
+  Megaphone,
   MessageSquareHeart,
   UserCog,
   UserRound,
@@ -49,6 +50,7 @@ const tiles = [
   { to: "/dashboard", label: "Dashboard", icon: LayoutDashboard, staffOnly: true },
   { to: "/approvals", label: "Approvals", icon: ShieldCheck, staffOnly: true, pastorOnly: true },
   { to: "/inbox", label: "Pastor Inbox", icon: Inbox, staffOnly: true, pastorOnly: true },
+  { to: "/announcements", label: "Announcement", icon: Megaphone, staffOnly: true, adminOnly: true },
   { to: "/roles", label: "User Roles", icon: UserCog, staffOnly: true, pastorOnly: true },
   { to: "/profile", label: "My Profile", icon: UserRound, staffOnly: false },
   { to: "/feedback", label: "Feedback", icon: Lightbulb, staffOnly: false },
@@ -75,7 +77,8 @@ function Home() {
       (!t.staffOnly || !isFloor) &&
       (!("childrenOnly" in t) || isChildrenLeader || isAdmin) &&
       (!("teensOnly" in t) || isTeensLeader || isAdmin) &&
-      (!("pastorOnly" in t) || isPastor),
+      (!("pastorOnly" in t) || isPastor) &&
+      (!("adminOnly" in t) || isAdmin),
   );
 
   return (
