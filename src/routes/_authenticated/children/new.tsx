@@ -16,6 +16,7 @@ import {
 } from "@/components/ui/select";
 import { toast } from "sonner";
 import { GENDERS } from "@/lib/shepherd";
+import { useAuth } from "@/lib/useAuth";
 
 export const Route = createFileRoute("/_authenticated/children/new")({
   head: () => ({
