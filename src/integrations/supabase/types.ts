@@ -235,6 +235,7 @@ export type Database = {
           created_at: string
           id: string
           message: string
+          parent_id: string | null
           subject: string | null
           updated_at: string
           user_id: string
@@ -244,6 +245,7 @@ export type Database = {
           created_at?: string
           id?: string
           message: string
+          parent_id?: string | null
           subject?: string | null
           updated_at?: string
           user_id: string
@@ -253,11 +255,20 @@ export type Database = {
           created_at?: string
           id?: string
           message?: string
+          parent_id?: string | null
           subject?: string | null
           updated_at?: string
           user_id?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "pastor_messages_parent_id_fkey"
+            columns: ["parent_id"]
+            isOneToOne: false
+            referencedRelation: "pastor_messages"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       profiles: {
         Row: {
