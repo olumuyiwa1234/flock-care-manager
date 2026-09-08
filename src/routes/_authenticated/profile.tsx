@@ -101,6 +101,7 @@ function MyProfile() {
     setAnnivDay(m.anniversary_day ? String(m.anniversary_day) : "");
     setMarital(m.marital_status ?? "");
     setDepartment(m.department ?? "");
+    setStatus((m as { status?: string | null }).status ?? "Member");
     setMembershipYear(m.membership_year ? String(m.membership_year) : "");
   }, [m]);
 
