@@ -18,7 +18,7 @@ import { SERVICE_TYPES, initials, todayISO } from "@/lib/shepherd";
 import { useAttendance, useMembers } from "@/lib/queries";
 import { useAuth } from "@/lib/useAuth";
 
-export const Route = createFileRoute("/_authenticated/teens")({
+export const Route = createFileRoute("/_authenticated/teens/")({
   head: () => ({
     meta: [
       { title: "Teens Attendance — Shepherd" },
