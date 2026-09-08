@@ -36,6 +36,7 @@ function AttendancePage() {
   const queryClient = useQueryClient();
   const [date, setDate] = useState(todayISO());
   const [serviceType, setServiceType] = useState<string>(SERVICE_TYPES[0]);
+  const [q, setQ] = useState("");
   const { data: members = [] } = useMembers();
   const { data: records = [], isLoading } = useAttendance(date);
 
