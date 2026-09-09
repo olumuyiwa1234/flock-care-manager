@@ -11,6 +11,7 @@ import { Switch } from "@/components/ui/switch";
 import { toast } from "sonner";
 import { ROLE_LABELS } from "@/lib/shepherd";
 import { useChurchSettings } from "@/lib/queries";
+import { NotificationSettings } from "@/components/NotificationSettings";
 import { useAuth } from "@/lib/useAuth";
 
 export const Route = createFileRoute("/_authenticated/settings")({
@@ -99,6 +100,9 @@ function Settings() {
           {auth?.role ? ROLE_LABELS[auth.role] : "Member"}
         </p>
       </div>
+
+      {/* Everyone can switch on birthday and anniversary alerts for their phone. */}
+      <NotificationSettings />
 
       {isFloor || !isStaff ? (
         <div className="mt-4">
