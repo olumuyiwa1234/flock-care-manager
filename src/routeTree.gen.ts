@@ -35,6 +35,7 @@ import { Route as AuthenticatedMembersMemberIdRouteImport } from './routes/_auth
 import { Route as AuthenticatedMembersNewRouteImport } from './routes/_authenticated/members/new'
 import { Route as AuthenticatedTeensIndexRouteImport } from './routes/_authenticated/teens/index'
 import { Route as AuthenticatedTeensNewRouteImport } from './routes/_authenticated/teens/new'
+import { Route as ApiPublicHooksCelebrationPushRouteImport } from './routes/api/public/hooks/celebration-push'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -173,6 +174,12 @@ const AuthenticatedTeensNewRoute = AuthenticatedTeensNewRouteImport.update({
   path: '/teens/new',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const ApiPublicHooksCelebrationPushRoute =
+  ApiPublicHooksCelebrationPushRouteImport.update({
+    id: '/api/public/hooks/celebration-push',
+    path: '/api/public/hooks/celebration-push',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -200,6 +207,7 @@ export interface FileRoutesByFullPath {
   '/children/': typeof AuthenticatedChildrenIndexRoute
   '/members/': typeof AuthenticatedMembersIndexRoute
   '/teens/': typeof AuthenticatedTeensIndexRoute
+  '/api/public/hooks/celebration-push': typeof ApiPublicHooksCelebrationPushRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -227,6 +235,7 @@ export interface FileRoutesByTo {
   '/children': typeof AuthenticatedChildrenIndexRoute
   '/members': typeof AuthenticatedMembersIndexRoute
   '/teens': typeof AuthenticatedTeensIndexRoute
+  '/api/public/hooks/celebration-push': typeof ApiPublicHooksCelebrationPushRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -256,6 +265,7 @@ export interface FileRoutesById {
   '/_authenticated/children/': typeof AuthenticatedChildrenIndexRoute
   '/_authenticated/members/': typeof AuthenticatedMembersIndexRoute
   '/_authenticated/teens/': typeof AuthenticatedTeensIndexRoute
+  '/api/public/hooks/celebration-push': typeof ApiPublicHooksCelebrationPushRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -285,6 +295,7 @@ export interface FileRouteTypes {
     | '/children/'
     | '/members/'
     | '/teens/'
+    | '/api/public/hooks/celebration-push'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -312,6 +323,7 @@ export interface FileRouteTypes {
     | '/children'
     | '/members'
     | '/teens'
+    | '/api/public/hooks/celebration-push'
   id:
     | '__root__'
     | '/'
@@ -340,12 +352,14 @@ export interface FileRouteTypes {
     | '/_authenticated/children/'
     | '/_authenticated/members/'
     | '/_authenticated/teens/'
+    | '/api/public/hooks/celebration-push'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
   AuthRoute: typeof AuthRoute
+  ApiPublicHooksCelebrationPushRoute: typeof ApiPublicHooksCelebrationPushRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -532,6 +546,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedTeensNewRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/api/public/hooks/celebration-push': {
+      id: '/api/public/hooks/celebration-push'
+      path: '/api/public/hooks/celebration-push'
+      fullPath: '/api/public/hooks/celebration-push'
+      preLoaderRoute: typeof ApiPublicHooksCelebrationPushRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -594,6 +615,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
   AuthRoute: AuthRoute,
+  ApiPublicHooksCelebrationPushRoute: ApiPublicHooksCelebrationPushRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
