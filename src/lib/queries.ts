@@ -22,6 +22,10 @@ export type MemberRow = {
   is_first_timer: boolean;
   invited_by: string | null;
   user_id: string | null;
+  parent_id: string | null;
+  parent2_id: string | null;
+  status: string | null;
+  natural_group: string | null;
   created_at: string;
 };
 
