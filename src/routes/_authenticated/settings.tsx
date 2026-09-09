@@ -101,6 +101,9 @@ function Settings() {
         </p>
       </div>
 
+      {/* Everyone can switch on birthday and anniversary alerts for their phone. */}
+      <NotificationSettings />
+
       {isFloor || !isStaff ? (
         <div className="mt-4">
           <EmptyState
