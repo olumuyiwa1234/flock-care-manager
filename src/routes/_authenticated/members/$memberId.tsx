@@ -119,6 +119,11 @@ function MemberDetail() {
   });
 
   const m = memberQuery.data;
+  const isChild =
+    !!m?.parent_id ||
+    !!m?.parent2_id ||
+    m?.age_bracket === "0-12" ||
+    m?.age_bracket === "13-17";
 
   const parentsQuery = useQuery({
     queryKey: ["member-parents", memberId],
@@ -258,7 +263,7 @@ function MemberDetail() {
         />
       </section>
 
-      {isFullAccess && (
+      {isFullAccess && isChild && (
         <section className="mt-5">
           <h2 className="mb-2 text-base font-semibold">Parents</h2>
           {(parentsQuery.data ?? []).length === 0 ? (
@@ -289,7 +294,7 @@ function MemberDetail() {
         </section>
       )}
 
-      {isFullAccess && (
+      {isFullAccess && !isChild && (
         <section className="mt-5">
           <h2 className="mb-2 text-base font-semibold">Children</h2>
           {(childrenQuery.data ?? []).length === 0 ? (
