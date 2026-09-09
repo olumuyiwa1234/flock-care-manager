@@ -118,6 +118,21 @@ function MemberDetail() {
     },
   });
 
+  const parentsQuery = useQuery({
+    queryKey: ["member-parents", memberId],
+    enabled: isFullAccess && !!m?.parent_id,
+    queryFn: async () => {
+      const parentIds = [m?.parent_id, m?.parent2_id].filter(Boolean) as string[];
+      if (parentIds.length === 0) return [];
+      const { data } = await supabase
+        .from("members")
+        .select("id, full_name, photo_url, age_bracket")
+        .in("id", parentIds)
+        .order("full_name", { ascending: true });
+      return (data ?? []) as Pick<MemberRow, "id" | "full_name" | "photo_url" | "age_bracket">[];
+    },
+  });
+
   const m = memberQuery.data;
 
   if (memberQuery.isLoading) {
