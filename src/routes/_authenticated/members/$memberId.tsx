@@ -260,6 +260,37 @@ function MemberDetail() {
 
       {isFullAccess && (
         <section className="mt-5">
+          <h2 className="mb-2 text-base font-semibold">Parents</h2>
+          {(parentsQuery.data ?? []).length === 0 ? (
+            <p className="rounded-2xl border border-dashed border-border bg-card p-5 text-sm text-muted-foreground">
+              No parents linked to this member.
+            </p>
+          ) : (
+            <ul className="space-y-2">
+              {(parentsQuery.data ?? []).map((p) => (
+                <li key={p.id}>
+                  <button
+                    type="button"
+                    onClick={() => navigate({ to: "/members/$memberId", params: { memberId: p.id } })}
+                    className="flex w-full items-center gap-3 rounded-2xl border border-border bg-card p-3 text-left transition-colors hover:bg-muted/50"
+                  >
+                    <MemberPhoto path={p.photo_url} name={p.full_name} size={40} />
+                    <span className="min-w-0">
+                      <span className="block truncate text-sm font-medium">{p.full_name}</span>
+                      {p.age_bracket && (
+                        <span className="block text-xs text-muted-foreground">{p.age_bracket}</span>
+                      )}
+                    </span>
+                  </button>
+                </li>
+              ))}
+            </ul>
+          )}
+        </section>
+      )}
+
+      {isFullAccess && (
+        <section className="mt-5">
           <h2 className="mb-2 text-base font-semibold">Children</h2>
           {(childrenQuery.data ?? []).length === 0 ? (
             <p className="rounded-2xl border border-dashed border-border bg-card p-5 text-sm text-muted-foreground">
