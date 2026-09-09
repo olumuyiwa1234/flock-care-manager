@@ -11,6 +11,7 @@ import { Switch } from "@/components/ui/switch";
 import { toast } from "sonner";
 import { ROLE_LABELS } from "@/lib/shepherd";
 import { useChurchSettings } from "@/lib/queries";
+import { NotificationSettings } from "@/components/NotificationSettings";
 import { useAuth } from "@/lib/useAuth";
 
 export const Route = createFileRoute("/_authenticated/settings")({
