@@ -58,7 +58,21 @@ function AttendancePage() {
     return map;
   }, [records, date, serviceType]);
 
+  // The chosen date must fall on the weekday the chosen service is held.
+  const isServiceDay =
+    weekdayOf(date) === SERVICE_DAY[serviceType as (typeof SERVICE_TYPES)[number]];
+  const canMark = isFullAccess && isServiceDay;
+
   async function setStatus(memberId: string, status: string) {
+    // Guard: block marking for anyone without rights or on a non-service day.
+    if (!canMark) {
+      toast.error(
+        !isFullAccess
+          ? "Only the Pastor, Parish Coordinator and Admin can mark attendance."
+          : "Attendance can only be marked on the day that service holds.",
+      );
+      return;
+    }
     const { error } = await supabase.from("attendance").upsert(
       {
         member_id: memberId,
