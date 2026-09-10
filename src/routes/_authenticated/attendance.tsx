@@ -134,6 +134,15 @@ function AttendancePage() {
         </div>
       </div>
 
+      {/* Explain when marking is unavailable, so the view still works for reviewing records. */}
+      {!canMark && (
+        <p className="mb-3 rounded-xl bg-secondary p-3 text-xs text-muted-foreground">
+          {!isFullAccess
+            ? "You can review attendance here, but only the Pastor, Parish Coordinator and Admin can mark members present or absent."
+            : "Marking is only available on the day the selected service holds."}
+        </p>
+      )}
+
       <div className="relative mb-3">
         <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
         <Input
