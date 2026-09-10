@@ -15,7 +15,16 @@ import {
 } from "@/components/ui/select";
 import { Search } from "lucide-react";
 import { toast } from "sonner";
-import { ATTENDANCE_STATUSES, SERVICE_TYPES, todayISO } from "@/lib/shepherd";
+import { SERVICE_DAY, SERVICE_TYPES, todayISO } from "@/lib/shepherd";
+
+// Only Present and Absent may be recorded — the Late option has been removed.
+const MARK_STATUSES = ["Present", "Absent"] as const;
+
+/** Weekday (0 = Sunday) of a yyyy-mm-dd string, parsed without timezone shift. */
+function weekdayOf(iso: string): number {
+  const [y, m, d] = iso.split("-").map(Number);
+  return new Date(y ?? 1970, (m ?? 1) - 1, d ?? 1).getDay();
+}
 import { useAttendance, useMembers } from "@/lib/queries";
 import { useAuth } from "@/lib/useAuth";
 
@@ -32,7 +41,8 @@ export const Route = createFileRoute("/_authenticated/attendance")({
 });
 
 function AttendancePage() {
-  const { auth, isFloor } = useAuth();
+  // Only full-access staff (Pastor, Parish Coordinator, Admin) may mark attendance.
+  const { auth, isFloor, isFullAccess } = useAuth();
   const queryClient = useQueryClient();
   const [date, setDate] = useState(todayISO());
   const [serviceType, setServiceType] = useState<string>(SERVICE_TYPES[0]);
@@ -48,7 +58,21 @@ function AttendancePage() {
     return map;
   }, [records, date, serviceType]);
 
+  // The chosen date must fall on the weekday the chosen service is held.
+  const isServiceDay =
+    weekdayOf(date) === SERVICE_DAY[serviceType as (typeof SERVICE_TYPES)[number]];
+  const canMark = isFullAccess && isServiceDay;
+
   async function setStatus(memberId: string, status: string) {
+    // Guard: block marking for anyone without rights or on a non-service day.
+    if (!canMark) {
+      toast.error(
+        !isFullAccess
+          ? "Only the Pastor, Parish Coordinator and Admin can mark attendance."
+          : "Attendance can only be marked on the day that service holds.",
+      );
+      return;
+    }
     const { error } = await supabase.from("attendance").upsert(
       {
         member_id: memberId,
@@ -110,6 +134,15 @@ function AttendancePage() {
         </div>
       </div>
 
+      {/* Explain when marking is unavailable, so the view still works for reviewing records. */}
+      {!canMark && (
+        <p className="mb-3 rounded-xl bg-secondary p-3 text-xs text-muted-foreground">
+          {!isFullAccess
+            ? "You can review attendance here, but only the Pastor, Parish Coordinator and Admin can mark members present or absent."
+            : "Marking is only available on the day the selected service holds."}
+        </p>
+      )}
+
       <div className="relative mb-3">
         <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
         <Input
@@ -140,19 +173,19 @@ function AttendancePage() {
                     <p className="truncate text-xs text-muted-foreground">{m.member_code}</p>
                   </div>
                 </div>
-                <div className="mt-3 grid grid-cols-3 gap-2">
-                  {ATTENDANCE_STATUSES.map((s) => (
+                {/* Present / Absent only, and only enabled for permitted staff on a service day. */}
+                <div className="mt-3 grid grid-cols-2 gap-2">
+                  {MARK_STATUSES.map((s) => (
                     <button
                       key={s}
                       type="button"
+                      disabled={!canMark}
                       onClick={() => void setStatus(m.id, s)}
-                      className={`rounded-xl px-2 py-2 text-sm font-medium transition ${
+                      className={`rounded-xl px-2 py-2 text-sm font-medium transition disabled:opacity-50 ${
                         status === s
                           ? s === "Present"
                             ? "bg-success text-primary-foreground"
-                            : s === "Late"
-                              ? "bg-warning text-warning-foreground"
-                              : "bg-destructive text-destructive-foreground"
+                            : "bg-destructive text-destructive-foreground"
                           : "bg-secondary text-secondary-foreground"
                       }`}
                     >
