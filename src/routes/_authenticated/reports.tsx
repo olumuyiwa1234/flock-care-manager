@@ -1,6 +1,8 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 import { AppShell, EmptyState } from "@/components/AppShell";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import {
   Select,
   SelectContent,
@@ -8,7 +10,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { AGE_BRACKETS, MONTHS, formatDate } from "@/lib/shepherd";
+import { AGE_BRACKETS, MONTHS, SERVICE_TYPES, formatDate, todayISO } from "@/lib/shepherd";
 import { useAttendance, useMembers, type MemberRow } from "@/lib/queries";
 import { useAuth } from "@/lib/useAuth";
 
@@ -25,6 +27,8 @@ export const Route = createFileRoute("/_authenticated/reports")({
 });
 
 const REPORTS = [
+  "Service Register (Checked In)",
+  "Service Register (Did Not Check In)",
   "Weekly Attendance",
   "Monthly Attendance",
   "Yearly Attendance",
@@ -35,6 +39,12 @@ const REPORTS = [
   "Anniversary Report",
   "Inactive Members",
 ] as const;
+
+// Reports that need a specific service day and service type to be chosen.
+const SERVICE_REPORTS: string[] = [
+  "Service Register (Checked In)",
+  "Service Register (Did Not Check In)",
+];
 
 function Bars({ rows }: { rows: { label: string; value: number }[] }) {
   const max = Math.max(1, ...rows.map((r) => r.value));
@@ -84,6 +94,9 @@ function People({ people }: { people: MemberRow[] }) {
 function Reports() {
   const { isFloor } = useAuth();
   const [report, setReport] = useState<string>(REPORTS[0]);
+  // Service day + service type used by the two register reports.
+  const [serviceDate, setServiceDate] = useState<string>(todayISO());
+  const [serviceType, setServiceType] = useState<string>(SERVICE_TYPES[0]);
   const { data: members = [] } = useMembers();
   const { data: attendance = [] } = useAttendance();
 
@@ -92,6 +105,16 @@ function Reports() {
     [attendance],
   );
   const memberById = useMemo(() => new Map(members.map((m) => [m.id, m])), [members]);
+
+  // Everyone recorded as attending the chosen service (check-in or marked present by a leader).
+  const checkedInIds = useMemo(() => {
+    const ids = new Set<string>();
+    for (const a of attendance) {
+      if (a.service_date !== serviceDate || a.service_type !== serviceType) continue;
+      if (a.status === "Present" || a.status === "Late") ids.add(a.member_id);
+    }
+    return ids;
+  }, [attendance, serviceDate, serviceType]);
 
   const content = useMemo(() => {
     const group = (keyOf: (date: string) => string) => {
@@ -117,6 +140,12 @@ function Reports() {
     };
 
     switch (report) {
+      // Exact list of who was recorded at the chosen service.
+      case "Service Register (Checked In)":
+        return <People people={members.filter((m) => checkedInIds.has(m.id))} />;
+      // Exact list of who was NOT recorded at the chosen service.
+      case "Service Register (Did Not Check In)":
+        return <People people={members.filter((m) => !checkedInIds.has(m.id))} />;
       case "Weekly Attendance":
         return <Bars rows={group((d) => `Week of ${formatDate(weekStart(d))}`)} />;
       case "Monthly Attendance":
@@ -156,7 +185,7 @@ function Reports() {
       default:
         return null;
     }
-  }, [report, present, members, memberById]);
+  }, [report, present, members, memberById, checkedInIds]);
 
   if (isFloor) {
     return (
@@ -180,6 +209,40 @@ function Reports() {
           ))}
         </SelectContent>
       </Select>
+
+      {/* Day and service pickers, only needed by the two register reports. */}
+      {SERVICE_REPORTS.includes(report) && (
+        <div className="mb-4 grid grid-cols-2 gap-3 rounded-2xl border border-border bg-card p-4">
+          <div>
+            <Label className="text-xs uppercase tracking-wide text-muted-foreground">Service date</Label>
+            <Input
+              type="date"
+              className="mt-1"
+              value={serviceDate}
+              onChange={(e) => setServiceDate(e.target.value)}
+            />
+          </div>
+          <div>
+            <Label className="text-xs uppercase tracking-wide text-muted-foreground">Service</Label>
+            <Select value={serviceType} onValueChange={setServiceType}>
+              <SelectTrigger className="mt-1">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {SERVICE_TYPES.map((s) => (
+                  <SelectItem key={s} value={s}>
+                    {s}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          <p className="col-span-2 text-xs text-muted-foreground">
+            {checkedInIds.size} of {members.length} recorded present for this service.
+          </p>
+        </div>
+      )}
+
       {content}
     </AppShell>
   );
