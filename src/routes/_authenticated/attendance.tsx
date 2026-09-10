@@ -41,7 +41,8 @@ export const Route = createFileRoute("/_authenticated/attendance")({
 });
 
 function AttendancePage() {
-  const { auth, isFloor } = useAuth();
+  // Only full-access staff (Pastor, Parish Coordinator, Admin) may mark attendance.
+  const { auth, isFloor, isFullAccess } = useAuth();
   const queryClient = useQueryClient();
   const [date, setDate] = useState(todayISO());
   const [serviceType, setServiceType] = useState<string>(SERVICE_TYPES[0]);
