@@ -207,6 +207,40 @@ function Reports() {
           ))}
         </SelectContent>
       </Select>
+
+      {/* Day and service pickers, only needed by the two register reports. */}
+      {SERVICE_REPORTS.includes(report) && (
+        <div className="mb-4 grid grid-cols-2 gap-3 rounded-2xl border border-border bg-card p-4">
+          <div>
+            <Label className="text-xs uppercase tracking-wide text-muted-foreground">Service date</Label>
+            <Input
+              type="date"
+              className="mt-1"
+              value={serviceDate}
+              onChange={(e) => setServiceDate(e.target.value)}
+            />
+          </div>
+          <div>
+            <Label className="text-xs uppercase tracking-wide text-muted-foreground">Service</Label>
+            <Select value={serviceType} onValueChange={setServiceType}>
+              <SelectTrigger className="mt-1">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {SERVICE_TYPES.map((s) => (
+                  <SelectItem key={s} value={s}>
+                    {s}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          <p className="col-span-2 text-xs text-muted-foreground">
+            {checkedInIds.size} of {members.length} recorded present for this service.
+          </p>
+        </div>
+      )}
+
       {content}
     </AppShell>
   );
