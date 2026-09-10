@@ -138,6 +138,12 @@ function Reports() {
     };
 
     switch (report) {
+      // Exact list of who was recorded at the chosen service.
+      case "Service Register (Checked In)":
+        return <People people={members.filter((m) => checkedInIds.has(m.id))} />;
+      // Exact list of who was NOT recorded at the chosen service.
+      case "Service Register (Did Not Check In)":
+        return <People people={members.filter((m) => !checkedInIds.has(m.id))} />;
       case "Weekly Attendance":
         return <Bars rows={group((d) => `Week of ${formatDate(weekStart(d))}`)} />;
       case "Monthly Attendance":
