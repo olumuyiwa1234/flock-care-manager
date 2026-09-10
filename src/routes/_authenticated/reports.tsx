@@ -25,6 +25,8 @@ export const Route = createFileRoute("/_authenticated/reports")({
 });
 
 const REPORTS = [
+  "Service Register (Checked In)",
+  "Service Register (Did Not Check In)",
   "Weekly Attendance",
   "Monthly Attendance",
   "Yearly Attendance",
@@ -35,6 +37,12 @@ const REPORTS = [
   "Anniversary Report",
   "Inactive Members",
 ] as const;
+
+// Reports that need a specific service day and service type to be chosen.
+const SERVICE_REPORTS: string[] = [
+  "Service Register (Checked In)",
+  "Service Register (Did Not Check In)",
+];
 
 function Bars({ rows }: { rows: { label: string; value: number }[] }) {
   const max = Math.max(1, ...rows.map((r) => r.value));
