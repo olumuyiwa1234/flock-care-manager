@@ -19,6 +19,7 @@ import {
   DEPARTMENTS,
   GENDERS,
   MARITAL_STATUSES,
+  FELLOWSHIPS,
 } from "@/lib/shepherd";
 
 export type MemberDraft = {
@@ -35,6 +36,8 @@ export type MemberDraft = {
   marital_status: string;
   department: string;
   membership_year: string;
+  // Natural group (fellowship) — only editable by full-access leaders
+  natural_group?: string;
 };
 
 const empty: MemberDraft = {
@@ -51,6 +54,7 @@ const empty: MemberDraft = {
   marital_status: "",
   department: "",
   membership_year: String(new Date().getFullYear()),
+  natural_group: "",
 };
 
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
@@ -71,12 +75,15 @@ export function MemberForm({
   invitedBy,
   submitLabel = "Save member",
   onSaved,
+  // When true, the form shows a Natural group selector (Pastor / Parish Coordinator / Admin only)
+  allowNaturalGroup = false,
 }: {
   initial?: Partial<MemberDraft> & { photo_url?: string | null };
   memberId?: string;
   isFirstTimer?: boolean;
   invitedBy?: string | null;
   submitLabel?: string;
+  allowNaturalGroup?: boolean;
   onSaved?: (member: { id: string; full_name: string; member_code: string }) => void;
 }) {
   const [draft, setDraft] = useState<MemberDraft>(() => ({
@@ -135,6 +142,8 @@ export function MemberForm({
       department: draft.department || null,
       membership_year: draft.membership_year ? Number(draft.membership_year) : null,
       photo_url: photoPath,
+      // Only leaders with full access may write the natural group; others leave it untouched
+      ...(allowNaturalGroup ? { natural_group: draft.natural_group || null } : {}),
     };
 
     const query = memberId
@@ -286,6 +295,28 @@ export function MemberForm({
           />
         </Field>
       </div>
+
+      {/* Natural group — visible only to Pastor, Parish Coordinator and Admin */}
+      {allowNaturalGroup ? (
+        <Field label="Natural group">
+          <Select
+            value={draft.natural_group || "none"}
+            onValueChange={(v) => set("natural_group", v === "none" ? "" : v)}
+          >
+            <SelectTrigger>
+              <SelectValue placeholder="Select natural group" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="none">None</SelectItem>
+              {FELLOWSHIPS.map((f) => (
+                <SelectItem key={f} value={f}>
+                  {f}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </Field>
+      ) : null}
 
       <Button type="submit" className="w-full" size="lg" disabled={saving}>
         {saving ? "Saving…" : submitLabel}
