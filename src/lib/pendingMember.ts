@@ -76,11 +76,15 @@ export async function flushPendingMember(userId: string) {
   // Record exists: copy across only the details that are still missing,
   // so nothing the person already corrected in the app gets overwritten.
   const row = existing as Record<string, unknown>;
-  const patch: Record<string, unknown> = {};
-  for (const [key, value] of Object.entries(draft)) {
+  const patch: Partial<PendingMember> = {};
+  for (const key of Object.keys(draft) as (keyof PendingMember)[]) {
+    const value = draft[key];
     if (value === null || value === "") continue;
-    const current = row[key];
-    if (current === null || current === undefined || current === "") patch[key] = value;
+    const current = row[key as string];
+    if (current === null || current === undefined || current === "") {
+      // Safe: keys and values both come from the saved registration draft.
+      (patch as Record<string, unknown>)[key as string] = value;
+    }
   }
 
   if (Object.keys(patch).length === 0) {
