@@ -92,6 +92,9 @@ function People({ people }: { people: MemberRow[] }) {
 function Reports() {
   const { isFloor } = useAuth();
   const [report, setReport] = useState<string>(REPORTS[0]);
+  // Service day + service type used by the two register reports.
+  const [serviceDate, setServiceDate] = useState<string>(todayISO());
+  const [serviceType, setServiceType] = useState<string>(SERVICE_TYPES[0]);
   const { data: members = [] } = useMembers();
   const { data: attendance = [] } = useAttendance();
 
@@ -100,6 +103,16 @@ function Reports() {
     [attendance],
   );
   const memberById = useMemo(() => new Map(members.map((m) => [m.id, m])), [members]);
+
+  // Everyone recorded as attending the chosen service (check-in or marked present by a leader).
+  const checkedInIds = useMemo(() => {
+    const ids = new Set<string>();
+    for (const a of attendance) {
+      if (a.service_date !== serviceDate || a.service_type !== serviceType) continue;
+      if (a.status === "Present" || a.status === "Late") ids.add(a.member_id);
+    }
+    return ids;
+  }, [attendance, serviceDate, serviceType]);
 
   const content = useMemo(() => {
     const group = (keyOf: (date: string) => string) => {
