@@ -183,7 +183,7 @@ function Reports() {
       default:
         return null;
     }
-  }, [report, present, members, memberById]);
+  }, [report, present, members, memberById, checkedInIds]);
 
   if (isFloor) {
     return (
