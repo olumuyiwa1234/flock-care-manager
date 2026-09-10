@@ -23,7 +23,7 @@ const MARK_STATUSES = ["Present", "Absent"] as const;
 /** Weekday (0 = Sunday) of a yyyy-mm-dd string, parsed without timezone shift. */
 function weekdayOf(iso: string): number {
   const [y, m, d] = iso.split("-").map(Number);
-  return new Date(y, (m ?? 1) - 1, d ?? 1).getDay();
+  return new Date(y ?? 1970, (m ?? 1) - 1, d ?? 1).getDay();
 }
 import { useAttendance, useMembers } from "@/lib/queries";
 import { useAuth } from "@/lib/useAuth";
