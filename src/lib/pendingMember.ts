@@ -44,21 +44,50 @@ export function clearPendingMember() {
   }
 }
 
-/** Creates the signed-in user's own member record from a saved signup draft. */
+/**
+ * Creates — or completes — the signed-in user's own member record from the
+ * details they typed at registration.
+ *
+ * The backend already creates a member row the moment an account is created,
+ * so if a row exists we must FILL IN any detail that is still empty rather
+ * than skipping (skipping was silently losing gender, birthday, age bracket,
+ * marital status, address and membership year).
+ */
 export async function flushPendingMember(userId: string) {
   const draft = readPendingMember();
   if (!draft) return;
+
+  // Look for the member record already linked to this account.
   const { data: existing } = await supabase
     .from("members")
-    .select("id")
+    .select("*")
     .eq("user_id", userId)
     .maybeSingle();
-  if (existing) {
+
+  // No record yet: create one holding every detail from the form.
+  if (!existing) {
+    const { error } = await supabase
+      .from("members")
+      .insert({ ...draft, user_id: userId, created_by: userId });
+    if (!error) clearPendingMember();
+    return;
+  }
+
+  // Record exists: copy across only the details that are still missing,
+  // so nothing the person already corrected in the app gets overwritten.
+  const row = existing as Record<string, unknown>;
+  const patch: Record<string, unknown> = {};
+  for (const [key, value] of Object.entries(draft)) {
+    if (value === null || value === "") continue;
+    const current = row[key];
+    if (current === null || current === undefined || current === "") patch[key] = value;
+  }
+
+  if (Object.keys(patch).length === 0) {
     clearPendingMember();
     return;
   }
-  const { error } = await supabase
-    .from("members")
-    .insert({ ...draft, user_id: userId, created_by: userId });
+
+  const { error } = await supabase.from("members").update(patch).eq("user_id", userId);
   if (!error) clearPendingMember();
 }
