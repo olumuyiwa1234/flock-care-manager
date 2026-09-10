@@ -164,19 +164,19 @@ function AttendancePage() {
                     <p className="truncate text-xs text-muted-foreground">{m.member_code}</p>
                   </div>
                 </div>
-                <div className="mt-3 grid grid-cols-3 gap-2">
-                  {ATTENDANCE_STATUSES.map((s) => (
+                {/* Present / Absent only, and only enabled for permitted staff on a service day. */}
+                <div className="mt-3 grid grid-cols-2 gap-2">
+                  {MARK_STATUSES.map((s) => (
                     <button
                       key={s}
                       type="button"
+                      disabled={!canMark}
                       onClick={() => void setStatus(m.id, s)}
-                      className={`rounded-xl px-2 py-2 text-sm font-medium transition ${
+                      className={`rounded-xl px-2 py-2 text-sm font-medium transition disabled:opacity-50 ${
                         status === s
                           ? s === "Present"
                             ? "bg-success text-primary-foreground"
-                            : s === "Late"
-                              ? "bg-warning text-warning-foreground"
-                              : "bg-destructive text-destructive-foreground"
+                            : "bg-destructive text-destructive-foreground"
                           : "bg-secondary text-secondary-foreground"
                       }`}
                     >
