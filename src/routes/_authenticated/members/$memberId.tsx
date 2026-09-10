@@ -180,6 +180,7 @@ function MemberDetail() {
         <MemberForm
           memberId={m.id}
           submitLabel="Update member"
+          allowNaturalGroup={isFullAccess}
           initial={{
             full_name: m.full_name,
             phone: m.phone ?? "",
@@ -194,6 +195,7 @@ function MemberDetail() {
             marital_status: m.marital_status ?? "",
             department: m.department ?? "",
             membership_year: m.membership_year ? String(m.membership_year) : "",
+            natural_group: m.natural_group ?? "",
             photo_url: m.photo_url,
           }}
           onSaved={async () => {
