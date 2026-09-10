@@ -261,6 +261,12 @@ function MemberDetail() {
             m.anniversary_month ? `${m.anniversary_day ?? ""} ${MONTHS[m.anniversary_month - 1]}` : null
           }
         />
+        {/* Church information — shown so no detail captured at registration is hidden. */}
+        <Row label="Department" value={m.department} />
+        <Row label="Status" value={m.status} />
+        <Row label="Natural group" value={m.natural_group} />
+        <Row label="Membership year" value={m.membership_year ? String(m.membership_year) : null} />
+        <Row label="Registered on" value={formatDate(m.created_at.slice(0, 10))} />
       </section>
 
       {isFullAccess && isChild && (
