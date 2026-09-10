@@ -15,7 +15,16 @@ import {
 } from "@/components/ui/select";
 import { Search } from "lucide-react";
 import { toast } from "sonner";
-import { ATTENDANCE_STATUSES, SERVICE_TYPES, todayISO } from "@/lib/shepherd";
+import { SERVICE_DAY, SERVICE_TYPES, todayISO } from "@/lib/shepherd";
+
+// Only Present and Absent may be recorded — the Late option has been removed.
+const MARK_STATUSES = ["Present", "Absent"] as const;
+
+/** Weekday (0 = Sunday) of a yyyy-mm-dd string, parsed without timezone shift. */
+function weekdayOf(iso: string): number {
+  const [y, m, d] = iso.split("-").map(Number);
+  return new Date(y, (m ?? 1) - 1, d ?? 1).getDay();
+}
 import { useAttendance, useMembers } from "@/lib/queries";
 import { useAuth } from "@/lib/useAuth";
 
