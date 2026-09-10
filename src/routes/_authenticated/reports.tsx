@@ -1,6 +1,8 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 import { AppShell, EmptyState } from "@/components/AppShell";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import {
   Select,
   SelectContent,
@@ -8,7 +10,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { AGE_BRACKETS, MONTHS, formatDate } from "@/lib/shepherd";
+import { AGE_BRACKETS, MONTHS, SERVICE_TYPES, formatDate, todayISO } from "@/lib/shepherd";
 import { useAttendance, useMembers, type MemberRow } from "@/lib/queries";
 import { useAuth } from "@/lib/useAuth";
 
