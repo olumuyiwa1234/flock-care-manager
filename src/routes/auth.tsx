@@ -223,6 +223,8 @@ function AuthPage() {
       password,
       options: {
         emailRedirectTo: window.location.origin,
+        // Every field captured on the registration form travels with the sign-up
+        // so the backend can store the complete member record immediately.
         data: {
           full_name: fullName.trim(),
           phone,
@@ -230,6 +232,16 @@ function AuthPage() {
           roles: effectiveRoles,
           sub_role: allSubRoles.length > 0 ? allSubRoles.join(", ") : null,
           department: departmentValue || null,
+          home_address: address || null,
+          gender: gender || null,
+          birth_month: birthMonth || null,
+          birth_day: birthDay || null,
+          age_bracket: bracket || null,
+          anniversary_month: annivMonth || null,
+          anniversary_day: annivDay || null,
+          marital_status: marital || null,
+          membership_year: membershipYear || null,
+          member_status: status,
         },
       },
     });
