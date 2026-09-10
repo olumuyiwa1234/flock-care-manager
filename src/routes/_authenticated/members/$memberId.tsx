@@ -338,6 +338,29 @@ function MemberDetail() {
             Log follow-up
           </Button>
         </div>
+        {/* Quick check-in summary: how many services this person attended, missed and when last seen. */}
+        {(() => {
+          const rows = historyQuery.data ?? [];
+          const attended = rows.filter((a) => a.status === "Present" || a.status === "Late").length;
+          const missed = rows.filter((a) => a.status === "Absent").length;
+          const last = rows.find((a) => a.status === "Present" || a.status === "Late");
+          return (
+            <div className="mb-3 grid grid-cols-3 gap-2 text-center">
+              <div className="rounded-2xl border border-border bg-card p-3">
+                <p className="text-lg font-semibold text-success">{attended}</p>
+                <p className="text-[11px] uppercase tracking-wide text-muted-foreground">Checked in</p>
+              </div>
+              <div className="rounded-2xl border border-border bg-card p-3">
+                <p className="text-lg font-semibold text-destructive">{missed}</p>
+                <p className="text-[11px] uppercase tracking-wide text-muted-foreground">Missed</p>
+              </div>
+              <div className="rounded-2xl border border-border bg-card p-3">
+                <p className="text-sm font-semibold">{last ? formatDate(last.service_date) : "—"}</p>
+                <p className="text-[11px] uppercase tracking-wide text-muted-foreground">Last seen</p>
+              </div>
+            </div>
+          );
+        })()}
         {(historyQuery.data ?? []).length === 0 ? (
           <p className="rounded-2xl border border-dashed border-border bg-card p-5 text-sm text-muted-foreground">
             No attendance recorded yet.
