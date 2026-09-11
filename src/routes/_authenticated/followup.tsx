@@ -185,7 +185,7 @@ function FollowUpForm({ memberId }: { memberId: string }) {
   return (
     <AppShell
       title={member?.full_name ?? "Follow-up"}
-      subtitle={member ? `${member.department ?? "No department"} · ${member.member_code}` : undefined}
+      subtitle={member ? `${member.department ?? "No department"} · ${member.member_code}` : ""}
     >
       {/* Back to the list of members needing follow-up. */}
       <Button
