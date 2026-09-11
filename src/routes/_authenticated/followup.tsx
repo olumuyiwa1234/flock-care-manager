@@ -41,6 +41,12 @@ export const Route = createFileRoute("/_authenticated/followup")({
 const LOOKBACK_SUNDAYS = 8;
 
 /**
+ * Absence tracking only starts from this Sunday. Anything before this date is
+ * ignored, so nobody appears in follow-up until they miss Sundays from here on.
+ */
+const TRACKING_START = "2026-09-13";
+
+/**
  * Counts how many of the most recent Sunday Services a member missed in a row.
  * Stops counting at the first Sunday the member was recorded as present.
  */
