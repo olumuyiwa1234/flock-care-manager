@@ -90,8 +90,9 @@ function FollowUp() {
 function FollowUpList() {
   const navigate = useNavigate();
   const { data: members = [] } = useMembers();
-  const sundays = lastSundays(LOOKBACK_SUNDAYS);
-  const { data: attendance = [] } = useAttendance(sundays.at(-1));
+  // Only Sunday Services on or after the tracking start date count towards follow-up.
+  const sundays = lastSundays(LOOKBACK_SUNDAYS).filter((d) => d >= TRACKING_START);
+  const { data: attendance = [] } = useAttendance(sundays.at(-1) ?? TRACKING_START);
 
   // Work out the missed-service count per member and keep only those at two or more.
   const needsFollowUp = useMemo(() => {
