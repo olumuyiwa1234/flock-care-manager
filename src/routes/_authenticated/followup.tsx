@@ -41,6 +41,12 @@ export const Route = createFileRoute("/_authenticated/followup")({
 const LOOKBACK_SUNDAYS = 8;
 
 /**
+ * Absence tracking only starts from this Sunday. Anything before this date is
+ * ignored, so nobody appears in follow-up until they miss Sundays from here on.
+ */
+const TRACKING_START = "2026-09-13";
+
+/**
  * Counts how many of the most recent Sunday Services a member missed in a row.
  * Stops counting at the first Sunday the member was recorded as present.
  */
@@ -84,8 +90,9 @@ function FollowUp() {
 function FollowUpList() {
   const navigate = useNavigate();
   const { data: members = [] } = useMembers();
-  const sundays = lastSundays(LOOKBACK_SUNDAYS);
-  const { data: attendance = [] } = useAttendance(sundays.at(-1));
+  // Only Sunday Services on or after the tracking start date count towards follow-up.
+  const sundays = lastSundays(LOOKBACK_SUNDAYS).filter((d) => d >= TRACKING_START);
+  const { data: attendance = [] } = useAttendance(sundays.at(-1) ?? TRACKING_START);
 
   // Work out the missed-service count per member and keep only those at two or more.
   const needsFollowUp = useMemo(() => {
@@ -120,7 +127,8 @@ function FollowUpList() {
                   </span>
                 </span>
                 <span className="shrink-0 rounded-full bg-destructive/10 px-2 py-1 text-xs font-medium text-destructive">
-                  {missed >= LOOKBACK_SUNDAYS ? `${LOOKBACK_SUNDAYS}+` : missed} missed
+                  {/* Exact number of tracked Sunday Services missed in a row. */}
+                  {missed} missed
                 </span>
               </button>
             </li>
