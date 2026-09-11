@@ -127,7 +127,8 @@ function FollowUpList() {
                   </span>
                 </span>
                 <span className="shrink-0 rounded-full bg-destructive/10 px-2 py-1 text-xs font-medium text-destructive">
-                  {missed >= LOOKBACK_SUNDAYS ? `${LOOKBACK_SUNDAYS}+` : missed} missed
+                  {/* Exact number of tracked Sunday Services missed in a row. */}
+                  {missed} missed
                 </span>
               </button>
             </li>
