@@ -338,6 +338,27 @@ export type Database = {
           },
         ]
       }
+      notification_dismissals: {
+        Row: {
+          dismissed_at: string
+          id: string
+          notification_id: string
+          user_id: string
+        }
+        Insert: {
+          dismissed_at?: string
+          id?: string
+          notification_id: string
+          user_id: string
+        }
+        Update: {
+          dismissed_at?: string
+          id?: string
+          notification_id?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       pastor_messages: {
         Row: {
           author_name: string
