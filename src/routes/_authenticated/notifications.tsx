@@ -52,7 +52,7 @@ function Notifications() {
     if (items.length === 0) return;
     const ids = items.map((n) => n.id);
     ids.forEach((id) => dismissedRef.current.add(id));
-    await dismissAllNotifications({ notificationIds: ids });
+    await dismissAllNotifications({ data: { notificationIds: ids } });
     queryClient.invalidateQueries({ queryKey: ["notification-dismissals"] });
   }
 
