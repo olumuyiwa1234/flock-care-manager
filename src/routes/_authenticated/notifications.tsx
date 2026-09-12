@@ -42,7 +42,7 @@ function Notifications() {
     if (ids.length === 0) return;
 
     ids.forEach((id) => dismissedRef.current.add(id));
-    dismissAllNotifications({ notificationIds: ids }).then(() => {
+    dismissAllNotifications({ data: { notificationIds: ids } }).then(() => {
       queryClient.invalidateQueries({ queryKey: ["notification-dismissals"] });
     });
   }, [items, loading, queryClient, dismissAllNotifications]);
