@@ -1,3 +1,4 @@
+import { useMemo, useRef } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useMembers, useAttendance, type MemberRow, type AttendanceRow } from "./queries";
 import { lastSundays } from "./shepherd";
@@ -5,6 +6,10 @@ import { useAuth } from "./useAuth";
 import { celebrationsToday } from "./celebrations.functions";
 import { recentSignups } from "./signups.functions";
 import { myGreetings } from "./greetings.functions";
+import {
+  getDismissedNotifications,
+  dismissAllNotifications,
+} from "./notifications.functions";
 
 export type Notification = {
   id: string;
@@ -57,7 +62,7 @@ export function useCelebrations() {
 
 export function useNotifications() {
   const { role, approved, isFullAccess, isFollowUp } = useAuth();
-  // Absentee and new-account alerts go only to Pastorate, IT Infrastructure,
+  // Absentee and new-account alerts go only to Pastorate, Admin,
   // Follow-up and HODs.
   const isCareTeam = isFullAccess || isFollowUp || (approved && role === "hod");
   const membersQuery = useMembers();
@@ -74,74 +79,106 @@ export function useNotifications() {
     staleTime: 60_000,
     queryFn: () => myGreetings(),
   });
+
+  // Load the IDs of notifications the signed-in user has already cleared.
+  const dismissedQuery = useQuery({
+    queryKey: ["notification-dismissals"],
+    staleTime: 60_000,
+    queryFn: () => getDismissedNotifications(),
+  });
+
   const members = membersQuery.data ?? [];
   const attendance = attendanceQuery.data ?? [];
 
-  const items: Notification[] = [];
+  // Build the full notification list from greetings, celebrations, signups and absentees.
+  const allItems = useMemo<Notification[]>(() => {
+    const list: Notification[] = [];
 
-  for (const g of greetingsQuery.data ?? []) {
-    items.push({
-      id: `greeting-${g.id}`,
-      kind: "greeting",
-      title:
-        g.occasion === "anniversary"
-          ? `${g.senderName} sent you an anniversary message`
-          : `${g.senderName} sent you a birthday message`,
-      body: g.message,
-      memberId: "",
-    });
-  }
-
-  for (const c of celebrationsQuery.data ?? []) {
-    items.push({
-      id: c.id,
-      kind: c.kind,
-      title:
-        c.kind === "birthday"
-          ? `Birthday today: ${c.name}`
-          : `Wedding anniversary today: ${c.name}`,
-      body: c.kind === "birthday" ? "Send a birthday blessing." : "Celebrate with the family.",
-      memberId: c.memberId,
-      celebrant: { memberId: c.memberId, name: c.name, occasion: c.kind },
-    });
-  }
-
-  if (isCareTeam) {
-    for (const s of signupsQuery.data ?? []) {
-      const joinedAt = new Date(s.createdAt).toLocaleString("en-NG", {
-        weekday: "short",
-        year: "numeric",
-        month: "short",
-        day: "numeric",
-        hour: "2-digit",
-        minute: "2-digit",
-      });
-      items.push({
-        id: s.id,
-        kind: "signup",
-        title: `New account: ${s.name}`,
-        body: s.department
-          ? `Registered under ${s.department} on ${joinedAt}.`
-          : `Joined Shepherd on ${joinedAt}.`,
-        memberId: s.memberId,
+    for (const g of greetingsQuery.data ?? []) {
+      list.push({
+        id: `greeting-${g.id}`,
+        kind: "greeting",
+        title:
+          g.occasion === "anniversary"
+            ? `${g.senderName} sent you an anniversary message`
+            : `${g.senderName} sent you a birthday message`,
+        body: g.message,
+        memberId: "",
       });
     }
-    for (const m of missedTwoSundays(members, attendance)) {
-      items.push({
-        id: `absent-${m.id}`,
-        kind: "absent",
-        title: `${m.full_name} missed two Sunday Services`,
-        body: "Assign a follow-up contact.",
-        memberId: m.id,
+
+    for (const c of celebrationsQuery.data ?? []) {
+      list.push({
+        id: c.id,
+        kind: c.kind,
+        title:
+          c.kind === "birthday"
+            ? `Birthday today: ${c.name}`
+            : `Wedding anniversary today: ${c.name}`,
+        body: c.kind === "birthday" ? "Send a birthday blessing." : "Celebrate with the family.",
+        memberId: c.memberId,
+        celebrant: { memberId: c.memberId, name: c.name, occasion: c.kind },
       });
     }
-  }
 
-  return {
-    items,
-    loading: membersQuery.isLoading || attendanceQuery.isLoading,
+    if (isCareTeam) {
+      for (const s of signupsQuery.data ?? []) {
+        const joinedAt = new Date(s.createdAt).toLocaleString("en-NG", {
+          weekday: "short",
+          year: "numeric",
+          month: "short",
+          day: "numeric",
+          hour: "2-digit",
+          minute: "2-digit",
+        });
+        list.push({
+          id: s.id,
+          kind: "signup",
+          title: `New account: ${s.name}`,
+          body: s.department
+            ? `Registered under ${s.department} on ${joinedAt}.`
+            : `Joined Shepherd on ${joinedAt}.`,
+          memberId: s.memberId,
+        });
+      }
+      for (const m of missedTwoSundays(members, attendance)) {
+        list.push({
+          id: `absent-${m.id}`,
+          kind: "absent",
+          title: `${m.full_name} missed two Sunday Services`,
+          body: "Assign a follow-up contact.",
+          memberId: m.id,
+        });
+      }
+    }
+
+    return list;
+  }, [
+    greetingsQuery.data,
+    celebrationsQuery.data,
+    signupsQuery.data,
     members,
     attendance,
     isCareTeam,
+  ]);
+
+  // Filter out notifications the user has already dismissed.
+  const dismissedSet = new Set(dismissedQuery.data ?? []);
+  const items = useMemo(
+    () => allItems.filter((n) => !dismissedSet.has(n.id)),
+    [allItems, dismissedQuery.data],
+  );
+
+  return {
+    items,
+    allItems,
+    loading:
+      membersQuery.isLoading ||
+      attendanceQuery.isLoading ||
+      dismissedQuery.isLoading,
+    members,
+    attendance,
+    isCareTeam,
+    dismissAllNotifications,
   };
 }
