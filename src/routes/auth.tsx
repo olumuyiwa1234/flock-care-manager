@@ -91,7 +91,8 @@ function AuthPage() {
   const [photoFile, setPhotoFile] = useState<File | null>(null);
 
   const isWorker = status === "Worker";
-  const effectiveRoles: AppRole[] = isWorker ? roles : ["member"];
+  // A worker who skips the (optional) role picker still gets the base member role.
+  const effectiveRoles: AppRole[] = isWorker ? (roles.length > 0 ? roles : ["member"]) : ["member"];
   const effectiveSubRoles = isWorker ? subRoles : {};
   const effectiveDepartments = isWorker ? departments : [];
 
@@ -169,12 +170,7 @@ function AuthPage() {
       return;
     }
 
-    if (effectiveRoles.length === 0) {
-      setBusy(false);
-      toast.error("Please select at least one role");
-      return;
-    }
-
+    // Roles are optional; when picked, each role needs at least one sub-role.
     const missing = effectiveRoles.find(
       (r) => optionsFor(r).length > 0 && (effectiveSubRoles[r] ?? []).length === 0,
     );
@@ -443,7 +439,7 @@ function AuthPage() {
 
               {isWorker && (
                 <>
-                  <Field label="Your roles">
+                  <Field label="Your roles (optional)">
                     <MultiSelect
                       options={ROLE_OPTIONS.map((r) => ROLE_LABELS[r])}
                       value={roles.map((r) => ROLE_LABELS[r])}
