@@ -1,10 +1,10 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { Bell, Cake, Heart, MailOpen, TriangleAlert, UserPlus, X } from "lucide-react";
-import { useEffect, useRef } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { AppShell, EmptyState } from "@/components/AppShell";
 import { useNotifications } from "@/lib/useNotifications";
 import { useAuth } from "@/lib/useAuth";
+import { dismissNotification } from "@/lib/notifications.functions";
 import { GreetingDialog } from "@/components/GreetingDialog";
 
 export const Route = createFileRoute("/_authenticated/notifications")({
@@ -31,29 +31,24 @@ function Notifications() {
   const { items, loading, dismissAllNotifications } = useNotifications();
   const { isFloor } = useAuth();
   const queryClient = useQueryClient();
-  // Track IDs already sent to the server so we only dismiss each once.
-  const dismissedRef = useRef<Set<string>>(new Set());
 
-  // When the notifications page opens, mark every visible notification as dismissed.
-  // This makes the home badge drop to zero once the user leaves this page.
-  useEffect(() => {
-    if (loading) return;
-    const ids = items.map((n) => n.id).filter((id) => !dismissedRef.current.has(id));
-    if (ids.length === 0) return;
+  // Refresh the dismissed list so the badge count updates after deletion.
+  function refreshDismissed() {
+    queryClient.invalidateQueries({ queryKey: ["notification-dismissals"] });
+  }
 
-    ids.forEach((id) => dismissedRef.current.add(id));
-    dismissAllNotifications({ data: { notificationIds: ids } }).then(() => {
-      queryClient.invalidateQueries({ queryKey: ["notification-dismissals"] });
-    });
-  }, [items, loading, queryClient, dismissAllNotifications]);
+  // Delete a single notification; it stays removed until new alerts arrive.
+  async function deleteOne(id: string) {
+    await dismissNotification({ data: { notificationId: id } });
+    refreshDismissed();
+  }
 
   // Manual "Clear all" action for the user.
   async function clearAll() {
     if (items.length === 0) return;
     const ids = items.map((n) => n.id);
-    ids.forEach((id) => dismissedRef.current.add(id));
     await dismissAllNotifications({ data: { notificationIds: ids } });
-    queryClient.invalidateQueries({ queryKey: ["notification-dismissals"] });
+    refreshDismissed();
   }
 
   const clearButton = (
@@ -98,17 +93,29 @@ function Notifications() {
             const className = "flex items-start gap-3 rounded-2xl border border-border bg-card p-4";
             return (
               <li key={n.id} className="rounded-2xl border border-border bg-card">
-                {isFloor || !n.memberId ? (
-                  <div className="flex items-start gap-3 p-4">{inner}</div>
-                ) : (
-                  <Link
-                    to="/members/$memberId"
-                    params={{ memberId: n.memberId }}
-                    className={`${className} border-0 bg-transparent`}
+                <div className="flex items-start gap-2">
+                  {/* Main notification body: links to the member when possible. */}
+                  {isFloor || !n.memberId ? (
+                    <div className="flex min-w-0 flex-1 items-start gap-3 p-4">{inner}</div>
+                  ) : (
+                    <Link
+                      to="/members/$memberId"
+                      params={{ memberId: n.memberId }}
+                      className={`${className} min-w-0 flex-1 border-0 bg-transparent`}
+                    >
+                      {inner}
+                    </Link>
+                  )}
+                  {/* Per-item delete button; removing is the only way an alert disappears. */}
+                  <button
+                    type="button"
+                    aria-label="Delete notification"
+                    onClick={() => deleteOne(n.id)}
+                    className="mt-4 mr-3 grid size-8 shrink-0 place-items-center rounded-full text-muted-foreground transition hover:bg-muted hover:text-foreground"
                   >
-                    {inner}
-                  </Link>
-                )}
+                    <X className="size-4" />
+                  </button>
+                </div>
                 {n.celebrant && (
                   <div className="flex justify-end px-4 pb-4">
                     <GreetingDialog
