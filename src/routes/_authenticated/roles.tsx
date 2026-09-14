@@ -50,6 +50,8 @@ function Roles() {
   const queryClient = useQueryClient();
   const [savingId, setSavingId] = useState<string | null>(null);
   const [draft, setDraft] = useState<Record<string, { role: AppRole; subRole: string }>>({});
+  // Search query used to filter the list of people by name.
+  const [search, setSearch] = useState("");
 
   const peopleQuery = useQuery({
     queryKey: ["all-people"],
