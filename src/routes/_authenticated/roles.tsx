@@ -96,7 +96,10 @@ function Roles() {
     );
   }
 
-  const people = (peopleQuery.data ?? []).filter((p) => p.id !== auth?.userId);
+  const people = (peopleQuery.data ?? [])
+    .filter((p) => p.id !== auth?.userId)
+    // Filter by name using the search input, case-insensitive.
+    .filter((p) => (p.full_name || "").toLowerCase().includes(search.trim().toLowerCase()));
 
   return (
     <AppShell title="User roles" subtitle="Assign roles and responsibilities" back="/home">
@@ -105,7 +108,15 @@ function Roles() {
       ) : people.length === 0 ? (
         <EmptyState title="No other accounts yet" />
       ) : (
-        <ul className="space-y-3">
+        <>
+          {/* Search input for quickly finding a member by name. */}
+          <Input
+            placeholder="Search by name"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="mb-4"
+          />
+          <ul className="space-y-3">
           {people.map((p) => {
             const current = draft[p.id] ?? { role: p.role, subRole: p.sub_role ?? "" };
             const subs = SUB_ROLES[current.role] as readonly string[];
