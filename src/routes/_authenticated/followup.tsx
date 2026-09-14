@@ -143,8 +143,14 @@ function FollowUpList() {
       .sort((a, b) => b.missed - a.missed || a.member.full_name.localeCompare(b.member.full_name));
   }, [members, attendance, sundays.join(","), restrictToGroup, leaderGroups]);
 
-  // Build an Excel workbook of the current follow-up list and download it.
+  // Build an Excel workbook of the whole follow-up list and download it.
+  // Full-access users (Pastor, Parish Coordinator, Admin) export every member
+  // who needs follow-up; natural group leaders export only their own group.
   function exportExcel() {
+    if (needsFollowUp.length === 0) {
+      toast.info("No one needs follow-up yet, so there is nothing to export.");
+      return;
+    }
     const rows = needsFollowUp.map(({ member, missed }) => ({
       Name: member.full_name,
       Gender: member.gender ?? "",
@@ -161,12 +167,11 @@ function FollowUpList() {
 
   return (
     <AppShell title="Follow-up" subtitle="Members needing a pastoral contact">
-      {/* Download the same list shown below as a spreadsheet. */}
-      {needsFollowUp.length > 0 && (
-        <Button variant="outline" size="sm" className="mb-3" onClick={exportExcel}>
-          <Download className="mr-1 h-4 w-4" /> Export to Excel
-        </Button>
-      )}
+      {/* Download the same list shown below as a spreadsheet. Always visible so
+          leaders can find it even when the list is currently empty. */}
+      <Button variant="outline" size="sm" className="mb-3" onClick={exportExcel}>
+        <Download className="mr-1 h-4 w-4" /> Export to Excel
+      </Button>
       {needsFollowUp.length === 0 ? (
         <EmptyState
           title="No one needs follow-up"
