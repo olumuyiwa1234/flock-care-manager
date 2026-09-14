@@ -17,7 +17,16 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { toast } from "sonner";
-import { CONTACT_METHODS, SITUATIONS, formatDate, lastSundays, todayISO } from "@/lib/shepherd";
+import * as XLSX from "xlsx";
+import { Download } from "lucide-react";
+import {
+  CONTACT_METHODS,
+  SITUATIONS,
+  fellowshipOf,
+  formatDate,
+  lastSundays,
+  todayISO,
+} from "@/lib/shepherd";
 import { useMembers, useAttendance, type MemberRow, type AttendanceRow } from "@/lib/queries";
 import { useAuth } from "@/lib/useAuth";
 
