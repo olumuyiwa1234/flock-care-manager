@@ -17,7 +17,16 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { toast } from "sonner";
-import { CONTACT_METHODS, SITUATIONS, formatDate, lastSundays, todayISO } from "@/lib/shepherd";
+import * as XLSX from "xlsx";
+import { Download } from "lucide-react";
+import {
+  CONTACT_METHODS,
+  SITUATIONS,
+  fellowshipOf,
+  formatDate,
+  lastSundays,
+  todayISO,
+} from "@/lib/shepherd";
 import { useMembers, useAttendance, type MemberRow, type AttendanceRow } from "@/lib/queries";
 import { useAuth } from "@/lib/useAuth";
 
@@ -90,20 +99,74 @@ function FollowUp() {
 function FollowUpList() {
   const navigate = useNavigate();
   const { data: members = [] } = useMembers();
+  const { role, subRole, isFullAccess, isFollowUp } = useAuth();
   // Only Sunday Services on or after the tracking start date count towards follow-up.
   const sundays = lastSundays(LOOKBACK_SUNDAYS).filter((d) => d >= TRACKING_START);
   const { data: attendance = [] } = useAttendance(sundays.at(-1) ?? TRACKING_START);
+  // Full attendance history, used only to show when each member was last seen.
+  const { data: allAttendance = [] } = useAttendance();
+
+  // Natural group leaders are limited to the fellowship(s) they lead.
+  const leaderGroups = useMemo(
+    () =>
+      (subRole ?? "")
+        .split(",")
+        .map((s) => s.trim().toLowerCase())
+        .filter(Boolean),
+    [subRole],
+  );
+  const restrictToGroup = role === "group_leader" && !isFullAccess && !isFollowUp;
+
+  // Most recent date each member was actually present, for the "last seen" column.
+  const lastSeen = useMemo(() => {
+    const map = new Map<string, string>();
+    for (const a of allAttendance) {
+      if (a.status === "Absent") continue;
+      const current = map.get(a.member_id);
+      if (!current || a.service_date > current) map.set(a.member_id, a.service_date);
+    }
+    return map;
+  }, [allAttendance]);
 
   // Work out the missed-service count per member and keep only those at two or more.
   const needsFollowUp = useMemo(() => {
     return members
+      .filter((m) => {
+        if (!restrictToGroup) return true;
+        // Use the saved natural group, falling back to the derived fellowship.
+        const group =
+          m.natural_group ?? fellowshipOf(m.gender, m.marital_status, m.age_bracket);
+        return !!group && leaderGroups.includes(group.toLowerCase());
+      })
       .map((m) => ({ member: m, missed: consecutiveMissedSundays(m.id, sundays, attendance) }))
       .filter((row) => row.missed >= 2)
       .sort((a, b) => b.missed - a.missed || a.member.full_name.localeCompare(b.member.full_name));
-  }, [members, attendance, sundays.join(",")]);
+  }, [members, attendance, sundays.join(","), restrictToGroup, leaderGroups]);
+
+  // Build an Excel workbook of the current follow-up list and download it.
+  function exportExcel() {
+    const rows = needsFollowUp.map(({ member, missed }) => ({
+      Name: member.full_name,
+      Gender: member.gender ?? "",
+      "Phone Number": member.phone ?? "",
+      "House Address": member.home_address ?? "",
+      "Last Seen": lastSeen.get(member.id) ? formatDate(lastSeen.get(member.id)!) : "Never",
+      "Sunday Services Missed": missed,
+    }));
+    const sheet = XLSX.utils.json_to_sheet(rows);
+    const book = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(book, sheet, "Follow-up");
+    XLSX.writeFile(book, `follow-up-${todayISO()}.xlsx`);
+  }
 
   return (
     <AppShell title="Follow-up" subtitle="Members needing a pastoral contact">
+      {/* Download the same list shown below as a spreadsheet. */}
+      {needsFollowUp.length > 0 && (
+        <Button variant="outline" size="sm" className="mb-3" onClick={exportExcel}>
+          <Download className="mr-1 h-4 w-4" /> Export to Excel
+        </Button>
+      )}
       {needsFollowUp.length === 0 ? (
         <EmptyState
           title="No one needs follow-up"
