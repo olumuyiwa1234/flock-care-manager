@@ -6,6 +6,8 @@ import { AppShell } from "@/components/AppShell";
 import { MemberForm } from "@/components/MemberForm";
 import { MemberPhoto } from "@/components/MemberPhoto";
 import { Button } from "@/components/ui/button";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 import { useMembers } from "@/lib/queries";
 import { useAuth } from "@/lib/useAuth";
 import { formatDate } from "@/lib/shepherd";
@@ -34,6 +36,25 @@ function FirstTimers() {
   const queryClient = useQueryClient();
   // Toggle between the visitor list and the registration form
   const [adding, setAdding] = useState(false);
+  // Tracks which visitor is currently being moved to the members list
+  const [converting, setConverting] = useState<string | null>(null);
+
+  /**
+   * Moves a first-time visitor into the members list once they register as a
+   * member. The visitor record itself is kept — only the first-timer flag is
+   * cleared, so all their details and registration date are preserved.
+   */
+  async function registerAsMember(id: string) {
+    setConverting(id);
+    const { error } = await supabase.from("members").update({ is_first_timer: false }).eq("id", id);
+    setConverting(null);
+    if (error) {
+      toast.error(error.message);
+      return;
+    }
+    toast.success("Added to members");
+    await queryClient.invalidateQueries({ queryKey: ["members"] });
+  }
 
   // First-time visitors, most recently registered first
   const firstTimers = members
@@ -86,13 +107,23 @@ function FirstTimers() {
                     <span className="min-w-0 flex-1">
                       <span className="block truncate font-medium">{m.full_name}</span>
                       <span className="block text-xs text-muted-foreground">
-                        {m.phone ?? "No phone"} · Visited {formatDate(m.created_at)}
+                        {m.phone ?? "No phone"} · Registered {formatDate(m.created_at)}
                       </span>
                     </span>
                     <span className="rounded-full bg-secondary px-2 py-1 text-xs font-medium text-primary">
                       First timer
                     </span>
                   </Link>
+                  {/* Moves the visitor into the Members tile when they register as a member */}
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="mt-2 w-full"
+                    disabled={converting === m.id}
+                    onClick={() => void registerAsMember(m.id)}
+                  >
+                    {converting === m.id ? "Adding…" : "Register as member"}
+                  </Button>
                 </li>
               ))}
             </ul>
