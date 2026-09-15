@@ -20,6 +20,7 @@ import { Route as AuthenticatedCheckinRouteImport } from './routes/_authenticate
 import { Route as AuthenticatedContactPastorRouteImport } from './routes/_authenticated/contact-pastor'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
 import { Route as AuthenticatedFeedbackRouteImport } from './routes/_authenticated/feedback'
+import { Route as AuthenticatedFirstTimersRouteImport } from './routes/_authenticated/first-timers'
 import { Route as AuthenticatedFollowupRouteImport } from './routes/_authenticated/followup'
 import { Route as AuthenticatedHomeRouteImport } from './routes/_authenticated/home'
 import { Route as AuthenticatedInboxRouteImport } from './routes/_authenticated/inbox'
@@ -94,6 +95,12 @@ const AuthenticatedFeedbackRoute = AuthenticatedFeedbackRouteImport.update({
   path: '/feedback',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedFirstTimersRoute =
+  AuthenticatedFirstTimersRouteImport.update({
+    id: '/first-timers',
+    path: '/first-timers',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedFollowupRoute = AuthenticatedFollowupRouteImport.update({
   id: '/followup',
   path: '/followup',
@@ -192,6 +199,7 @@ export interface FileRoutesByFullPath {
   '/contact-pastor': typeof AuthenticatedContactPastorRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/feedback': typeof AuthenticatedFeedbackRoute
+  '/first-timers': typeof AuthenticatedFirstTimersRoute
   '/followup': typeof AuthenticatedFollowupRoute
   '/home': typeof AuthenticatedHomeRoute
   '/inbox': typeof AuthenticatedInboxRoute
@@ -220,6 +228,7 @@ export interface FileRoutesByTo {
   '/contact-pastor': typeof AuthenticatedContactPastorRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/feedback': typeof AuthenticatedFeedbackRoute
+  '/first-timers': typeof AuthenticatedFirstTimersRoute
   '/followup': typeof AuthenticatedFollowupRoute
   '/home': typeof AuthenticatedHomeRoute
   '/inbox': typeof AuthenticatedInboxRoute
@@ -250,6 +259,7 @@ export interface FileRoutesById {
   '/_authenticated/contact-pastor': typeof AuthenticatedContactPastorRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
   '/_authenticated/feedback': typeof AuthenticatedFeedbackRoute
+  '/_authenticated/first-timers': typeof AuthenticatedFirstTimersRoute
   '/_authenticated/followup': typeof AuthenticatedFollowupRoute
   '/_authenticated/home': typeof AuthenticatedHomeRoute
   '/_authenticated/inbox': typeof AuthenticatedInboxRoute
@@ -280,6 +290,7 @@ export interface FileRouteTypes {
     | '/contact-pastor'
     | '/dashboard'
     | '/feedback'
+    | '/first-timers'
     | '/followup'
     | '/home'
     | '/inbox'
@@ -308,6 +319,7 @@ export interface FileRouteTypes {
     | '/contact-pastor'
     | '/dashboard'
     | '/feedback'
+    | '/first-timers'
     | '/followup'
     | '/home'
     | '/inbox'
@@ -337,6 +349,7 @@ export interface FileRouteTypes {
     | '/_authenticated/contact-pastor'
     | '/_authenticated/dashboard'
     | '/_authenticated/feedback'
+    | '/_authenticated/first-timers'
     | '/_authenticated/followup'
     | '/_authenticated/home'
     | '/_authenticated/inbox'
@@ -439,6 +452,13 @@ declare module '@tanstack/react-router' {
       path: '/feedback'
       fullPath: '/feedback'
       preLoaderRoute: typeof AuthenticatedFeedbackRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/first-timers': {
+      id: '/_authenticated/first-timers'
+      path: '/first-timers'
+      fullPath: '/first-timers'
+      preLoaderRoute: typeof AuthenticatedFirstTimersRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/followup': {
@@ -565,6 +585,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedContactPastorRoute: typeof AuthenticatedContactPastorRoute
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
   AuthenticatedFeedbackRoute: typeof AuthenticatedFeedbackRoute
+  AuthenticatedFirstTimersRoute: typeof AuthenticatedFirstTimersRoute
   AuthenticatedFollowupRoute: typeof AuthenticatedFollowupRoute
   AuthenticatedHomeRoute: typeof AuthenticatedHomeRoute
   AuthenticatedInboxRoute: typeof AuthenticatedInboxRoute
@@ -591,6 +612,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedContactPastorRoute: AuthenticatedContactPastorRoute,
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
   AuthenticatedFeedbackRoute: AuthenticatedFeedbackRoute,
+  AuthenticatedFirstTimersRoute: AuthenticatedFirstTimersRoute,
   AuthenticatedFollowupRoute: AuthenticatedFollowupRoute,
   AuthenticatedHomeRoute: AuthenticatedHomeRoute,
   AuthenticatedInboxRoute: AuthenticatedInboxRoute,

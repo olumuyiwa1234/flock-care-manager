@@ -42,6 +42,7 @@ export const Route = createFileRoute("/_authenticated/home")({
 const tiles = [
   { to: "/checkin", label: "Check In", icon: CalendarDays, staffOnly: false },
   { to: "/members", label: "Members", icon: Users, staffOnly: true },
+  { to: "/first-timers", label: "First Timers", icon: UserPlus, staffOnly: true },
   { to: "/children", label: "Children", icon: Baby, staffOnly: true, childrenOnly: true },
   { to: "/teens", label: "Teens", icon: Users, staffOnly: true, teensOnly: true },
   { to: "/attendance", label: "Attendance", icon: ClipboardList, staffOnly: true },
