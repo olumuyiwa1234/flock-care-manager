@@ -7,6 +7,7 @@ import { MemberForm } from "@/components/MemberForm";
 import { MemberPhoto } from "@/components/MemberPhoto";
 import { Button } from "@/components/ui/button";
 import { useMembers } from "@/lib/queries";
+import { useAuth } from "@/lib/useAuth";
 import { formatDate } from "@/lib/shepherd";
 
 export const Route = createFileRoute("/_authenticated/first-timers")({
