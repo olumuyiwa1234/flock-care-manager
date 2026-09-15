@@ -40,6 +40,17 @@ function FirstTimers() {
     .filter((m) => m.is_first_timer)
     .sort((a, b) => b.created_at.localeCompare(a.created_at));
 
+  // Guard the page so it cannot be reached directly by users without the right role.
+  if (!canAccess) {
+    return (
+      <AppShell title="First Timers" subtitle="Restricted" back="/home">
+        <p className="text-sm text-muted-foreground">
+          Only the Pastor, Admin, Follow-up HOD, Children HOD or Teens HOD can access first timers.
+        </p>
+      </AppShell>
+    );
+  }
+
   return (
     <AppShell title="First Timers" subtitle="First-time visitors" back="/home">
       {adding ? (
