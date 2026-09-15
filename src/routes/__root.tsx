@@ -17,6 +17,7 @@ import { InstallPrompt } from "@/components/InstallPrompt";
 import { AnnouncementPopup } from "@/components/AnnouncementPopup";
 import { ProfileCompletionPrompt } from "@/components/ProfileCompletionPrompt";
 import { registerAppServiceWorker } from "@/lib/pwa";
+import { GlobalLoader } from "@/components/GlobalLoader";
 
 function NotFoundComponent() {
   return (
@@ -159,6 +160,8 @@ function RootComponent() {
 
   return (
     <QueryClientProvider client={queryClient}>
+      {/* Top progress bar shown whenever the app is loading or saving */}
+      <GlobalLoader />
       <Outlet />
       <InstallPrompt />
       <AnnouncementPopup />
