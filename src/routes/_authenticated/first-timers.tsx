@@ -23,6 +23,12 @@ export const Route = createFileRoute("/_authenticated/first-timers")({
 });
 
 function FirstTimers() {
+  // Only pastors/admins and specific HODs (Follow-up, Children, Teens) may access this page.
+  const { isPastor, isAdmin, role, subRole, approved, isChildrenLeader, isTeensLeader } = useAuth();
+  const subRoles = (subRole ?? "").split(",").map((s) => s.trim().toLowerCase()).filter(Boolean);
+  const isFollowUpHod = approved && role === "hod" && subRoles.includes("follow-up");
+  const canAccess = isPastor || isAdmin || isFollowUpHod || isChildrenLeader || isTeensLeader;
+
   // All members visible to the signed-in user
   const { data: members = [] } = useMembers();
   const queryClient = useQueryClient();
