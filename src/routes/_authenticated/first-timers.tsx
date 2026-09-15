@@ -7,6 +7,7 @@ import { MemberForm } from "@/components/MemberForm";
 import { MemberPhoto } from "@/components/MemberPhoto";
 import { Button } from "@/components/ui/button";
 import { useMembers } from "@/lib/queries";
+import { useAuth } from "@/lib/useAuth";
 import { formatDate } from "@/lib/shepherd";
 
 export const Route = createFileRoute("/_authenticated/first-timers")({
@@ -22,6 +23,12 @@ export const Route = createFileRoute("/_authenticated/first-timers")({
 });
 
 function FirstTimers() {
+  // Only pastors/admins and specific HODs (Follow-up, Children, Teens) may access this page.
+  const { isPastor, isAdmin, role, subRole, approved, isChildrenLeader, isTeensLeader } = useAuth();
+  const subRoles = (subRole ?? "").split(",").map((s) => s.trim().toLowerCase()).filter(Boolean);
+  const isFollowUpHod = approved && role === "hod" && subRoles.includes("follow-up");
+  const canAccess = isPastor || isAdmin || isFollowUpHod || isChildrenLeader || isTeensLeader;
+
   // All members visible to the signed-in user
   const { data: members = [] } = useMembers();
   const queryClient = useQueryClient();
@@ -32,6 +39,17 @@ function FirstTimers() {
   const firstTimers = members
     .filter((m) => m.is_first_timer)
     .sort((a, b) => b.created_at.localeCompare(a.created_at));
+
+  // Guard the page so it cannot be reached directly by users without the right role.
+  if (!canAccess) {
+    return (
+      <AppShell title="First Timers" subtitle="Restricted" back="/home">
+        <p className="text-sm text-muted-foreground">
+          Only the Pastor, Admin, Follow-up HOD, Children HOD or Teens HOD can access first timers.
+        </p>
+      </AppShell>
+    );
+  }
 
   return (
     <AppShell title="First Timers" subtitle="First-time visitors" back="/home">

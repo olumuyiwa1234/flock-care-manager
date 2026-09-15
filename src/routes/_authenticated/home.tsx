@@ -42,7 +42,8 @@ export const Route = createFileRoute("/_authenticated/home")({
 const tiles = [
   { to: "/checkin", label: "Check In", icon: CalendarDays, staffOnly: false },
   { to: "/members", label: "Members", icon: Users, staffOnly: true },
-  { to: "/first-timers", label: "First Timers", icon: UserPlus, staffOnly: true },
+  // First Timers is limited to full-access users and specific HODs who handle newcomers.
+  { to: "/first-timers", label: "First Timers", icon: UserPlus, staffOnly: true, firstTimersOnly: true },
   { to: "/children", label: "Children", icon: Baby, staffOnly: true, childrenOnly: true },
   { to: "/teens", label: "Teens", icon: Users, staffOnly: true, teensOnly: true },
   { to: "/attendance", label: "Attendance", icon: ClipboardList, staffOnly: true },
@@ -61,7 +62,7 @@ const tiles = [
 ];
 
 function Home() {
-  const { auth, isFloor, role, isChildrenLeader, isTeensLeader, isAdmin, isPastor, pending } = useAuth();
+  const { auth, isFloor, role, subRole, approved, isChildrenLeader, isTeensLeader, isAdmin, isPastor, pending } = useAuth();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const { items } = useNotifications();
@@ -74,13 +75,19 @@ function Home() {
     navigate({ to: "/auth", replace: true });
   }
 
+  // Determine which HODs are allowed to see the First Timers tile.
+  const subRoles = (subRole ?? "").split(",").map((s) => s.trim().toLowerCase()).filter(Boolean);
+  const isFollowUpHod = approved && role === "hod" && subRoles.includes("follow-up");
+  const canViewFirstTimers = isPastor || isAdmin || isFollowUpHod || isChildrenLeader || isTeensLeader;
+
   const visible = tiles.filter(
     (t) =>
       (!t.staffOnly || !isFloor) &&
       (!("childrenOnly" in t) || isChildrenLeader || isAdmin) &&
       (!("teensOnly" in t) || isTeensLeader || isAdmin) &&
       (!("pastorOnly" in t) || isPastor) &&
-      (!("adminOnly" in t) || isAdmin),
+      (!("adminOnly" in t) || isAdmin) &&
+      (!("firstTimersOnly" in t) || canViewFirstTimers),
   );
 
   return (
