@@ -80,6 +80,9 @@ function Members() {
     fDepartment !== ALL || fAge !== ALL || fMarital !== ALL || fGender !== ALL || fStatus !== ALL;
 
   const filtered = members.filter((m) => {
+    // First-time visitors stay in the First Timers tile until they are
+    // registered as full members, so they are hidden from this list.
+    if (m.is_first_timer) return false;
     if (
       term &&
       !(
