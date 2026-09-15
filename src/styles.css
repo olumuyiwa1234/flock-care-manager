@@ -172,3 +172,13 @@
   opacity: 0 !important;
   pointer-events: none !important;
 }
+
+/* Sliding stripe used by the global loading bar at the top of the screen. */
+@keyframes shepherd-progress {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(400%);
+  }
+}
