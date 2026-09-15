@@ -62,7 +62,7 @@ const tiles = [
 ];
 
 function Home() {
-  const { auth, isFloor, role, isChildrenLeader, isTeensLeader, isAdmin, isPastor, pending } = useAuth();
+  const { auth, isFloor, role, subRole, approved, isChildrenLeader, isTeensLeader, isAdmin, isPastor, pending } = useAuth();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const { items } = useNotifications();
@@ -75,13 +75,19 @@ function Home() {
     navigate({ to: "/auth", replace: true });
   }
 
+  // Determine which HODs are allowed to see the First Timers tile.
+  const subRoles = (subRole ?? "").split(",").map((s) => s.trim().toLowerCase()).filter(Boolean);
+  const isFollowUpHod = approved && role === "hod" && subRoles.includes("follow-up");
+  const canViewFirstTimers = isPastor || isAdmin || isFollowUpHod || isChildrenLeader || isTeensLeader;
+
   const visible = tiles.filter(
     (t) =>
       (!t.staffOnly || !isFloor) &&
       (!("childrenOnly" in t) || isChildrenLeader || isAdmin) &&
       (!("teensOnly" in t) || isTeensLeader || isAdmin) &&
       (!("pastorOnly" in t) || isPastor) &&
-      (!("adminOnly" in t) || isAdmin),
+      (!("adminOnly" in t) || isAdmin) &&
+      (!("firstTimersOnly" in t) || canViewFirstTimers),
   );
 
   return (
