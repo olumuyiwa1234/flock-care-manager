@@ -79,7 +79,10 @@ function Members() {
   const hasFilters =
     fDepartment !== ALL || fAge !== ALL || fMarital !== ALL || fGender !== ALL || fStatus !== ALL;
 
-  const filtered = members.filter((m) => {
+  // Church roster excludes first-time visitors (they live in the First Timers tile).
+  const roster = members.filter((m) => !m.is_first_timer);
+
+  const filtered = roster.filter((m) => {
     // First-time visitors stay in the First Timers tile until they are
     // registered as full members, so they are hidden from this list.
     if (m.is_first_timer) return false;
@@ -123,7 +126,7 @@ function Members() {
   return (
     <AppShell
       title="Members"
-      subtitle={`${filtered.length} of ${members.length} in the database`}
+      subtitle={`${filtered.length} of ${roster.length} in the database`}
       action={
         <Button asChild size="icon" variant="secondary" className="rounded-full">
           <Link to="/members/new" aria-label="Add member">
@@ -212,14 +215,14 @@ function Members() {
         <p className="text-sm text-muted-foreground">Loading members…</p>
       ) : filtered.length === 0 ? (
         <EmptyState
-          title={members.length === 0 ? "No members yet" : "No members match"}
+          title={roster.length === 0 ? "No members yet" : "No members match"}
           hint={
-            members.length === 0
+            roster.length === 0
               ? "Add your first member to start recording attendance."
               : "Try a different search or clear the filters."
           }
           cta={
-            members.length === 0 ? (
+            roster.length === 0 ? (
               <Button asChild>
                 <Link to="/members/new">Add member</Link>
               </Button>
