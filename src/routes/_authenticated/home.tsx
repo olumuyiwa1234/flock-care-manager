@@ -16,6 +16,7 @@ import {
   Megaphone,
   MessageSquareHeart,
   UserCog,
+  UserPlus,
   UserRound,
   Users,
 } from "lucide-react";
