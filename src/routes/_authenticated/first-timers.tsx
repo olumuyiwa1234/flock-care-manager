@@ -134,15 +134,17 @@ function FirstTimers() {
                     </span>
                   </Link>
                   {/* Moves the visitor into the Members tile when they register as a member */}
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="mt-2 w-full"
-                    disabled={converting === m.id}
-                    onClick={() => void registerAsMember(m.id)}
-                  >
-                    {converting === m.id ? "Adding…" : "Register as member"}
-                  </Button>
+                  {canRegister && (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="mt-2 w-full"
+                      disabled={converting === m.id}
+                      onClick={() => void registerAsMember(m.id)}
+                    >
+                      {converting === m.id ? "Adding…" : "Register as member"}
+                    </Button>
+                  )}
                 </li>
               ))}
             </ul>
