@@ -176,16 +176,19 @@ export function MemberForm({
         />
       </Field>
 
-      <Field label="Photo">
-        <Input
-          type="file"
-          accept="image/*"
-          onChange={(e) => {
-            const f = e.target.files?.[0];
-            if (f) void uploadPhoto(f);
-          }}
-        />
-      </Field>
+      {/* Photo — hidden for first-timer registration (kept only for full member registration) */}
+      {!isFirstTimer ? (
+        <Field label="Photo">
+          <Input
+            type="file"
+            accept="image/*"
+            onChange={(e) => {
+              const f = e.target.files?.[0];
+              if (f) void uploadPhoto(f);
+            }}
+          />
+        </Field>
+      ) : null}
 
       <div className="grid grid-cols-2 gap-3">
         <Field label="Phone number">
@@ -266,35 +269,42 @@ export function MemberForm({
         </Select>
       </Field>
 
-      <Field label="Wedding anniversary (optional)">
-        <MonthDayPicker
-          month={draft.anniversary_month ? Number(draft.anniversary_month) : null}
-          day={draft.anniversary_day ? Number(draft.anniversary_day) : null}
-          onChange={(m, d) => {
-            set("anniversary_month", m ? String(m) : "");
-            set("anniversary_day", d ? String(d) : "");
-          }}
-          placeholder="Pick anniversary"
-        />
-      </Field>
+      {/* Wedding anniversary — hidden for first-timer registration */}
+      {!isFirstTimer ? (
+        <Field label="Wedding anniversary (optional)">
+          <MonthDayPicker
+            month={draft.anniversary_month ? Number(draft.anniversary_month) : null}
+            day={draft.anniversary_day ? Number(draft.anniversary_day) : null}
+            onChange={(m, d) => {
+              set("anniversary_month", m ? String(m) : "");
+              set("anniversary_day", d ? String(d) : "");
+            }}
+            placeholder="Pick anniversary"
+          />
+        </Field>
+      ) : null}
 
-      <div className="grid grid-cols-2 gap-3">
-        <Field label="Departments (optional)">
-          <MultiSelect
-            options={DEPARTMENTS}
-            value={draft.department ? draft.department.split(",").map((d) => d.trim()).filter(Boolean) : []}
-            onChange={(v) => set("department", v.join(", "))}
-            placeholder="None"
-          />
-        </Field>
-        <Field label="Membership year">
-          <Input
-            value={draft.membership_year}
-            onChange={(e) => set("membership_year", e.target.value)}
-            inputMode="numeric"
-          />
-        </Field>
-      </div>
+      {/* Departments and Membership year — hidden for first-timer registration.
+          These are collected later when the first timer converts to a full member. */}
+      {!isFirstTimer ? (
+        <div className="grid grid-cols-2 gap-3">
+          <Field label="Departments (optional)">
+            <MultiSelect
+              options={DEPARTMENTS}
+              value={draft.department ? draft.department.split(",").map((d) => d.trim()).filter(Boolean) : []}
+              onChange={(v) => set("department", v.join(", "))}
+              placeholder="None"
+            />
+          </Field>
+          <Field label="Membership year">
+            <Input
+              value={draft.membership_year}
+              onChange={(e) => set("membership_year", e.target.value)}
+              inputMode="numeric"
+            />
+          </Field>
+        </div>
+      ) : null}
 
       {/* Natural group — visible only to Pastor, Parish Coordinator and Admin */}
       {allowNaturalGroup ? (
