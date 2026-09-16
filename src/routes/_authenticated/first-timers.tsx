@@ -10,7 +10,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useMembers } from "@/lib/queries";
 import { useAuth } from "@/lib/useAuth";
-import { formatDate } from "@/lib/shepherd";
+import { formatDate, fellowshipOf } from "@/lib/shepherd";
 
 export const Route = createFileRoute("/_authenticated/first-timers")({
   head: () => ({
@@ -25,11 +25,18 @@ export const Route = createFileRoute("/_authenticated/first-timers")({
 });
 
 function FirstTimers() {
-  // Only pastors/admins and specific HODs (Follow-up, Children, Teens) may access this page.
+  // Roles that decide who may see and who may register first timers.
   const { isPastor, isAdmin, role, subRole, approved, isChildrenLeader, isTeensLeader } = useAuth();
   const subRoles = (subRole ?? "").split(",").map((s) => s.trim().toLowerCase()).filter(Boolean);
   const isFollowUpHod = approved && role === "hod" && subRoles.includes("follow-up");
-  const canAccess = isPastor || isAdmin || isFollowUpHod || isChildrenLeader || isTeensLeader;
+  // The follow-up team: the dedicated follow-up role plus the Follow-up HOD.
+  const isFollowUpTeam = (approved && role === "follow_up") || isFollowUpHod;
+  // Only the follow-up team (and the Pastor/Admin who oversee them) may register first timers.
+  const canRegister = isPastor || isAdmin || isFollowUpTeam;
+  // Natural group leaders get a read-only view of the first timers in their fellowship.
+  const isGroupLeader = approved && role === "group_leader";
+  const myFellowships = isGroupLeader ? subRoles : [];
+  const canAccess = canRegister || isGroupLeader || isChildrenLeader || isTeensLeader;
 
   // All members visible to the signed-in user
   const { data: members = [] } = useMembers();
