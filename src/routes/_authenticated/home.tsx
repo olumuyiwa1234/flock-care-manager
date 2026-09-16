@@ -75,10 +75,15 @@ function Home() {
     navigate({ to: "/auth", replace: true });
   }
 
-  // Determine which HODs are allowed to see the First Timers tile.
+  // Determine who is allowed to see the First Timers tile: the follow-up team who
+  // register visitors, Pastor/Admin, the Children and Teens HODs, and natural group
+  // leaders who receive the first timers belonging to their fellowship.
   const subRoles = (subRole ?? "").split(",").map((s) => s.trim().toLowerCase()).filter(Boolean);
   const isFollowUpHod = approved && role === "hod" && subRoles.includes("follow-up");
-  const canViewFirstTimers = isPastor || isAdmin || isFollowUpHod || isChildrenLeader || isTeensLeader;
+  const isFollowUpTeam = (approved && role === "follow_up") || isFollowUpHod;
+  const isGroupLeader = approved && role === "group_leader";
+  const canViewFirstTimers =
+    isPastor || isAdmin || isFollowUpTeam || isGroupLeader || isChildrenLeader || isTeensLeader;
 
   const visible = tiles.filter(
     (t) =>

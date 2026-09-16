@@ -10,7 +10,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useMembers } from "@/lib/queries";
 import { useAuth } from "@/lib/useAuth";
-import { formatDate } from "@/lib/shepherd";
+import { formatDate, fellowshipOf } from "@/lib/shepherd";
 
 export const Route = createFileRoute("/_authenticated/first-timers")({
   head: () => ({
@@ -25,11 +25,18 @@ export const Route = createFileRoute("/_authenticated/first-timers")({
 });
 
 function FirstTimers() {
-  // Only pastors/admins and specific HODs (Follow-up, Children, Teens) may access this page.
+  // Roles that decide who may see and who may register first timers.
   const { isPastor, isAdmin, role, subRole, approved, isChildrenLeader, isTeensLeader } = useAuth();
   const subRoles = (subRole ?? "").split(",").map((s) => s.trim().toLowerCase()).filter(Boolean);
   const isFollowUpHod = approved && role === "hod" && subRoles.includes("follow-up");
-  const canAccess = isPastor || isAdmin || isFollowUpHod || isChildrenLeader || isTeensLeader;
+  // The follow-up team: the dedicated follow-up role plus the Follow-up HOD.
+  const isFollowUpTeam = (approved && role === "follow_up") || isFollowUpHod;
+  // Only the follow-up team (and the Pastor/Admin who oversee them) may register first timers.
+  const canRegister = isPastor || isAdmin || isFollowUpTeam;
+  // Natural group leaders get a read-only view of the first timers in their fellowship.
+  const isGroupLeader = approved && role === "group_leader";
+  const myFellowships = isGroupLeader ? subRoles : [];
+  const canAccess = canRegister || isGroupLeader || isChildrenLeader || isTeensLeader;
 
   // All members visible to the signed-in user
   const { data: members = [] } = useMembers();
@@ -56,9 +63,17 @@ function FirstTimers() {
     await queryClient.invalidateQueries({ queryKey: ["members"] });
   }
 
-  // First-time visitors, most recently registered first
+  // First-time visitors, most recently registered first. Natural group leaders
+  // only see the visitors whose status places them in their own fellowship
+  // (singles → Youth, married men under 50 → Men's, married women under 50 →
+  // Good Women, anyone 50 and above → Elders).
   const firstTimers = members
     .filter((m) => m.is_first_timer)
+    .filter((m) => {
+      if (!isGroupLeader) return true;
+      const fellowship = fellowshipOf(m.gender, m.marital_status, m.age_bracket);
+      return !!fellowship && myFellowships.includes(fellowship.toLowerCase());
+    })
     .sort((a, b) => b.created_at.localeCompare(a.created_at));
 
   // Guard the page so it cannot be reached directly by users without the right role.
@@ -66,7 +81,8 @@ function FirstTimers() {
     return (
       <AppShell title="First Timers" subtitle="Restricted" back="/home">
         <p className="text-sm text-muted-foreground">
-          Only the Pastor, Admin, Follow-up HOD, Children HOD or Teens HOD can access first timers.
+          Only the follow-up team, Pastor, Admin, natural group leaders, Children HOD or Teens HOD
+          can access first timers.
         </p>
       </AppShell>
     );
@@ -86,9 +102,12 @@ function FirstTimers() {
         />
       ) : (
         <>
-          <Button className="mb-4 w-full" size="lg" onClick={() => setAdding(true)}>
-            <UserPlus className="size-4" /> Register a first timer
-          </Button>
+          {/* Only the follow-up team may add new first timers */}
+          {canRegister && (
+            <Button className="mb-4 w-full" size="lg" onClick={() => setAdding(true)}>
+              <UserPlus className="size-4" /> Register a first timer
+            </Button>
+          )}
 
           {firstTimers.length === 0 ? (
             <p className="rounded-2xl border border-dashed border-border bg-card p-5 text-sm text-muted-foreground">
@@ -115,15 +134,17 @@ function FirstTimers() {
                     </span>
                   </Link>
                   {/* Moves the visitor into the Members tile when they register as a member */}
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="mt-2 w-full"
-                    disabled={converting === m.id}
-                    onClick={() => void registerAsMember(m.id)}
-                  >
-                    {converting === m.id ? "Adding…" : "Register as member"}
-                  </Button>
+                  {canRegister && (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="mt-2 w-full"
+                      disabled={converting === m.id}
+                      onClick={() => void registerAsMember(m.id)}
+                    >
+                      {converting === m.id ? "Adding…" : "Register as member"}
+                    </Button>
+                  )}
                 </li>
               ))}
             </ul>
