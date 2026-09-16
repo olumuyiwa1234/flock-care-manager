@@ -63,9 +63,17 @@ function FirstTimers() {
     await queryClient.invalidateQueries({ queryKey: ["members"] });
   }
 
-  // First-time visitors, most recently registered first
+  // First-time visitors, most recently registered first. Natural group leaders
+  // only see the visitors whose status places them in their own fellowship
+  // (singles → Youth, married men under 50 → Men's, married women under 50 →
+  // Good Women, anyone 50 and above → Elders).
   const firstTimers = members
     .filter((m) => m.is_first_timer)
+    .filter((m) => {
+      if (!isGroupLeader) return true;
+      const fellowship = fellowshipOf(m.gender, m.marital_status, m.age_bracket);
+      return !!fellowship && myFellowships.includes(fellowship.toLowerCase());
+    })
     .sort((a, b) => b.created_at.localeCompare(a.created_at));
 
   // Guard the page so it cannot be reached directly by users without the right role.
@@ -73,7 +81,8 @@ function FirstTimers() {
     return (
       <AppShell title="First Timers" subtitle="Restricted" back="/home">
         <p className="text-sm text-muted-foreground">
-          Only the Pastor, Admin, Follow-up HOD, Children HOD or Teens HOD can access first timers.
+          Only the follow-up team, Pastor, Admin, natural group leaders, Children HOD or Teens HOD
+          can access first timers.
         </p>
       </AppShell>
     );
