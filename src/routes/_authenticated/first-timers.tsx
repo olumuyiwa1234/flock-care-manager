@@ -102,9 +102,12 @@ function FirstTimers() {
         />
       ) : (
         <>
-          <Button className="mb-4 w-full" size="lg" onClick={() => setAdding(true)}>
-            <UserPlus className="size-4" /> Register a first timer
-          </Button>
+          {/* Only the follow-up team may add new first timers */}
+          {canRegister && (
+            <Button className="mb-4 w-full" size="lg" onClick={() => setAdding(true)}>
+              <UserPlus className="size-4" /> Register a first timer
+            </Button>
+          )}
 
           {firstTimers.length === 0 ? (
             <p className="rounded-2xl border border-dashed border-border bg-card p-5 text-sm text-muted-foreground">
