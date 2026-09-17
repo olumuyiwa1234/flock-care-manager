@@ -1,10 +1,11 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
-import { Check, Plus, X } from "lucide-react";
+import { Check, Plus, Search, X } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { AppShell } from "@/components/AppShell";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
   Select,
@@ -46,9 +47,31 @@ function ChildrenAttendance() {
   const activeService = todaysService();
   const [serviceType, setServiceType] = useState<string>(activeService ?? SERVICE_TYPES[0]);
   const [busy, setBusy] = useState<string | null>(null);
+  // Name search term used to filter the children list as the leader types.
+  const [q, setQ] = useState("");
 
-  const children = useMemo(
-    () => members.filter((m) => m.age_bracket === "0-12"),
+  // Children roster, optionally narrowed by the name/member-ID search box.
+  const children = useMemo(() => {
+    const term = q.trim().toLowerCase();
+    return members.filter((m) => {
+      if (m.age_bracket !== "0-12") return false;
+      // Match against name or member code so a partial ID also finds the child.
+      if (
+        term &&
+        !(
+          m.full_name.toLowerCase().includes(term) ||
+          m.member_code.toLowerCase().includes(term)
+        )
+      )
+        return false;
+      return true;
+    });
+  }, [members, q]);
+
+  // Total children in the bracket regardless of search, used to tell
+  // "nothing registered yet" apart from "no search match".
+  const totalChildren = useMemo(
+    () => members.filter((m) => m.age_bracket === "0-12").length,
     [members],
   );
 
@@ -137,10 +160,23 @@ function ChildrenAttendance() {
           )}
         </div>
 
+        {/* Search box: filters the children list by name or member ID */}
+        <div className="relative">
+          <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+          <Input
+            className="pl-9"
+            placeholder="Search by name or member ID"
+            value={q}
+            onChange={(e) => setQ(e.target.value)}
+          />
+        </div>
+
         {isLoading && <p className="text-sm text-muted-foreground">Loading children…</p>}
         {!isLoading && children.length === 0 && (
           <p className="text-sm text-muted-foreground">
-            No members in the 0–12 age bracket yet. Tap + to add a child.
+            {totalChildren === 0
+              ? "No members in the 0–12 age bracket yet. Tap + to add a child."
+              : "No child matches your search."}
           </p>
         )}
 

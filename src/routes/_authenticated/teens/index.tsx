@@ -1,10 +1,11 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
-import { Check, Plus, X } from "lucide-react";
+import { Check, Plus, Search, X } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { AppShell } from "@/components/AppShell";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
   Select,
@@ -46,9 +47,31 @@ function TeensAttendance() {
   const activeService = todaysService();
   const [serviceType, setServiceType] = useState<string>(activeService ?? SERVICE_TYPES[0]);
   const [busy, setBusy] = useState<string | null>(null);
+  // Name search term used to filter the teenagers list as the leader types.
+  const [q, setQ] = useState("");
 
-  const teens = useMemo(
-    () => members.filter((m) => m.age_bracket === "13-17"),
+  // Teens roster, optionally narrowed by the name/member-ID search box.
+  const teens = useMemo(() => {
+    const term = q.trim().toLowerCase();
+    return members.filter((m) => {
+      if (m.age_bracket !== "13-17") return false;
+      // Match against name or member code so a partial ID also finds the teen.
+      if (
+        term &&
+        !(
+          m.full_name.toLowerCase().includes(term) ||
+          m.member_code.toLowerCase().includes(term)
+        )
+      )
+        return false;
+      return true;
+    });
+  }, [members, q]);
+
+  // Total teens in the bracket regardless of search, used to tell
+  // "nothing registered yet" apart from "no search match".
+  const totalTeens = useMemo(
+    () => members.filter((m) => m.age_bracket === "13-17").length,
     [members],
   );
 
@@ -137,10 +160,23 @@ function TeensAttendance() {
           )}
         </div>
 
+        {/* Search box: filters the teenagers list by name or member ID */}
+        <div className="relative">
+          <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+          <Input
+            className="pl-9"
+            placeholder="Search by name or member ID"
+            value={q}
+            onChange={(e) => setQ(e.target.value)}
+          />
+        </div>
+
         {isLoading && <p className="text-sm text-muted-foreground">Loading teenagers…</p>}
         {!isLoading && teens.length === 0 && (
           <p className="text-sm text-muted-foreground">
-            No members in the 13–17 age bracket yet. Tap + to add a teenager.
+            {totalTeens === 0
+              ? "No members in the 13–17 age bracket yet. Tap + to add a teenager."
+              : "No teenager matches your search."}
           </p>
         )}
 
