@@ -54,40 +54,6 @@ function Dashboard() {
         <StatTile label="Anniversaries today" value={annivs.length} />
       </div>
 
-      {isCareTeam && (
-        <section className="mt-6">
-          <h2 className="mb-3 text-base font-semibold">Missed two consecutive Sunday Services</h2>
-          {missed.length === 0 ? (
-            <p className="rounded-2xl border border-dashed border-border bg-card p-5 text-sm text-muted-foreground">
-              Everyone has been present recently. 🎉
-            </p>
-          ) : (
-            <ul className="space-y-2">
-              {missed.slice(0, 20).map((m) => (
-                <li key={m.id}>
-                  <Link
-                    to="/members/$memberId"
-                    params={{ memberId: m.id }}
-                    className="flex items-center gap-3 rounded-2xl border border-border bg-card p-3"
-                  >
-                    <MemberPhoto path={m.photo_url} name={m.full_name} />
-                    <span className="min-w-0 flex-1">
-                      <span className="block truncate font-medium">{m.full_name}</span>
-                      <span className="block text-xs text-muted-foreground">
-                        {m.department ?? "No department"} · {m.member_code}
-                      </span>
-                    </span>
-                    <span className="rounded-full bg-destructive/10 px-2 py-1 text-xs font-medium text-destructive">
-                      Absent
-                    </span>
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          )}
-        </section>
-      )}
-
       <section className="mt-6 space-y-4">
         <div>
           <h2 className="mb-3 text-base font-semibold">Birthdays this month</h2>
