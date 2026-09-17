@@ -32,7 +32,6 @@ function Dashboard() {
   );
   const bdays = birthdaysToday(members);
   const annivs = anniversariesToday(members);
-  const missed = missedTwoSundays(members, attendance);
 
   return (
     <AppShell title="Dashboard" subtitle="Today at a glance">
