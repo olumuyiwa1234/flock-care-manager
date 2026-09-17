@@ -160,10 +160,23 @@ function TeensAttendance() {
           )}
         </div>
 
+        {/* Search box: filters the teenagers list by name or member ID */}
+        <div className="relative">
+          <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+          <Input
+            className="pl-9"
+            placeholder="Search by name or member ID"
+            value={q}
+            onChange={(e) => setQ(e.target.value)}
+          />
+        </div>
+
         {isLoading && <p className="text-sm text-muted-foreground">Loading teenagers…</p>}
         {!isLoading && teens.length === 0 && (
           <p className="text-sm text-muted-foreground">
-            No members in the 13–17 age bracket yet. Tap + to add a teenager.
+            {totalTeens === 0
+              ? "No members in the 13–17 age bracket yet. Tap + to add a teenager."
+              : "No teenager matches your search."}
           </p>
         )}
 
