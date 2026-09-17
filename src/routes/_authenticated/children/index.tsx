@@ -68,6 +68,13 @@ function ChildrenAttendance() {
     });
   }, [members, q]);
 
+  // Total children in the bracket regardless of search, used to tell
+  // "nothing registered yet" apart from "no search match".
+  const totalChildren = useMemo(
+    () => members.filter((m) => m.age_bracket === "0-12").length,
+    [members],
+  );
+
   const statusFor = (memberId: string) =>
     attendance.find(
       (a) =>

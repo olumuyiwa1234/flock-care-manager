@@ -68,6 +68,13 @@ function TeensAttendance() {
     });
   }, [members, q]);
 
+  // Total teens in the bracket regardless of search, used to tell
+  // "nothing registered yet" apart from "no search match".
+  const totalTeens = useMemo(
+    () => members.filter((m) => m.age_bracket === "13-17").length,
+    [members],
+  );
+
   const statusFor = (memberId: string) =>
     attendance.find(
       (a) =>
