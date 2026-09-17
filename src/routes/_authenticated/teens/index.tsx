@@ -47,11 +47,26 @@ function TeensAttendance() {
   const activeService = todaysService();
   const [serviceType, setServiceType] = useState<string>(activeService ?? SERVICE_TYPES[0]);
   const [busy, setBusy] = useState<string | null>(null);
+  // Name search term used to filter the teenagers list as the leader types.
+  const [q, setQ] = useState("");
 
-  const teens = useMemo(
-    () => members.filter((m) => m.age_bracket === "13-17"),
-    [members],
-  );
+  // Teens roster, optionally narrowed by the name/member-ID search box.
+  const teens = useMemo(() => {
+    const term = q.trim().toLowerCase();
+    return members.filter((m) => {
+      if (m.age_bracket !== "13-17") return false;
+      // Match against name or member code so a partial ID also finds the teen.
+      if (
+        term &&
+        !(
+          m.full_name.toLowerCase().includes(term) ||
+          m.member_code.toLowerCase().includes(term)
+        )
+      )
+        return false;
+      return true;
+    });
+  }, [members, q]);
 
   const statusFor = (memberId: string) =>
     attendance.find(
