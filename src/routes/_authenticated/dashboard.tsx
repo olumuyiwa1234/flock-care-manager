@@ -2,7 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { AppShell, StatTile } from "@/components/AppShell";
 import { useAuth } from "@/lib/useAuth";
 import { useMembers, useAttendance } from "@/lib/queries";
-import { anniversariesToday, birthdaysToday, missedTwoSundays } from "@/lib/useNotifications";
+import { anniversariesToday, birthdaysToday } from "@/lib/useNotifications";
 import { lastSundays, todayISO } from "@/lib/shepherd";
 import { MemberPhoto } from "@/components/MemberPhoto";
 
