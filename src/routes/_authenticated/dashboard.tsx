@@ -19,8 +19,7 @@ export const Route = createFileRoute("/_authenticated/dashboard")({
 });
 
 function Dashboard() {
-  const { isFloor, isFullAccess, isFollowUp, role, approved } = useAuth();
-  const isCareTeam = isFullAccess || isFollowUp || (approved && role === "hod");
+  const { isFloor } = useAuth();
   const { data: members = [] } = useMembers();
   const { data: attendance = [] } = useAttendance(lastSundays(4).at(-1));
 
