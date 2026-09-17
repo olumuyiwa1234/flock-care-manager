@@ -29,25 +29,37 @@ function Dashboard() {
   // Selected day drives which attendance records the stats count.
   // Defaults to today so the dashboard opens on the current picture.
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
-  const selectedISO = selectedDate.toISOString().slice(0, 10);
+  // Format in LOCAL time (toISOString would shift the day by the UTC offset
+  // and make the filter show the wrong date's numbers).
+  const selectedISO = format(selectedDate, "yyyy-MM-dd");
   const isToday = selectedISO === todayISO();
 
-  // Load the member roster (all-time totals) and attendance from the
-  // selected date onward; we narrow to the exact date below.
+  // Load the member roster (all-time totals) and attendance for the
+  // selected date; we narrow to the exact date below.
   const { data: members = [] } = useMembers();
   const { data: attendance = [] } = useAttendance(selectedISO);
+
+  // Registered members only — first-time visitors are counted separately.
+  const roster = members.filter((m) => !m.is_first_timer);
+  const rosterIds = new Set(roster.map((m) => m.id));
 
   // Members recorded as present (or late) on the selected day.
   const presentSet = new Set(
     attendance
-      .filter((a) => a.service_date === selectedISO && a.status !== "Absent")
+      .filter(
+        (a) =>
+          a.service_date === selectedISO &&
+          a.status !== "Absent" &&
+          rosterIds.has(a.member_id),
+      )
       .map((a) => a.member_id),
   );
 
-  // First-timers whose record was created on the selected day.
+  // First-timers whose record was created on the selected day (local time).
   const firstTimers = members.filter(
-    (m) => m.is_first_timer && m.created_at.slice(0, 10) === selectedISO,
+    (m) => m.is_first_timer && format(new Date(m.created_at), "yyyy-MM-dd") === selectedISO,
   );
+
 
   return (
     <AppShell
