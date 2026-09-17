@@ -1,18 +1,23 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { useState } from "react";
+import { createFileRoute } from "@tanstack/react-router";
+import { format } from "date-fns";
+import { CalendarIcon } from "lucide-react";
 import { AppShell, StatTile } from "@/components/AppShell";
+import { Button } from "@/components/ui/button";
+import { Calendar } from "@/components/ui/calendar";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { cn } from "@/lib/utils";
 import { useAuth } from "@/lib/useAuth";
 import { useMembers, useAttendance } from "@/lib/queries";
-import { anniversariesToday, birthdaysToday } from "@/lib/useNotifications";
-import { lastSundays, todayISO } from "@/lib/shepherd";
-import { MemberPhoto } from "@/components/MemberPhoto";
+import { todayISO } from "@/lib/shepherd";
 
 export const Route = createFileRoute("/_authenticated/dashboard")({
   head: () => ({
     meta: [
       { title: "Dashboard — Shepherd" },
-      { name: "description", content: "Live totals for members, attendance, absentees, visitors, birthdays and anniversaries." },
+      { name: "description", content: "Live totals for members, attendance, absentees and first-time visitors, filterable by date." },
       { property: "og:title", content: "Dashboard — Shepherd" },
-      { property: "og:description", content: "Live church attendance and pastoral care overview." },
+      { property: "og:description", content: "Live church attendance overview with a date filter." },
     ],
   }),
   component: Dashboard,
@@ -20,74 +25,80 @@ export const Route = createFileRoute("/_authenticated/dashboard")({
 
 function Dashboard() {
   const { isFloor } = useAuth();
-  const { data: members = [] } = useMembers();
-  const { data: attendance = [] } = useAttendance(lastSundays(4).at(-1));
 
-  const today = todayISO();
-  const presentToday = new Set(
-    attendance.filter((a) => a.service_date === today && a.status !== "Absent").map((a) => a.member_id),
+  // Selected day drives which attendance records the stats count.
+  // Defaults to today so the dashboard opens on the current picture.
+  const [selectedDate, setSelectedDate] = useState<Date>(new Date());
+  const selectedISO = selectedDate.toISOString().slice(0, 10);
+  const isToday = selectedISO === todayISO();
+
+  // Load the member roster (all-time totals) and attendance from the
+  // selected date onward; we narrow to the exact date below.
+  const { data: members = [] } = useMembers();
+  const { data: attendance = [] } = useAttendance(selectedISO);
+
+  // Members recorded as present (or late) on the selected day.
+  const presentSet = new Set(
+    attendance
+      .filter((a) => a.service_date === selectedISO && a.status !== "Absent")
+      .map((a) => a.member_id),
   );
+
+  // First-timers whose record was created on the selected day.
   const firstTimers = members.filter(
-    (m) => m.is_first_timer && m.created_at.slice(0, 10) === today,
+    (m) => m.is_first_timer && m.created_at.slice(0, 10) === selectedISO,
   );
-  const bdays = birthdaysToday(members);
-  const annivs = anniversariesToday(members);
 
   return (
-    <AppShell title="Dashboard" subtitle="Today at a glance">
+    <AppShell
+      title="Dashboard"
+      subtitle={isToday ? "Today at a glance" : format(selectedDate, "EEE, d MMM yyyy")}
+      // Date filter lives in the header action slot so it is always reachable.
+      action={
+        <Popover>
+          <PopoverTrigger asChild>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              className={cn("border-primary-foreground/30 bg-primary-foreground/10 text-primary-foreground hover:bg-primary-foreground/20 hover:text-primary-foreground")}
+              aria-label="Filter dashboard by date"
+            >
+              <CalendarIcon className="h-4 w-4" />
+              {format(selectedDate, "d MMM yyyy")}
+            </Button>
+          </PopoverTrigger>
+          <PopoverContent className="w-auto p-0 pointer-events-auto" align="end">
+            <Calendar
+              mode="single"
+              selected={selectedDate}
+              onSelect={(d) => d && setSelectedDate(d)}
+              initialFocus
+              className="p-3 pointer-events-auto"
+            />
+          </PopoverContent>
+        </Popover>
+      }
+    >
       <div className="grid grid-cols-2 gap-3">
         {!isFloor && (
           <>
             <StatTile label="Total members" value={members.length} to="/members" />
-            <StatTile label="Present today" value={presentToday.size} tone="good" to="/attendance" />
             <StatTile
-              label="Absent today"
-              value={Math.max(members.length - presentToday.size, 0)}
+              label={isToday ? "Present today" : "Present on date"}
+              value={presentSet.size}
+              tone="good"
+              to="/attendance"
+            />
+            <StatTile
+              label={isToday ? "Absent today" : "Absent on date"}
+              value={Math.max(members.length - presentSet.size, 0)}
               tone="warn"
             />
             <StatTile label="First-time visitors" value={firstTimers.length} />
           </>
         )}
-        <StatTile label="Birthdays this month" value={bdays.length} />
-        <StatTile label="Anniversaries today" value={annivs.length} />
       </div>
-
-      <section className="mt-6 space-y-4">
-        <div>
-          <h2 className="mb-3 text-base font-semibold">Birthdays this month</h2>
-          <PeopleList people={bdays} empty="No birthdays this month." />
-        </div>
-        <div>
-          <h2 className="mb-3 text-base font-semibold">Anniversaries today</h2>
-          <PeopleList people={annivs} empty="No anniversaries today." />
-        </div>
-      </section>
     </AppShell>
-  );
-}
-
-function PeopleList({
-  people,
-  empty,
-}: {
-  people: { id: string; full_name: string; photo_url: string | null; member_code: string }[];
-  empty: string;
-}) {
-  if (people.length === 0)
-    return (
-      <p className="rounded-2xl border border-dashed border-border bg-card p-5 text-sm text-muted-foreground">
-        {empty}
-      </p>
-    );
-  return (
-    <ul className="space-y-2">
-      {people.map((m) => (
-        <li key={m.id} className="flex items-center gap-3 rounded-2xl border border-border bg-card p-3">
-          <MemberPhoto path={m.photo_url} name={m.full_name} />
-          <span className="min-w-0 flex-1 truncate font-medium">{m.full_name}</span>
-          <span className="text-xs text-muted-foreground">{m.member_code}</span>
-        </li>
-      ))}
-    </ul>
   );
 }
