@@ -160,10 +160,23 @@ function ChildrenAttendance() {
           )}
         </div>
 
+        {/* Search box: filters the children list by name or member ID */}
+        <div className="relative">
+          <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+          <Input
+            className="pl-9"
+            placeholder="Search by name or member ID"
+            value={q}
+            onChange={(e) => setQ(e.target.value)}
+          />
+        </div>
+
         {isLoading && <p className="text-sm text-muted-foreground">Loading children…</p>}
         {!isLoading && children.length === 0 && (
           <p className="text-sm text-muted-foreground">
-            No members in the 0–12 age bracket yet. Tap + to add a child.
+            {totalChildren === 0
+              ? "No members in the 0–12 age bracket yet. Tap + to add a child."
+              : "No child matches your search."}
           </p>
         )}
 
