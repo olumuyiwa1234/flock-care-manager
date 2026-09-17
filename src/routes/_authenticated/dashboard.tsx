@@ -84,7 +84,10 @@ function Dashboard() {
             <Calendar
               mode="single"
               selected={selectedDate}
+              // Ignore clearing (clicking the selected day) so a date is always set.
               onSelect={(d) => d && setSelectedDate(d)}
+              // Future days have no attendance data, so block them.
+              disabled={(d) => d > new Date()}
               initialFocus
               className="p-3 pointer-events-auto"
             />
@@ -95,7 +98,7 @@ function Dashboard() {
       <div className="grid grid-cols-2 gap-3">
         {!isFloor && (
           <>
-            <StatTile label="Total members" value={members.length} to="/members" />
+            <StatTile label="Total members" value={roster.length} to="/members" />
             <StatTile
               label={isToday ? "Present today" : "Present on date"}
               value={presentSet.size}
@@ -104,10 +107,11 @@ function Dashboard() {
             />
             <StatTile
               label={isToday ? "Absent today" : "Absent on date"}
-              value={Math.max(members.length - presentSet.size, 0)}
+              value={Math.max(roster.length - presentSet.size, 0)}
               tone="warn"
             />
             <StatTile label="First-time visitors" value={firstTimers.length} />
+
           </>
         )}
       </div>
