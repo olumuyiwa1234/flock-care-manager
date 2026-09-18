@@ -8,7 +8,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 import { formatDate } from "@/lib/shepherd";
 import { useAuth } from "@/lib/useAuth";
-import { Lightbulb, MessageSquareHeart } from "lucide-react";
+import { Lightbulb, MessageSquareHeart, Trash2 } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/inbox")({
   head: () => ({
