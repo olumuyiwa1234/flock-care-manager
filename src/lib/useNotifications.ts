@@ -49,9 +49,13 @@ export function missedTwoSundays(members: MemberRow[], attendance: AttendanceRow
       )
       .map((a) => `${a.member_id}:${a.service_date}`),
   );
-  return members.filter(
-    (m) => !attended.has(`${m.id}:${s1}`) && !attended.has(`${m.id}:${s2}`),
-  );
+  return members.filter((m) => {
+    // Skip anyone registered after the earlier of the two Sundays —
+    // they could not have attended services that happened before they joined.
+    const registeredOn = m.created_at.slice(0, 10);
+    if (registeredOn > s2) return false;
+    return !attended.has(`${m.id}:${s1}`) && !attended.has(`${m.id}:${s2}`);
+  });
 }
 
 export function useCelebrations() {
