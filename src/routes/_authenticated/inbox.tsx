@@ -8,7 +8,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 import { formatDate } from "@/lib/shepherd";
 import { useAuth } from "@/lib/useAuth";
-import { Lightbulb, MessageSquareHeart } from "lucide-react";
+import { Lightbulb, MessageSquareHeart, Trash2 } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/inbox")({
   head: () => ({
@@ -106,6 +106,32 @@ function Inbox() {
     },
   });
 
+  // Permanently delete an inbox item. For pastor messages, also delete every
+  // reply in the thread so no orphaned replies remain.
+  async function deleteItem(item: Item) {
+    setBusy(true);
+    if (item.kind === "message") {
+      await supabase.from("pastor_messages").delete().eq("parent_id", item.rowId);
+    }
+    const { error } = await supabase
+      .from(item.kind === "feedback" ? "suggestions" : "pastor_messages")
+      .delete()
+      .eq("id", item.rowId);
+    setBusy(false);
+    if (error) {
+      toast.error(error.message);
+      return;
+    }
+    // Close any open reply box that belonged to the deleted item.
+    if (replyFor === item.rowId) {
+      setReplyFor(null);
+      setReplyText("");
+    }
+    await queryClient.invalidateQueries({ queryKey: ["pastor-inbox"] });
+    await queryClient.invalidateQueries({ queryKey: ["pastor-messages"] });
+    toast.success("Deleted");
+  }
+
   async function sendReply(parentId: string) {
     const body = replyText.trim();
     if (!body) {
@@ -181,6 +207,16 @@ function Inbox() {
                                     minute: "2-digit",
                                   })}
                                 </span>
+                                {/* Pastor-only delete: removes the message and its replies. */}
+                                <button
+                                  type="button"
+                                  aria-label="Delete message"
+                                  disabled={busy}
+                                  onClick={() => void deleteItem(i)}
+                                  className="grid size-6 place-items-center rounded-full text-muted-foreground transition hover:bg-destructive/10 hover:text-destructive disabled:opacity-50"
+                                >
+                                  <Trash2 className="size-3.5" />
+                                </button>
                               </div>
                               {i.subject && <p className="mt-1 text-sm font-medium">{i.subject}</p>}
                               <p className="mt-1 whitespace-pre-wrap text-sm text-muted-foreground">
