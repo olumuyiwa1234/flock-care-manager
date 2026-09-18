@@ -147,6 +147,56 @@ export type Database = {
         }
         Relationships: []
       }
+      deletion_requests: {
+        Row: {
+          created_at: string
+          decided_at: string | null
+          decided_by: string | null
+          id: string
+          member_id: string | null
+          member_name: string
+          reason: string | null
+          requested_by: string
+          requested_by_name: string
+          status: string
+          target_user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          decided_at?: string | null
+          decided_by?: string | null
+          id?: string
+          member_id?: string | null
+          member_name?: string
+          reason?: string | null
+          requested_by: string
+          requested_by_name?: string
+          status?: string
+          target_user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          decided_at?: string | null
+          decided_by?: string | null
+          id?: string
+          member_id?: string | null
+          member_name?: string
+          reason?: string | null
+          requested_by?: string
+          requested_by_name?: string
+          status?: string
+          target_user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "deletion_requests_member_id_fkey"
+            columns: ["member_id"]
+            isOneToOne: false
+            referencedRelation: "members"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       follow_ups: {
         Row: {
           contact_method: string
