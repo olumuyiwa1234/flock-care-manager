@@ -37,6 +37,8 @@ export function anniversariesToday(members: MemberRow[]) {
 /** Members absent from the last two consecutive Sunday Services. */
 export function missedTwoSundays(members: MemberRow[], attendance: AttendanceRow[]) {
   const [s1, s2] = lastSundays(2);
+  // Members only count as "missed" for Sundays on/after the day they registered,
+  // so a brand-new account is never flagged for Sundays that came before it.
   const attended = new Set(
     attendance
       .filter(
