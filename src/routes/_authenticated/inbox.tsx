@@ -207,6 +207,16 @@ function Inbox() {
                                     minute: "2-digit",
                                   })}
                                 </span>
+                                {/* Pastor-only delete: removes the message and its replies. */}
+                                <button
+                                  type="button"
+                                  aria-label="Delete message"
+                                  disabled={busy}
+                                  onClick={() => void deleteItem(i)}
+                                  className="grid size-6 place-items-center rounded-full text-muted-foreground transition hover:bg-destructive/10 hover:text-destructive disabled:opacity-50"
+                                >
+                                  <Trash2 className="size-3.5" />
+                                </button>
                               </div>
                               {i.subject && <p className="mt-1 text-sm font-medium">{i.subject}</p>}
                               <p className="mt-1 whitespace-pre-wrap text-sm text-muted-foreground">
