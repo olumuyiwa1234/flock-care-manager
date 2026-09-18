@@ -138,7 +138,13 @@ function FollowUpList() {
           m.natural_group ?? fellowshipOf(m.gender, m.marital_status, m.age_bracket);
         return !!group && leaderGroups.includes(group.toLowerCase());
       })
-      .map((m) => ({ member: m, missed: consecutiveMissedSundays(m.id, sundays, attendance) }))
+      .map((m) => {
+        // Only count Sundays on/after the day the member registered —
+        // they cannot miss services that happened before they joined.
+        const registeredOn = m.created_at.slice(0, 10);
+        const countable = sundays.filter((s) => s >= registeredOn);
+        return { member: m, missed: consecutiveMissedSundays(m.id, countable, attendance) };
+      })
       .filter((row) => row.missed >= 2)
       .sort((a, b) => b.missed - a.missed || a.member.full_name.localeCompare(b.member.full_name));
   }, [members, attendance, sundays.join(","), restrictToGroup, leaderGroups]);
