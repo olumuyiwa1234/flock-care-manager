@@ -28,7 +28,14 @@ export function AppShell({
               type="button"
               aria-label="Go back"
               onClick={() => {
-                if (typeof back === "string") router.navigate({ to: back });
+                // Go back to the exact page/point the user came from.
+                // If there is no in-app history (e.g. page opened directly),
+                // fall back to the section's home path so the button never dead-ends.
+                if (window.history.length > 1) {
+                  router.history.back();
+                } else if (typeof back === "string") {
+                  router.navigate({ to: back });
+                }
               }}
               className="grid size-10 shrink-0 place-items-center rounded-full bg-primary-foreground/15 transition hover:bg-primary-foreground/25"
             >
