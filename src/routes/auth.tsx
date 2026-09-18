@@ -493,6 +493,31 @@ function AuthPage() {
               autoComplete="email"
             />
           </Field>
+          {/* Forgot-password link: only meaningful in sign-in mode; sends a
+              recovery email to the address typed above. */}
+          {mode === "signin" && (
+            <div className="-mt-2 text-right">
+              <button
+                type="button"
+                className="text-sm font-medium text-primary underline-offset-4 hover:underline"
+                onClick={async () => {
+                  if (!email.trim()) {
+                    toast.error("Enter your email address first");
+                    return;
+                  }
+                  setBusy(true);
+                  const { error } = await supabase.auth.resetPasswordForEmail(email.trim(), {
+                    redirectTo: `${window.location.origin}/reset-password`,
+                  });
+                  setBusy(false);
+                  if (error) toast.error(error.message);
+                  else toast.success("Password reset link sent — check your email.");
+                }}
+              >
+                Forgot password?
+              </button>
+            </div>
+          )}
           <Field label="Password">
             <div className="relative">
               <Input
