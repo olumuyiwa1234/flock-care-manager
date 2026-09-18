@@ -39,6 +39,7 @@ export function missedTwoSundays(members: MemberRow[], attendance: AttendanceRow
   const [s1, s2] = lastSundays(2);
   // Members only count as "missed" for Sundays on/after the day they registered,
   // so a brand-new account is never flagged for Sundays that came before it.
+  if (!s1 || !s2) return [];
   const attended = new Set(
     attendance
       .filter(
