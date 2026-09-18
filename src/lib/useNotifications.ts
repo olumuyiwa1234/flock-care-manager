@@ -37,6 +37,9 @@ export function anniversariesToday(members: MemberRow[]) {
 /** Members absent from the last two consecutive Sunday Services. */
 export function missedTwoSundays(members: MemberRow[], attendance: AttendanceRow[]) {
   const [s1, s2] = lastSundays(2);
+  // Members only count as "missed" for Sundays on/after the day they registered,
+  // so a brand-new account is never flagged for Sundays that came before it.
+  if (!s1 || !s2) return [];
   const attended = new Set(
     attendance
       .filter(
@@ -47,9 +50,13 @@ export function missedTwoSundays(members: MemberRow[], attendance: AttendanceRow
       )
       .map((a) => `${a.member_id}:${a.service_date}`),
   );
-  return members.filter(
-    (m) => !attended.has(`${m.id}:${s1}`) && !attended.has(`${m.id}:${s2}`),
-  );
+  return members.filter((m) => {
+    // Skip anyone registered after the earlier of the two Sundays —
+    // they could not have attended services that happened before they joined.
+    const registeredOn = m.created_at.slice(0, 10);
+    if (registeredOn > s2) return false;
+    return !attended.has(`${m.id}:${s1}`) && !attended.has(`${m.id}:${s2}`);
+  });
 }
 
 export function useCelebrations() {
