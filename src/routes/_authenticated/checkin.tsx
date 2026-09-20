@@ -64,25 +64,75 @@ function CheckIn() {
       let receivedPosition = false;
 
       // A phone's first GPS fix is often stale or based on a nearby mast.
-      // Retry fresh fixes and accept the first one that places the member in range.
-      for (let attempt = 0; attempt < 3; attempt += 1) {
+      // Watch the live position for up to ~10 seconds and keep the fix with
+      // the smallest reported error (the most trustworthy one). Checking the
+      // geofence with that best fix avoids false "out of range" results from
+      // an early, inaccurate reading.
+      let best: { lat: number; lng: number; accuracy: number } | null = null;
+      let watchId: string | undefined;
+      try {
+        const watchPromise = Geolocation.watchPosition(
+          { enableHighAccuracy: true, maximumAge: 0, timeout: 12000 },
+          (pos) => {
+            if (!pos?.coords) return;
+            const accuracy = pos.coords.accuracy ?? Number.MAX_SAFE_INTEGER;
+            if (!best || accuracy < best.accuracy) {
+              best = {
+                lat: pos.coords.latitude,
+                lng: pos.coords.longitude,
+                accuracy,
+              };
+            }
+          },
+        );
+        watchId = await watchPromise;
+      } catch {
+        // Watching failed (e.g. permission prompt dismissed); a single
+        // snapshot below is the fallback.
+      }
+
+      // Give the GPS up to 10 seconds to refine the fix before deciding.
+      if (watchId) await new Promise((resolve) => setTimeout(resolve, 10000));
+
+      // Fall back to a one-off snapshot when the watch produced nothing.
+      if (!best) {
         try {
           const pos = await Geolocation.getCurrentPosition({
             enableHighAccuracy: true,
             timeout: 12000,
             maximumAge: 0,
           });
-          receivedPosition = true;
+          best = {
+            lat: pos.coords.latitude,
+            lng: pos.coords.longitude,
+            accuracy: pos.coords.accuracy ?? Number.MAX_SAFE_INTEGER,
+          };
+        } catch {
+          // No usable position at all.
+        }
+      }
+
+      if (best) {
+        receivedPosition = true;
+        try {
           latestResult = await checkGeofence({
             data: {
-              lat: pos.coords.latitude,
-              lng: pos.coords.longitude,
-              accuracy: pos.coords.accuracy ?? undefined,
+              lat: best.lat,
+              lng: best.lng,
+              accuracy: Number.isFinite(best.accuracy) ? best.accuracy : undefined,
             },
           });
-          if (latestResult.allowed || !latestResult.enabled) break;
         } catch {
-          // A later attempt can still succeed when the phone is acquiring GPS.
+          latestResult = null;
+        }
+      }
+
+      // Stop watching so the GPS radio does not keep draining battery.
+      if (watchId) {
+        try {
+          await Geolocation.clearWatch({ id: watchId });
+        } catch {
+          // Clearing the watch is best-effort.
         }
       }
 

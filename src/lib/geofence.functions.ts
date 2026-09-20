@@ -41,10 +41,12 @@ export const checkGeofence = createServerFn({ method: "POST" })
       Math.cos(toRad(data.lat)) * Math.cos(toRad(s.latitude)) * Math.sin(lngDelta / 2) ** 2;
     const dist = 6371000 * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 
-    // Phones commonly under-report their error indoors. Keep a small baseline
-    // tolerance, then use the device's larger reported error when available.
-    // The cap prevents a very poor fix from opening the geofence entirely.
-    const buffer = Math.min(Math.max(data.accuracy ?? 0, 100), 500);
+    // Phone GPS is unreliable indoors: the reported position can be hundreds
+    // of metres off even when the phone claims good accuracy. Use the larger
+    // of the reported error and a generous baseline as the buffer so members
+    // standing inside the church are never rejected. The cap stops a totally
+    // failed fix from opening the geofence to the whole city.
+    const buffer = Math.min(Math.max(data.accuracy ?? 0, 250), 1500);
     return {
       churchName: s.church_name,
       enabled: true,
