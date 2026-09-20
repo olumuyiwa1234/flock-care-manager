@@ -155,24 +155,43 @@ function MemberDetail() {
     );
   }
 
+  // Pastor deletes straight away; everyone else with access sends the pastor
+  // a request that must be approved before anything is removed.
   async function deleteAccount() {
     if (!m) return;
     setDeleting(true);
     try {
-      await deleteUserAccount({
-        data: m.user_id ? { userId: m.user_id, memberId: m.id } : { memberId: m.id },
-      });
-      await queryClient.invalidateQueries({ queryKey: ["member", memberId] });
-      await queryClient.invalidateQueries({ queryKey: ["members"] });
-      toast.success("Account and all records deleted");
-      setConfirmDelete(false);
-      void navigate({ to: "/members" });
+      if (isPastor) {
+        await deleteUserAccount({
+          data: m.user_id ? { userId: m.user_id, memberId: m.id } : { memberId: m.id },
+        });
+        await queryClient.invalidateQueries({ queryKey: ["member", memberId] });
+        await queryClient.invalidateQueries({ queryKey: ["members"] });
+        toast.success("Account and all records deleted");
+        setConfirmDelete(false);
+        void navigate({ to: "/members" });
+      } else {
+        const res = await requestAccountDeletion({
+          data: {
+            ...(m.user_id ? { userId: m.user_id } : {}),
+            memberId: m.id,
+            memberName: m.full_name,
+          },
+        });
+        toast.success(
+          res.alreadyPending
+            ? "A request for this account is already awaiting the pastor"
+            : "Request sent — the pastor has to approve before deletion",
+        );
+        setConfirmDelete(false);
+      }
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Could not delete account");
     } finally {
       setDeleting(false);
     }
   }
+
 
   if (editing) {
     return (
