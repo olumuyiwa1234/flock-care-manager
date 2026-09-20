@@ -1,11 +1,14 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { AppShell } from "@/components/AppShell";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { useAuth } from "@/lib/useAuth";
-import { ROLE_LABELS, type AppRole } from "@/lib/shepherd";
+import { ROLE_LABELS, formatDate, type AppRole } from "@/lib/shepherd";
+import { decideAccountDeletion } from "@/lib/accounts.functions";
+
 
 export const Route = createFileRoute("/_authenticated/approvals")({
   head: () => ({
