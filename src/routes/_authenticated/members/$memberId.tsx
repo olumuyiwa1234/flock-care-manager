@@ -453,10 +453,13 @@ function MemberDetail() {
             className="w-full border-destructive/40 text-destructive"
             onClick={() => setConfirmDelete(true)}
           >
-            <Trash2 className="mr-2 size-4" /> Delete account
+            <Trash2 className="mr-2 size-4" />{" "}
+            {isPastor ? "Delete account" : "Request account deletion"}
           </Button>
           <p className="mt-2 text-center text-xs text-muted-foreground">
-            Permanently removes this person, their profile, attendance and follow-up records.
+            {isPastor
+              ? "Permanently removes this person, their profile, attendance and follow-up records."
+              : "The pastor has to approve before this account and its records are removed."}
           </p>
         </section>
       )}
@@ -464,10 +467,13 @@ function MemberDetail() {
       <AlertDialog open={confirmDelete} onOpenChange={setConfirmDelete}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Delete this account?</AlertDialogTitle>
+            <AlertDialogTitle>
+              {isPastor ? "Delete this account?" : "Ask the pastor to delete this account?"}
+            </AlertDialogTitle>
             <AlertDialogDescription>
-              This permanently wipes {m.full_name} from the database — profile, attendance and
-              follow-up records included. This action cannot be undone.
+              {isPastor
+                ? `This permanently wipes ${m.full_name} from the database — profile, attendance and follow-up records included. This action cannot be undone.`
+                : `The pastor will be asked to approve removing ${m.full_name}. Nothing is deleted until the pastor approves.`}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
@@ -480,8 +486,15 @@ function MemberDetail() {
               }}
               disabled={deleting}
             >
-              {deleting ? "Deleting…" : "Delete account"}
+              {deleting
+                ? isPastor
+                  ? "Deleting…"
+                  : "Sending…"
+                : isPastor
+                  ? "Delete account"
+                  : "Send request"}
             </AlertDialogAction>
+
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
