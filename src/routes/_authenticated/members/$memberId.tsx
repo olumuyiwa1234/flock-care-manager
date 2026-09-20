@@ -27,7 +27,7 @@ import { toast } from "sonner";
 import { MONTHS, formatDate } from "@/lib/shepherd";
 import type { MemberRow, AttendanceRow } from "@/lib/queries";
 import { useAuth } from "@/lib/useAuth";
-import { deleteUserAccount } from "@/lib/accounts.functions";
+import { deleteUserAccount, requestAccountDeletion } from "@/lib/accounts.functions";
 
 export const Route = createFileRoute("/_authenticated/members/$memberId")({
   head: () => ({
@@ -68,7 +68,7 @@ function MemberDetail() {
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [photoOpen, setPhotoOpen] = useState(false);
-  const { isFullAccess, auth } = useAuth();
+  const { isFullAccess, isPastor, auth } = useAuth();
 
   const memberQuery = useQuery({
     queryKey: ["member", memberId],
