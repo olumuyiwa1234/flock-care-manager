@@ -27,7 +27,7 @@ import { toast } from "sonner";
 import { MONTHS, formatDate } from "@/lib/shepherd";
 import type { MemberRow, AttendanceRow } from "@/lib/queries";
 import { useAuth } from "@/lib/useAuth";
-import { deleteUserAccount } from "@/lib/accounts.functions";
+import { deleteUserAccount, requestAccountDeletion } from "@/lib/accounts.functions";
 
 export const Route = createFileRoute("/_authenticated/members/$memberId")({
   head: () => ({
@@ -68,7 +68,7 @@ function MemberDetail() {
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [photoOpen, setPhotoOpen] = useState(false);
-  const { isFullAccess, auth } = useAuth();
+  const { isFullAccess, isPastor, auth } = useAuth();
 
   const memberQuery = useQuery({
     queryKey: ["member", memberId],
@@ -155,24 +155,43 @@ function MemberDetail() {
     );
   }
 
+  // Pastor deletes straight away; everyone else with access sends the pastor
+  // a request that must be approved before anything is removed.
   async function deleteAccount() {
     if (!m) return;
     setDeleting(true);
     try {
-      await deleteUserAccount({
-        data: m.user_id ? { userId: m.user_id, memberId: m.id } : { memberId: m.id },
-      });
-      await queryClient.invalidateQueries({ queryKey: ["member", memberId] });
-      await queryClient.invalidateQueries({ queryKey: ["members"] });
-      toast.success("Account and all records deleted");
-      setConfirmDelete(false);
-      void navigate({ to: "/members" });
+      if (isPastor) {
+        await deleteUserAccount({
+          data: m.user_id ? { userId: m.user_id, memberId: m.id } : { memberId: m.id },
+        });
+        await queryClient.invalidateQueries({ queryKey: ["member", memberId] });
+        await queryClient.invalidateQueries({ queryKey: ["members"] });
+        toast.success("Account and all records deleted");
+        setConfirmDelete(false);
+        void navigate({ to: "/members" });
+      } else {
+        const res = await requestAccountDeletion({
+          data: {
+            ...(m.user_id ? { userId: m.user_id } : {}),
+            memberId: m.id,
+            memberName: m.full_name,
+          },
+        });
+        toast.success(
+          res.alreadyPending
+            ? "A request for this account is already awaiting the pastor"
+            : "Request sent — the pastor has to approve before deletion",
+        );
+        setConfirmDelete(false);
+      }
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Could not delete account");
     } finally {
       setDeleting(false);
     }
   }
+
 
   if (editing) {
     return (
@@ -434,10 +453,13 @@ function MemberDetail() {
             className="w-full border-destructive/40 text-destructive"
             onClick={() => setConfirmDelete(true)}
           >
-            <Trash2 className="mr-2 size-4" /> Delete account
+            <Trash2 className="mr-2 size-4" />{" "}
+            {isPastor ? "Delete account" : "Request account deletion"}
           </Button>
           <p className="mt-2 text-center text-xs text-muted-foreground">
-            Permanently removes this person, their profile, attendance and follow-up records.
+            {isPastor
+              ? "Permanently removes this person, their profile, attendance and follow-up records."
+              : "The pastor has to approve before this account and its records are removed."}
           </p>
         </section>
       )}
@@ -445,10 +467,13 @@ function MemberDetail() {
       <AlertDialog open={confirmDelete} onOpenChange={setConfirmDelete}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Delete this account?</AlertDialogTitle>
+            <AlertDialogTitle>
+              {isPastor ? "Delete this account?" : "Ask the pastor to delete this account?"}
+            </AlertDialogTitle>
             <AlertDialogDescription>
-              This permanently wipes {m.full_name} from the database — profile, attendance and
-              follow-up records included. This action cannot be undone.
+              {isPastor
+                ? `This permanently wipes ${m.full_name} from the database — profile, attendance and follow-up records included. This action cannot be undone.`
+                : `The pastor will be asked to approve removing ${m.full_name}. Nothing is deleted until the pastor approves.`}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
@@ -461,8 +486,15 @@ function MemberDetail() {
               }}
               disabled={deleting}
             >
-              {deleting ? "Deleting…" : "Delete account"}
+              {deleting
+                ? isPastor
+                  ? "Deleting…"
+                  : "Sending…"
+                : isPastor
+                  ? "Delete account"
+                  : "Send request"}
             </AlertDialogAction>
+
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
