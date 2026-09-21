@@ -329,7 +329,14 @@ function AuthPage() {
                   type="file"
                   accept="image/*"
                   required
-                  onChange={(e) => setPhotoFile(e.target.files?.[0] ?? null)}
+                  onChange={(e) => {
+                    // Keep the picked photo safe straight away so it survives
+                    // the sign-up step (and any email confirmation detour).
+                    const f = e.target.files?.[0] ?? null;
+                    setPhotoFile(f);
+                    if (f) void savePendingPhoto(f);
+                    else clearPendingPhoto();
+                  }}
                 />
               </Field>
 
