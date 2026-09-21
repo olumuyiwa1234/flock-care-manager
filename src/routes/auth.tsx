@@ -26,6 +26,8 @@ import {
   type AppRole,
 } from "@/lib/shepherd";
 import { savePendingMember, flushPendingMember, clearPendingMember } from "@/lib/pendingMember";
+// Keeps the registration photo until the new account can upload it.
+import { savePendingPhoto, flushPendingPhoto, clearPendingPhoto } from "@/lib/pendingPhoto";
 import { pastorSeatTaken } from "@/lib/pastor.functions";
 import { checkPhoneExists } from "@/lib/phone.functions";
 
@@ -120,18 +122,13 @@ function AuthPage() {
   const needsApproval = !(effectiveRoles.every((r) => r === "member") || isPastor);
 
 
-  async function uploadPhoto(userId: string) {
-    if (!photoFile) return;
-    const ext = photoFile.name.split(".").pop() ?? "jpg";
-    const path = `${userId}/${crypto.randomUUID()}.${ext}`;
-    const { error } = await supabase.storage.from("member-photos").upload(path, photoFile);
-    if (error) return;
-    await supabase.from("members").update({ photo_url: path }).eq("user_id", userId);
-  }
-
+  // Once a session exists, save the member details and then upload the photo
+  // that was kept aside at registration. The photo is retried on next sign-in
+  // if anything fails, so it is never silently lost.
   async function afterSession(userId: string) {
     await flushPendingMember(userId);
-    await uploadPhoto(userId);
+    const ok = await flushPendingPhoto(userId);
+    if (!ok) toast.error("Your photo could not be saved. You can add it from your profile.");
   }
 
   async function submit(e: React.FormEvent) {
@@ -196,6 +193,10 @@ function AuthPage() {
     const departmentValue = effectiveRoles.includes("hod")
       ? Array.from(new Set([...(effectiveSubRoles["hod"] ?? []), ...effectiveDepartments])).join(", ")
       : effectiveDepartments.join(", ");
+
+    // Make sure the chosen photo is stored locally before the account is made,
+    // so it is always ready to upload the instant a session exists.
+    if (photoFile) await savePendingPhoto(photoFile);
 
     savePendingMember({
       full_name: fullName.trim(),
@@ -334,7 +335,14 @@ function AuthPage() {
                   type="file"
                   accept="image/*"
                   required
-                  onChange={(e) => setPhotoFile(e.target.files?.[0] ?? null)}
+                  onChange={(e) => {
+                    // Keep the picked photo safe straight away so it survives
+                    // the sign-up step (and any email confirmation detour).
+                    const f = e.target.files?.[0] ?? null;
+                    setPhotoFile(f);
+                    if (f) void savePendingPhoto(f);
+                    else clearPendingPhoto();
+                  }}
                 />
               </Field>
 

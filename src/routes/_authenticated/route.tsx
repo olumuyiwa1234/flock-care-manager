@@ -7,6 +7,9 @@ export const Route = createFileRoute("/_authenticated")({
   beforeLoad: async () => {
     const { data, error } = await supabase.auth.getUser();
     if (error || !data.user) throw redirect({ to: "/auth" });
+    // If a registration photo is still waiting (for example the person had to
+    // confirm their email first), upload it now in the background.
+    void import("@/lib/pendingPhoto").then((m) => m.flushPendingPhoto(data.user!.id));
     return { user: data.user };
   },
   component: () => (
