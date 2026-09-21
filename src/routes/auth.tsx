@@ -120,18 +120,13 @@ function AuthPage() {
   const needsApproval = !(effectiveRoles.every((r) => r === "member") || isPastor);
 
 
-  async function uploadPhoto(userId: string) {
-    if (!photoFile) return;
-    const ext = photoFile.name.split(".").pop() ?? "jpg";
-    const path = `${userId}/${crypto.randomUUID()}.${ext}`;
-    const { error } = await supabase.storage.from("member-photos").upload(path, photoFile);
-    if (error) return;
-    await supabase.from("members").update({ photo_url: path }).eq("user_id", userId);
-  }
-
+  // Once a session exists, save the member details and then upload the photo
+  // that was kept aside at registration. The photo is retried on next sign-in
+  // if anything fails, so it is never silently lost.
   async function afterSession(userId: string) {
     await flushPendingMember(userId);
-    await uploadPhoto(userId);
+    const ok = await flushPendingPhoto(userId);
+    if (!ok) toast.error("Your photo could not be saved. You can add it from your profile.");
   }
 
   async function submit(e: React.FormEvent) {
