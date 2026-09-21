@@ -26,6 +26,8 @@ import {
   type AppRole,
 } from "@/lib/shepherd";
 import { savePendingMember, flushPendingMember, clearPendingMember } from "@/lib/pendingMember";
+// Keeps the registration photo until the new account can upload it.
+import { savePendingPhoto, flushPendingPhoto, clearPendingPhoto } from "@/lib/pendingPhoto";
 import { pastorSeatTaken } from "@/lib/pastor.functions";
 import { checkPhoneExists } from "@/lib/phone.functions";
 
