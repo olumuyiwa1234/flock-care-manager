@@ -194,6 +194,10 @@ function AuthPage() {
       ? Array.from(new Set([...(effectiveSubRoles["hod"] ?? []), ...effectiveDepartments])).join(", ")
       : effectiveDepartments.join(", ");
 
+    // Make sure the chosen photo is stored locally before the account is made,
+    // so it is always ready to upload the instant a session exists.
+    if (photoFile) await savePendingPhoto(photoFile);
+
     savePendingMember({
       full_name: fullName.trim(),
       photo_url: null,
