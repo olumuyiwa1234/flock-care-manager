@@ -29,13 +29,26 @@ type Row = {
   author_name: string;
   is_active: boolean;
   created_at: string;
+  expires_at: string | null;
 };
+
+/** How long a blast keeps popping up, in hours (0 = until it is stopped manually). */
+const DURATIONS = [
+  { label: "1 hour", hours: 1 },
+  { label: "6 hours", hours: 6 },
+  { label: "12 hours", hours: 12 },
+  { label: "24 hours", hours: 24 },
+  { label: "3 days", hours: 72 },
+  { label: "1 week", hours: 168 },
+  { label: "Until I stop it", hours: 0 },
+];
 
 function Announcements() {
   const { auth, isAdmin } = useAuth();
   const queryClient = useQueryClient();
   const [title, setTitle] = useState("");
   const [body, setBody] = useState("");
+  const [hours, setHours] = useState(24);
   const [busy, setBusy] = useState(false);
 
   const listQuery = useQuery({
@@ -43,7 +56,7 @@ function Announcements() {
     queryFn: async (): Promise<Row[]> => {
       const { data, error } = await supabase
         .from("announcements")
-        .select("id, title, body, author_name, is_active, created_at")
+        .select("id, title, body, author_name, is_active, created_at, expires_at")
         .order("created_at", { ascending: false });
       if (error) throw error;
       return (data ?? []) as Row[];
@@ -69,11 +82,15 @@ function Announcements() {
     }
     if (!auth) return;
     setBusy(true);
+    // Work out when the blast should stop popping up.
+    const expiresAt =
+      hours > 0 ? new Date(Date.now() + hours * 60 * 60 * 1000).toISOString() : null;
     const { error } = await supabase.from("announcements").insert({
       title: title.trim(),
       body: text,
       author_name: auth.fullName || "Church leadership",
       created_by: auth.userId,
+      expires_at: expiresAt,
     });
     setBusy(false);
     if (error) {
@@ -86,6 +103,7 @@ function Announcements() {
     await queryClient.invalidateQueries({ queryKey: ["active-announcement"] });
     toast.success("Announcement sent to everyone");
   }
+
 
   async function toggle(row: Row) {
     const { error } = await supabase
@@ -130,12 +148,29 @@ function Announcements() {
           maxLength={1000}
           placeholder="What should everyone know?"
         />
+        {/* Sender chooses how long the blast should keep popping up. */}
+        <label className="mt-3 block text-xs font-medium text-muted-foreground">
+          Keep showing for
+        </label>
+        <select
+          value={hours}
+          onChange={(e) => setHours(Number(e.target.value))}
+          className="mt-1 h-10 w-full rounded-md border border-input bg-background px-3 text-sm"
+        >
+          {DURATIONS.map((d) => (
+            <option key={d.hours} value={d.hours}>
+              {d.label}
+            </option>
+          ))}
+        </select>
         <Button className="mt-3 w-full" onClick={() => void send()} disabled={busy}>
           {busy ? "Sending…" : "Send to everyone"}
         </Button>
         <p className="mt-2 text-xs text-muted-foreground">
-          This pops up for every user when they sign in, until they close it.
+          It pops up for everyone during that time. Closing it hides it until the person opens or
+          signs into the app again.
         </p>
+
       </div>
 
       <h2 className="mb-2 mt-6 text-base font-semibold">Sent announcements</h2>
@@ -152,6 +187,15 @@ function Announcements() {
                 <span className="text-xs text-muted-foreground">{formatDate(r.created_at)}</span>
               </div>
               <p className="mt-1 whitespace-pre-wrap text-muted-foreground">{r.body}</p>
+              {/* Show when this blast stops popping up. */}
+              <p className="mt-1 text-xs text-muted-foreground">
+                {r.expires_at
+                  ? new Date(r.expires_at).getTime() > Date.now()
+                    ? `Showing until ${formatDate(r.expires_at)}`
+                    : "No longer showing"
+                  : "Shows until you stop it"}
+              </p>
+
               <div className="mt-3 flex items-center gap-2">
                 <Button size="sm" variant="outline" onClick={() => void toggle(r)}>
                   {r.is_active ? "Stop showing" : "Show again"}

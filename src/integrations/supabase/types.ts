@@ -49,6 +49,7 @@ export type Database = {
           body: string
           created_at: string
           created_by: string
+          expires_at: string | null
           id: string
           is_active: boolean
           title: string
@@ -59,6 +60,7 @@ export type Database = {
           body: string
           created_at?: string
           created_by: string
+          expires_at?: string | null
           id?: string
           is_active?: boolean
           title?: string
@@ -69,6 +71,7 @@ export type Database = {
           body?: string
           created_at?: string
           created_by?: string
+          expires_at?: string | null
           id?: string
           is_active?: boolean
           title?: string
