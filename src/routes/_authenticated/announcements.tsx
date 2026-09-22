@@ -148,12 +148,29 @@ function Announcements() {
           maxLength={1000}
           placeholder="What should everyone know?"
         />
+        {/* Sender chooses how long the blast should keep popping up. */}
+        <label className="mt-3 block text-xs font-medium text-muted-foreground">
+          Keep showing for
+        </label>
+        <select
+          value={hours}
+          onChange={(e) => setHours(Number(e.target.value))}
+          className="mt-1 h-10 w-full rounded-md border border-input bg-background px-3 text-sm"
+        >
+          {DURATIONS.map((d) => (
+            <option key={d.hours} value={d.hours}>
+              {d.label}
+            </option>
+          ))}
+        </select>
         <Button className="mt-3 w-full" onClick={() => void send()} disabled={busy}>
           {busy ? "Sending…" : "Send to everyone"}
         </Button>
         <p className="mt-2 text-xs text-muted-foreground">
-          This pops up for every user when they sign in, until they close it.
+          It pops up for everyone during that time. Closing it hides it until the person opens or
+          signs into the app again.
         </p>
+
       </div>
 
       <h2 className="mb-2 mt-6 text-base font-semibold">Sent announcements</h2>
@@ -170,6 +187,15 @@ function Announcements() {
                 <span className="text-xs text-muted-foreground">{formatDate(r.created_at)}</span>
               </div>
               <p className="mt-1 whitespace-pre-wrap text-muted-foreground">{r.body}</p>
+              {/* Show when this blast stops popping up. */}
+              <p className="mt-1 text-xs text-muted-foreground">
+                {r.expires_at
+                  ? new Date(r.expires_at).getTime() > Date.now()
+                    ? `Showing until ${formatDate(r.expires_at)}`
+                    : "No longer showing"
+                  : "Shows until you stop it"}
+              </p>
+
               <div className="mt-3 flex items-center gap-2">
                 <Button size="sm" variant="outline" onClick={() => void toggle(r)}>
                   {r.is_active ? "Stop showing" : "Show again"}
