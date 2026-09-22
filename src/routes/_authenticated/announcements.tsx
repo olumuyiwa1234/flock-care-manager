@@ -32,7 +32,8 @@ type Row = {
   expires_at: string | null;
 };
 
-/** How long a blast keeps popping up, in hours (0 = until it is stopped manually). */
+/** How long a blast keeps popping up, in hours
+ *  (0 = until it is stopped manually, -1 = the sender types a custom end time). */
 const DURATIONS = [
   { label: "1 hour", hours: 1 },
   { label: "6 hours", hours: 6 },
@@ -40,8 +41,15 @@ const DURATIONS = [
   { label: "24 hours", hours: 24 },
   { label: "3 days", hours: 72 },
   { label: "1 week", hours: 168 },
+  { label: "Custom time…", hours: -1 },
   { label: "Until I stop it", hours: 0 },
 ];
+
+/** Format a Date as the local `YYYY-MM-DDTHH:mm` value a datetime-local input expects. */
+function localDateTimeValue(d: Date): string {
+  const pad = (n: number) => String(n).padStart(2, "0");
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+}
 
 function Announcements() {
   const { auth, isAdmin } = useAuth();
@@ -49,6 +57,8 @@ function Announcements() {
   const [title, setTitle] = useState("");
   const [body, setBody] = useState("");
   const [hours, setHours] = useState(24);
+  // Exact end date/time typed by the sender when "Custom time…" is picked.
+  const [customUntil, setCustomUntil] = useState("");
   const [busy, setBusy] = useState(false);
 
   const listQuery = useQuery({
@@ -83,8 +93,25 @@ function Announcements() {
     if (!auth) return;
     setBusy(true);
     // Work out when the blast should stop popping up.
-    const expiresAt =
-      hours > 0 ? new Date(Date.now() + hours * 60 * 60 * 1000).toISOString() : null;
+    let expiresAt: string | null = null;
+    if (hours > 0) {
+      // Preset duration: count the chosen number of hours from right now.
+      expiresAt = new Date(Date.now() + hours * 60 * 60 * 1000).toISOString();
+    } else if (hours === -1) {
+      // Custom time: the sender typed the exact date and time the blast should stop.
+      if (!customUntil) {
+        setBusy(false);
+        toast.error("Pick the date and time the blast should stop");
+        return;
+      }
+      const end = new Date(customUntil);
+      if (Number.isNaN(end.getTime()) || end.getTime() <= Date.now()) {
+        setBusy(false);
+        toast.error("The custom end time must be in the future");
+        return;
+      }
+      expiresAt = end.toISOString();
+    }
     const { error } = await supabase.from("announcements").insert({
       title: title.trim(),
       body: text,
@@ -163,6 +190,21 @@ function Announcements() {
             </option>
           ))}
         </select>
+        {/* With "Custom time…" picked, the sender types the exact date and time the blast stops. */}
+        {hours === -1 && (
+          <div className="mt-3">
+            <label className="block text-xs font-medium text-muted-foreground">
+              Show until
+            </label>
+            <input
+              type="datetime-local"
+              value={customUntil}
+              onChange={(e) => setCustomUntil(e.target.value)}
+              min={localDateTimeValue(new Date())}
+              className="mt-1 h-10 w-full rounded-md border border-input bg-background px-3 text-sm"
+            />
+          </div>
+        )}
         <Button className="mt-3 w-full" onClick={() => void send()} disabled={busy}>
           {busy ? "Sending…" : "Send to everyone"}
         </Button>
