@@ -32,7 +32,8 @@ type Row = {
   expires_at: string | null;
 };
 
-/** How long a blast keeps popping up, in hours (0 = until it is stopped manually). */
+/** How long a blast keeps popping up, in hours
+ *  (0 = until it is stopped manually, -1 = the sender types a custom end time). */
 const DURATIONS = [
   { label: "1 hour", hours: 1 },
   { label: "6 hours", hours: 6 },
@@ -40,8 +41,15 @@ const DURATIONS = [
   { label: "24 hours", hours: 24 },
   { label: "3 days", hours: 72 },
   { label: "1 week", hours: 168 },
+  { label: "Custom time…", hours: -1 },
   { label: "Until I stop it", hours: 0 },
 ];
+
+/** Format a Date as the local `YYYY-MM-DDTHH:mm` value a datetime-local input expects. */
+function localDateTimeValue(d: Date): string {
+  const pad = (n: number) => String(n).padStart(2, "0");
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+}
 
 function Announcements() {
   const { auth, isAdmin } = useAuth();
@@ -49,6 +57,8 @@ function Announcements() {
   const [title, setTitle] = useState("");
   const [body, setBody] = useState("");
   const [hours, setHours] = useState(24);
+  // Exact end date/time typed by the sender when "Custom time…" is picked.
+  const [customUntil, setCustomUntil] = useState("");
   const [busy, setBusy] = useState(false);
 
   const listQuery = useQuery({
