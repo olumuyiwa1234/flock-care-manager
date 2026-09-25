@@ -173,6 +173,7 @@ export function useNotifications() {
     members,
     attendance,
     isCareTeam,
+    userId,
   ]);
 
   // Filter out notifications the user has already dismissed.
@@ -192,6 +193,7 @@ export function useNotifications() {
     members,
     attendance,
     isCareTeam,
+    userId,
     dismissAllNotifications,
   };
 }
