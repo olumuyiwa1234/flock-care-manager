@@ -45,17 +45,23 @@ export const Route = createFileRoute("/api/public/hooks/celebration-push")({
         // Who is celebrating today?
         const { data: members, error: membersError } = await supabaseAdmin
           .from("members")
-          .select("full_name, birth_month, birth_day, anniversary_month, anniversary_day");
+          .select("full_name, user_id, birth_month, birth_day, anniversary_month, anniversary_day");
         if (membersError) {
           return Response.json({ error: membersError.message }, { status: 500 });
         }
 
+        // Collect celebrant names, plus their login IDs so we can skip their own phones.
         const birthdays: string[] = [];
         const anniversaries: string[] = [];
+        const celebrantUserIds = new Set<string>();
         for (const m of members ?? []) {
-          if (m.birth_month === month && m.birth_day === day) birthdays.push(m.full_name);
+          if (m.birth_month === month && m.birth_day === day) {
+            birthdays.push(m.full_name);
+            if (m.user_id) celebrantUserIds.add(m.user_id);
+          }
           if (m.anniversary_month === month && m.anniversary_day === day) {
             anniversaries.push(m.full_name);
+            if (m.user_id) celebrantUserIds.add(m.user_id);
           }
         }
 
@@ -64,13 +70,15 @@ export const Route = createFileRoute("/api/public/hooks/celebration-push")({
           return Response.json({ sent: 0, reason: "no celebrations today" });
         }
 
-        // Every registered device gets the same notification.
-        const { data: tokens, error: tokensError } = await supabaseAdmin
+        // Blast every registered device EXCEPT the celebrants' own devices
+        // (celebrants get their personal greeting instead).
+        const { data: allTokens, error: tokensError } = await supabaseAdmin
           .from("push_tokens")
-          .select("token");
+          .select("token, user_id");
         if (tokensError) {
           return Response.json({ error: tokensError.message }, { status: 500 });
         }
+        const tokens = (allTokens ?? []).filter((t) => !celebrantUserIds.has(t.user_id));
 
         const title =
           birthdays.length && anniversaries.length
