@@ -79,7 +79,7 @@ export const Route = createFileRoute("/api/public/hooks/auto-celebration-greetin
 
           // Deliver the greeting into the celebrant's notifications.
           const { error: greetingError } = await supabaseAdmin.from("greetings").insert({
-            sender_id: item.userId, // celebrant's own id is unused; sender is the church family
+            sender_id: null, // automatic greeting — the sender is the church family, not a user
             sender_name: CHURCH_FAMILY,
             recipient_member_id: item.memberId,
             occasion: item.occasion,

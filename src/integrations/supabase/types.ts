@@ -280,7 +280,7 @@ export type Database = {
           message: string
           occasion: string
           recipient_member_id: string
-          sender_id: string
+          sender_id: string | null
           sender_name: string
           updated_at: string
         }
@@ -290,7 +290,7 @@ export type Database = {
           message: string
           occasion?: string
           recipient_member_id: string
-          sender_id: string
+          sender_id?: string | null
           sender_name?: string
           updated_at?: string
         }
@@ -300,7 +300,7 @@ export type Database = {
           message?: string
           occasion?: string
           recipient_member_id?: string
-          sender_id?: string
+          sender_id?: string | null
           sender_name?: string
           updated_at?: string
         }
