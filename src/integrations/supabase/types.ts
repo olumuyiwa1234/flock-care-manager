@@ -120,6 +120,38 @@ export type Database = {
           },
         ]
       }
+      auto_greetings_log: {
+        Row: {
+          celebrated_on: string
+          created_at: string
+          id: string
+          member_id: string
+          occasion: string
+        }
+        Insert: {
+          celebrated_on: string
+          created_at?: string
+          id?: string
+          member_id: string
+          occasion: string
+        }
+        Update: {
+          celebrated_on?: string
+          created_at?: string
+          id?: string
+          member_id?: string
+          occasion?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "auto_greetings_log_member_id_fkey"
+            columns: ["member_id"]
+            isOneToOne: false
+            referencedRelation: "members"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       church_settings: {
         Row: {
           church_name: string
