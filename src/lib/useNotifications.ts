@@ -68,7 +68,7 @@ export function useCelebrations() {
 }
 
 export function useNotifications() {
-  const { role, approved, isFullAccess, isFollowUp } = useAuth();
+  const { role, approved, isFullAccess, isFollowUp, userId } = useAuth();
   // Absentee and new-account alerts go only to Pastorate, Admin,
   // Follow-up and HODs.
   const isCareTeam = isFullAccess || isFollowUp || (approved && role === "hod");
@@ -117,7 +117,7 @@ export function useNotifications() {
     // Celebration blast: everyone is told who is celebrating, except the
     // celebrant themselves (they receive their personal greeting instead).
     const myMemberIds = new Set(
-      members.filter((m) => user?.id && m.user_id === user.id).map((m) => m.id),
+      members.filter((m) => userId && m.user_id === userId).map((m) => m.id),
     );
     for (const c of celebrationsQuery.data ?? []) {
       if (myMemberIds.has(c.memberId)) continue;
