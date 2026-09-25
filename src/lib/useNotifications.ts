@@ -68,7 +68,8 @@ export function useCelebrations() {
 }
 
 export function useNotifications() {
-  const { role, approved, isFullAccess, isFollowUp, userId } = useAuth();
+  const { role, approved, isFullAccess, isFollowUp, auth } = useAuth();
+  const userId = auth?.userId;
   // Absentee and new-account alerts go only to Pastorate, Admin,
   // Follow-up and HODs.
   const isCareTeam = isFullAccess || isFollowUp || (approved && role === "hod");
