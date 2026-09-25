@@ -37,6 +37,7 @@ import { Route as AuthenticatedMembersMemberIdRouteImport } from './routes/_auth
 import { Route as AuthenticatedMembersNewRouteImport } from './routes/_authenticated/members/new'
 import { Route as AuthenticatedTeensIndexRouteImport } from './routes/_authenticated/teens/index'
 import { Route as AuthenticatedTeensNewRouteImport } from './routes/_authenticated/teens/new'
+import { Route as ApiPublicHooksAutoCelebrationGreetingsRouteImport } from './routes/api/public/hooks/auto-celebration-greetings'
 import { Route as ApiPublicHooksCelebrationPushRouteImport } from './routes/api/public/hooks/celebration-push'
 
 const IndexRoute = IndexRouteImport.update({
@@ -187,6 +188,12 @@ const AuthenticatedTeensNewRoute = AuthenticatedTeensNewRouteImport.update({
   path: '/teens/new',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const ApiPublicHooksAutoCelebrationGreetingsRoute =
+  ApiPublicHooksAutoCelebrationGreetingsRouteImport.update({
+    id: '/api/public/hooks/auto-celebration-greetings',
+    path: '/api/public/hooks/auto-celebration-greetings',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const ApiPublicHooksCelebrationPushRoute =
   ApiPublicHooksCelebrationPushRouteImport.update({
     id: '/api/public/hooks/celebration-push',
@@ -222,6 +229,7 @@ export interface FileRoutesByFullPath {
   '/children/': typeof AuthenticatedChildrenIndexRoute
   '/members/': typeof AuthenticatedMembersIndexRoute
   '/teens/': typeof AuthenticatedTeensIndexRoute
+  '/api/public/hooks/auto-celebration-greetings': typeof ApiPublicHooksAutoCelebrationGreetingsRoute
   '/api/public/hooks/celebration-push': typeof ApiPublicHooksCelebrationPushRoute
 }
 export interface FileRoutesByTo {
@@ -252,6 +260,7 @@ export interface FileRoutesByTo {
   '/children': typeof AuthenticatedChildrenIndexRoute
   '/members': typeof AuthenticatedMembersIndexRoute
   '/teens': typeof AuthenticatedTeensIndexRoute
+  '/api/public/hooks/auto-celebration-greetings': typeof ApiPublicHooksAutoCelebrationGreetingsRoute
   '/api/public/hooks/celebration-push': typeof ApiPublicHooksCelebrationPushRoute
 }
 export interface FileRoutesById {
@@ -284,6 +293,7 @@ export interface FileRoutesById {
   '/_authenticated/children/': typeof AuthenticatedChildrenIndexRoute
   '/_authenticated/members/': typeof AuthenticatedMembersIndexRoute
   '/_authenticated/teens/': typeof AuthenticatedTeensIndexRoute
+  '/api/public/hooks/auto-celebration-greetings': typeof ApiPublicHooksAutoCelebrationGreetingsRoute
   '/api/public/hooks/celebration-push': typeof ApiPublicHooksCelebrationPushRoute
 }
 export interface FileRouteTypes {
@@ -316,6 +326,7 @@ export interface FileRouteTypes {
     | '/children/'
     | '/members/'
     | '/teens/'
+    | '/api/public/hooks/auto-celebration-greetings'
     | '/api/public/hooks/celebration-push'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -346,6 +357,7 @@ export interface FileRouteTypes {
     | '/children'
     | '/members'
     | '/teens'
+    | '/api/public/hooks/auto-celebration-greetings'
     | '/api/public/hooks/celebration-push'
   id:
     | '__root__'
@@ -377,6 +389,7 @@ export interface FileRouteTypes {
     | '/_authenticated/children/'
     | '/_authenticated/members/'
     | '/_authenticated/teens/'
+    | '/api/public/hooks/auto-celebration-greetings'
     | '/api/public/hooks/celebration-push'
   fileRoutesById: FileRoutesById
 }
@@ -385,6 +398,7 @@ export interface RootRouteChildren {
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
   AuthRoute: typeof AuthRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
+  ApiPublicHooksAutoCelebrationGreetingsRoute: typeof ApiPublicHooksAutoCelebrationGreetingsRoute
   ApiPublicHooksCelebrationPushRoute: typeof ApiPublicHooksCelebrationPushRoute
 }
 
@@ -586,6 +600,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedTeensNewRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/api/public/hooks/auto-celebration-greetings': {
+      id: '/api/public/hooks/auto-celebration-greetings'
+      path: '/api/public/hooks/auto-celebration-greetings'
+      fullPath: '/api/public/hooks/auto-celebration-greetings'
+      preLoaderRoute: typeof ApiPublicHooksAutoCelebrationGreetingsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/hooks/celebration-push': {
       id: '/api/public/hooks/celebration-push'
       path: '/api/public/hooks/celebration-push'
@@ -658,6 +679,8 @@ const rootRouteChildren: RootRouteChildren = {
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
   AuthRoute: AuthRoute,
   ResetPasswordRoute: ResetPasswordRoute,
+  ApiPublicHooksAutoCelebrationGreetingsRoute:
+    ApiPublicHooksAutoCelebrationGreetingsRoute,
   ApiPublicHooksCelebrationPushRoute: ApiPublicHooksCelebrationPushRoute,
 }
 export const routeTree = rootRouteImport
