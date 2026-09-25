@@ -15,6 +15,13 @@
       "when": 1790072980042,
       "tag": "0001_add_announcement_expiry",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1790321095112,
+      "tag": "0002_create_auto_greetings_log",
+      "breakpoints": true
     }
   ]
 }
