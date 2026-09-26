@@ -54,6 +54,8 @@ const tiles = [
   { to: "/approvals", label: "Approvals", icon: ShieldCheck, staffOnly: true, pastorOnly: true },
   { to: "/inbox", label: "Pastor Inbox", icon: Inbox, staffOnly: true, pastorOnly: true },
   { to: "/announcements", label: "Announcement", icon: Megaphone, staffOnly: true, adminOnly: true },
+  // Delivery log of daily celebration push notifications (full-access only).
+  { to: "/push-log", label: "Push Log", icon: Bell, staffOnly: true, adminOnly: true },
   { to: "/roles", label: "User Roles", icon: UserCog, staffOnly: true, pastorOnly: true },
   { to: "/profile", label: "My Profile", icon: UserRound, staffOnly: false },
   { to: "/feedback", label: "Feedback", icon: Lightbulb, staffOnly: false },
