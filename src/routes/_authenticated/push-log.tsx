@@ -77,7 +77,7 @@ function PushLog() {
       )}
       <div className="space-y-3">
         {runs.data?.map((r) => {
-          const s = STATUS[r.status] ?? STATUS.running;
+          const s = STATUS[r.status] ?? { label: "Sending…", cls: "bg-secondary text-primary" };
           const open = openRun === r.id;
           return (
             <div key={r.id} className="rounded-2xl border border-border bg-card p-4 shadow-tile">
