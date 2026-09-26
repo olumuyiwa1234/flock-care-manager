@@ -29,6 +29,13 @@
       "when": 1790321133812,
       "tag": "0003_greetings_sender_nullable",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1790440910936,
+      "tag": "0004_celebration_push_log",
+      "breakpoints": true
     }
   ]
 }

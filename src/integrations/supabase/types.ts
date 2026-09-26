@@ -152,6 +152,86 @@ export type Database = {
           },
         ]
       }
+      celebration_push_deliveries: {
+        Row: {
+          created_at: string
+          error: string | null
+          id: string
+          platform: string | null
+          recipient_name: string | null
+          run_id: string
+          status: string
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          error?: string | null
+          id?: string
+          platform?: string | null
+          recipient_name?: string | null
+          run_id: string
+          status: string
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          error?: string | null
+          id?: string
+          platform?: string | null
+          recipient_name?: string | null
+          run_id?: string
+          status?: string
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "celebration_push_deliveries_run_id_fkey"
+            columns: ["run_id"]
+            isOneToOne: false
+            referencedRelation: "celebration_push_runs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      celebration_push_runs: {
+        Row: {
+          body: string
+          celebrants: string[]
+          created_at: string
+          failed_count: number
+          id: string
+          recipients_count: number
+          scheduled_for: string
+          sent_count: number
+          status: string
+          title: string
+        }
+        Insert: {
+          body: string
+          celebrants?: string[]
+          created_at?: string
+          failed_count?: number
+          id?: string
+          recipients_count?: number
+          scheduled_for?: string
+          sent_count?: number
+          status?: string
+          title: string
+        }
+        Update: {
+          body?: string
+          celebrants?: string[]
+          created_at?: string
+          failed_count?: number
+          id?: string
+          recipients_count?: number
+          scheduled_for?: string
+          sent_count?: number
+          status?: string
+          title?: string
+        }
+        Relationships: []
+      }
       church_settings: {
         Row: {
           church_name: string
