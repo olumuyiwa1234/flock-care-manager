@@ -74,7 +74,7 @@ export const Route = createFileRoute("/api/public/hooks/celebration-push")({
         // (celebrants get their personal greeting instead).
         const { data: allTokens, error: tokensError } = await supabaseAdmin
           .from("push_tokens")
-          .select("token, user_id");
+          .select("token, user_id, platform");
         if (tokensError) {
           return Response.json({ error: tokensError.message }, { status: 500 });
         }
@@ -92,10 +92,34 @@ export const Route = createFileRoute("/api/public/hooks/celebration-push")({
                 : "Wedding anniversary today";
         const body = buildBody(birthdays, anniversaries);
 
+        // Record this run so admins can review it in the Push log page.
+        const { data: run } = await supabaseAdmin
+          .from("celebration_push_runs")
+          .insert({
+            title,
+            body,
+            celebrants: [...birthdays, ...anniversaries],
+            recipients_count: tokens.length,
+          })
+          .select("id")
+          .single();
+
+        // Map login IDs to names so the log shows who each device belongs to.
+        const nameByUser = new Map<string, string>();
+        for (const m of members ?? []) if (m.user_id) nameByUser.set(m.user_id, m.full_name);
+
         let sent = 0;
         const stale: string[] = [];
+        const deliveries: {
+          run_id: string;
+          user_id: string;
+          recipient_name: string | null;
+          platform: string;
+          status: string;
+          error: string | null;
+        }[] = [];
 
-        for (const row of tokens ?? []) {
+        for (const row of tokens) {
           const res = await fetch(`${GATEWAY_URL}/v1/projects/_/messages:send`, {
             method: "POST",
             headers: {
@@ -112,20 +136,44 @@ export const Route = createFileRoute("/api/public/hooks/celebration-push")({
             }),
           });
 
+          // Base delivery record for this device.
+          const base = {
+            run_id: run?.id ?? "",
+            user_id: row.user_id,
+            recipient_name: nameByUser.get(row.user_id) ?? null,
+            platform: row.platform,
+          };
+
           if (res.ok) {
             sent += 1;
+            deliveries.push({ ...base, status: "sent", error: null });
             continue;
           }
 
           // 404/400 means the device uninstalled or reset — drop the token.
           const errorText = await res.text();
           console.error(`FCM send failed [${res.status}]: ${errorText}`);
+          deliveries.push({ ...base, status: "failed", error: `[${res.status}] ${errorText.slice(0, 500)}` });
           if (res.status === 404 || res.status === 400) stale.push(row.token);
         }
 
         // Clean up devices that can no longer be reached.
         if (stale.length) {
           await supabaseAdmin.from("push_tokens").delete().in("token", stale);
+        }
+
+        // Save per-device outcomes and the final run status.
+        if (run?.id) {
+          if (deliveries.length) await supabaseAdmin.from("celebration_push_deliveries").insert(deliveries);
+          const failed = deliveries.length - sent;
+          await supabaseAdmin
+            .from("celebration_push_runs")
+            .update({
+              sent_count: sent,
+              failed_count: failed,
+              status: tokens.length === 0 ? "no_recipients" : failed === 0 ? "delivered" : sent === 0 ? "failed" : "partial",
+            })
+            .eq("id", run.id);
         }
 
         return Response.json({ sent, removed: stale.length, birthdays, anniversaries });
