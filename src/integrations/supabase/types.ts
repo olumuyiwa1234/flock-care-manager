@@ -318,6 +318,7 @@ export type Database = {
           contacted_on: string
           created_at: string
           created_by: string | null
+          escalated: boolean
           id: string
           member_id: string
           notes: string | null
@@ -328,6 +329,7 @@ export type Database = {
           contacted_on?: string
           created_at?: string
           created_by?: string | null
+          escalated?: boolean
           id?: string
           member_id: string
           notes?: string | null
@@ -338,6 +340,7 @@ export type Database = {
           contacted_on?: string
           created_at?: string
           created_by?: string | null
+          escalated?: boolean
           id?: string
           member_id?: string
           notes?: string | null

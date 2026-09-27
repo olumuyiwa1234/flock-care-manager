@@ -1,4 +1,4 @@
-import { createFileRoute, useNavigate, useSearch } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate, useSearch } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { ChevronLeft } from "lucide-react";
@@ -18,7 +18,8 @@ import {
 } from "@/components/ui/select";
 import { toast } from "sonner";
 import * as XLSX from "xlsx";
-import { Download } from "lucide-react";
+import { Download, History } from "lucide-react";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   CONTACT_METHODS,
   SITUATIONS,
@@ -34,6 +35,8 @@ export const Route = createFileRoute("/_authenticated/followup")({
   // The tile can be opened as a plain list, or focused on one member via ?memberId=
   validateSearch: (search: Record<string, unknown>) => ({
     memberId: typeof search["memberId"] === "string" ? search["memberId"] : undefined,
+    // "history" opens the past follow-up reports sub-tile.
+    view: search["view"] === "history" ? ("history" as const) : undefined,
   }),
   head: () => ({
     meta: [
@@ -92,6 +95,7 @@ function FollowUp() {
   }
 
   // With a member selected we show the form; otherwise the list of who needs follow-up.
+  if (search.view === "history") return <FollowUpHistory />;
   return search.memberId ? <FollowUpForm memberId={search.memberId} /> : <FollowUpList />;
 }
 
@@ -105,6 +109,23 @@ function FollowUpList() {
   const { data: attendance = [] } = useAttendance(sundays.at(-1) ?? TRACKING_START);
   // Full attendance history, used only to show when each member was last seen.
   const { data: allAttendance = [] } = useAttendance();
+
+  // Most recent follow-up date per member: counting restarts after it.
+  const lastFollowUps = useQuery({
+    queryKey: ["follow-ups-latest"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("follow_ups")
+        .select("member_id, contacted_on");
+      if (error) throw error;
+      const map = new Map<string, string>();
+      for (const f of data ?? []) {
+        const cur = map.get(f.member_id);
+        if (!cur || f.contacted_on > cur) map.set(f.member_id, f.contacted_on);
+      }
+      return map;
+    },
+  });
 
   // Natural group leaders are limited to the fellowship(s) they lead.
   const leaderGroups = useMemo(
@@ -142,12 +163,16 @@ function FollowUpList() {
         // Only count Sundays on/after the day the member registered —
         // they cannot miss services that happened before they joined.
         const registeredOn = m.created_at.slice(0, 10);
-        const countable = sundays.filter((s) => s >= registeredOn);
+        // Once followed up, only Sundays AFTER the follow-up date count again.
+        const followedUpOn = lastFollowUps.data?.get(m.id);
+        const countable = sundays.filter(
+          (s) => s >= registeredOn && (!followedUpOn || s > followedUpOn),
+        );
         return { member: m, missed: consecutiveMissedSundays(m.id, countable, attendance) };
       })
       .filter((row) => row.missed >= 2)
       .sort((a, b) => b.missed - a.missed || a.member.full_name.localeCompare(b.member.full_name));
-  }, [members, attendance, sundays.join(","), restrictToGroup, leaderGroups]);
+  }, [members, attendance, sundays.join(","), restrictToGroup, leaderGroups, lastFollowUps.data]);
 
   // Build an Excel workbook of the whole follow-up list and download it.
   // Full-access users (Pastor, Parish Coordinator, Admin) export every member
@@ -175,9 +200,19 @@ function FollowUpList() {
     <AppShell title="Follow-up" subtitle="Members needing a pastoral contact">
       {/* Download the same list shown below as a spreadsheet. Always visible so
           leaders can find it even when the list is currently empty. */}
-      <Button variant="outline" size="sm" className="mb-3" onClick={exportExcel}>
-        <Download className="mr-1 h-4 w-4" /> Export to Excel
-      </Button>
+      <div className="mb-3 flex flex-wrap gap-2">
+        <Button variant="outline" size="sm" onClick={exportExcel}>
+          <Download className="mr-1 h-4 w-4" /> Export to Excel
+        </Button>
+        {/* Sub-tile: past follow-up reports. */}
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => navigate({ to: "/followup", search: { memberId: undefined, view: "history" } })}
+        >
+          <History className="mr-1 h-4 w-4" /> Past follow-ups
+        </Button>
+      </div>
       {needsFollowUp.length === 0 ? (
         <EmptyState
           title="No one needs follow-up"
@@ -190,7 +225,7 @@ function FollowUpList() {
               {/* Tapping a member opens the follow-up form already set to that person. */}
               <button
                 type="button"
-                onClick={() => navigate({ to: "/followup", search: { memberId: member.id } })}
+                onClick={() => navigate({ to: "/followup", search: { memberId: member.id, view: undefined } })}
                 className="flex w-full items-center gap-3 rounded-2xl border border-border bg-card p-3 text-left"
               >
                 <MemberPhoto path={member.photo_url} name={member.full_name} />
@@ -227,6 +262,8 @@ function FollowUpForm({ memberId }: { memberId: string }) {
   const [contactedOn, setContactedOn] = useState(todayISO());
   const [notes, setNotes] = useState("");
   const [saving, setSaving] = useState(false);
+  // Optional: flag this follow-up for the Pastor's attention.
+  const [escalate, setEscalate] = useState(false);
 
   // Past follow-ups recorded for this member only.
   const list = useQuery({
@@ -253,6 +290,7 @@ function FollowUpForm({ memberId }: { memberId: string }) {
       contacted_on: contactedOn,
       notes: notes || null,
       created_by: auth?.userId ?? null,
+      escalated: escalate,
     });
     setSaving(false);
     if (error) {
@@ -260,8 +298,15 @@ function FollowUpForm({ memberId }: { memberId: string }) {
       return;
     }
     setNotes("");
-    toast.success("Follow-up recorded");
-    await queryClient.invalidateQueries({ queryKey: ["follow-ups", memberId] });
+    setEscalate(false);
+    toast.success(escalate ? "Follow-up recorded and sent to the Pastor" : "Follow-up recorded");
+    // Refresh history, the list (member drops off) and the Pastor's alerts.
+    await Promise.all([
+      queryClient.invalidateQueries({ queryKey: ["follow-ups", memberId] }),
+      queryClient.invalidateQueries({ queryKey: ["follow-ups-latest"] }),
+      queryClient.invalidateQueries({ queryKey: ["follow-ups-all"] }),
+      queryClient.invalidateQueries({ queryKey: ["follow-up-escalations"] }),
+    ]);
   }
 
   return (
@@ -274,7 +319,7 @@ function FollowUpForm({ memberId }: { memberId: string }) {
         variant="ghost"
         size="sm"
         className="mb-3 -ml-2"
-        onClick={() => navigate({ to: "/followup", search: { memberId: undefined } })}
+        onClick={() => navigate({ to: "/followup", search: { memberId: undefined, view: undefined } })}
       >
         <ChevronLeft className="mr-1 h-4 w-4" /> All follow-ups
       </Button>
@@ -334,6 +379,12 @@ function FollowUpForm({ memberId }: { memberId: string }) {
           />
         </div>
 
+        {/* Optional escalation: notifies the Pastor about this follow-up. */}
+        <label className="flex items-center gap-2 text-sm">
+          <Checkbox checked={escalate} onCheckedChange={(v) => setEscalate(v === true)} />
+          Escalate to Pastor (needs the Pastor's attention)
+        </label>
+
         <Button className="w-full" onClick={() => void save()} disabled={saving}>
           {saving ? "Saving…" : "Record follow-up"}
         </Button>
@@ -347,12 +398,74 @@ function FollowUpForm({ memberId }: { memberId: string }) {
           {(list.data ?? []).map((f: any) => (
             <li key={f.id} className="rounded-2xl border border-border bg-card p-3 text-sm">
               <div className="flex items-center justify-between">
-                <span className="font-medium">{f.contact_method}</span>
+                <span className="font-medium">
+                  {f.contact_method}
+                  {f.escalated && <span className="ml-2 text-xs text-destructive">Escalated</span>}
+                </span>
                 <span className="text-xs text-muted-foreground">{formatDate(f.contacted_on)}</span>
               </div>
               {f.situation && f.situation !== "None" && (
                 <p className="text-xs text-muted-foreground">{f.situation}</p>
               )}
+              {f.notes && <p className="mt-1 text-muted-foreground">{f.notes}</p>}
+            </li>
+          ))}
+        </ul>
+      )}
+    </AppShell>
+  );
+}
+
+/** Sub-tile: every past follow-up report, newest first, with a name search. */
+function FollowUpHistory() {
+  const navigate = useNavigate();
+  const [q, setQ] = useState("");
+  // Load all follow-ups the user may see (RLS scopes them), with member names.
+  const all = useQuery({
+    queryKey: ["follow-ups-all"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("follow_ups")
+        .select("*, members(full_name, member_code)")
+        .order("contacted_on", { ascending: false })
+        .limit(500);
+      if (error) throw error;
+      return (data ?? []) as any[];
+    },
+  });
+  // Filter by member name as the user types.
+  const rows = (all.data ?? []).filter((f) =>
+    (f.members?.full_name ?? "").toLowerCase().includes(q.trim().toLowerCase()),
+  );
+
+  return (
+    <AppShell title="Past follow-ups" subtitle="Follow-up reports history">
+      <Button
+        variant="ghost"
+        size="sm"
+        className="mb-3 -ml-2"
+        onClick={() => navigate({ to: "/followup", search: { memberId: undefined, view: undefined } })}
+      >
+        <ChevronLeft className="mr-1 h-4 w-4" /> Follow-up list
+      </Button>
+      <Input className="mb-3" placeholder="Search by name" value={q} onChange={(e) => setQ(e.target.value)} />
+      {rows.length === 0 ? (
+        <EmptyState title={all.isLoading ? "Loading…" : "No follow-up reports yet"} />
+      ) : (
+        <ul className="space-y-2">
+          {rows.map((f) => (
+            <li key={f.id} className="rounded-2xl border border-border bg-card p-3 text-sm">
+              <div className="flex items-center justify-between gap-2">
+                <Link to="/members/$memberId" params={{ memberId: f.member_id }} className="font-medium text-primary">
+                  {f.members?.full_name ?? "Member"}
+                </Link>
+                <span className="text-xs text-muted-foreground">{formatDate(f.contacted_on)}</span>
+              </div>
+              <p className="text-xs text-muted-foreground">
+                {f.contact_method}
+                {f.situation && f.situation !== "None" ? ` · ${f.situation}` : ""}
+                {f.escalated && <span className="ml-2 text-destructive">Escalated to Pastor</span>}
+              </p>
               {f.notes && <p className="mt-1 text-muted-foreground">{f.notes}</p>}
             </li>
           ))}
