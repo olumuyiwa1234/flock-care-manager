@@ -355,7 +355,7 @@ function MemberDetail() {
       <section className="mt-5">
         <div className="mb-2 flex items-center justify-between">
           <h2 className="text-base font-semibold">Attendance history</h2>
-          <Button variant="ghost" size="sm" onClick={() => navigate({ to: "/followup", search: { memberId } })}>
+          <Button variant="ghost" size="sm" onClick={() => navigate({ to: "/followup", search: { memberId, view: undefined } })}>
             Log follow-up
           </Button>
         </div>
