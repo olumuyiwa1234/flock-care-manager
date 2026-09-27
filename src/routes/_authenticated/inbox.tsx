@@ -43,7 +43,9 @@ function dayKey(iso: string) {
 }
 
 function Inbox() {
-  const { isPastor, auth } = useAuth();
+  const { auth } = useAuth();
+  // Inbox access is tied to one specific email, not to a role.
+  const isPastor = auth?.email?.toLowerCase() === "aakintokunbo@gmail.com";
   const queryClient = useQueryClient();
   const [replyFor, setReplyFor] = useState<string | null>(null);
   const [replyText, setReplyText] = useState("");
@@ -51,7 +53,8 @@ function Inbox() {
 
   const query = useQuery({
     queryKey: ["pastor-inbox"],
-    enabled: isPastor,
+    // Only load messages for the designated inbox owner.
+    enabled: isPastor && auth?.email?.toLowerCase() === "aakintokunbo@gmail.com",
     queryFn: async (): Promise<Item[]> => {
       const [fb, pm] = await Promise.all([
         supabase
@@ -158,7 +161,8 @@ function Inbox() {
     toast.success("Reply sent");
   }
 
-  if (!isPastor) {
+  // Only the designated inbox owner (by email) may open this page.
+  if (auth?.email?.toLowerCase() !== "aakintokunbo@gmail.com") {
     return (
       <AppShell title="Pastor Inbox" subtitle="Restricted" back="/home">
         <EmptyState title="Not available" hint="Only the Pastor can open this page." />

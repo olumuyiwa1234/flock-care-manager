@@ -52,7 +52,7 @@ const tiles = [
   { to: "/reports", label: "Reports", icon: BarChart3, staffOnly: true },
   { to: "/dashboard", label: "Dashboard", icon: LayoutDashboard, staffOnly: true },
   { to: "/approvals", label: "Approvals", icon: ShieldCheck, staffOnly: true, pastorOnly: true },
-  { to: "/inbox", label: "Pastor Inbox", icon: Inbox, staffOnly: true, pastorOnly: true },
+  { to: "/inbox", label: "Pastor Inbox", icon: Inbox, staffOnly: false },
   { to: "/announcements", label: "Announcement", icon: Megaphone, staffOnly: true, adminOnly: true },
   // Delivery log of daily celebration push notifications (full-access only).
   { to: "/push-log", label: "Push Log", icon: Bell, staffOnly: true, adminOnly: true },
@@ -94,7 +94,9 @@ function Home() {
       (!("teensOnly" in t) || isTeensLeader || isAdmin) &&
       (!("pastorOnly" in t) || isPastor) &&
       (!("adminOnly" in t) || isAdmin) &&
-      (!("firstTimersOnly" in t) || canViewFirstTimers),
+      (!("firstTimersOnly" in t) || canViewFirstTimers) &&
+      // Pastor Inbox is restricted to one specific account by email.
+      (t.to !== "/inbox" || auth?.email?.toLowerCase() === "aakintokunbo@gmail.com"),
   );
 
   return (
