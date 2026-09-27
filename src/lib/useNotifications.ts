@@ -1,5 +1,6 @@
 import { useMemo, useRef } from "react";
 import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 import { useMembers, useAttendance, type MemberRow, type AttendanceRow } from "./queries";
 import { lastSundays } from "./shepherd";
 import { useAuth } from "./useAuth";
@@ -13,7 +14,7 @@ import {
 
 export type Notification = {
   id: string;
-  kind: "birthday" | "anniversary" | "absent" | "signup" | "greeting";
+  kind: "birthday" | "anniversary" | "absent" | "signup" | "greeting" | "escalation";
   title: string;
   body: string;
   memberId: string;
@@ -68,7 +69,7 @@ export function useCelebrations() {
 }
 
 export function useNotifications() {
-  const { role, approved, isFullAccess, isFollowUp, auth } = useAuth();
+  const { role, approved, isFullAccess, isFollowUp, isPastor, auth } = useAuth();
   const userId = auth?.userId;
   // Absentee and new-account alerts go only to Pastorate, Admin,
   // Follow-up and HODs.
@@ -86,6 +87,23 @@ export function useNotifications() {
     queryKey: ["my-greetings"],
     staleTime: 60_000,
     queryFn: () => myGreetings(),
+  });
+
+  // Follow-ups escalated to the Pastor (Pastor-level accounts only).
+  const escalationsQuery = useQuery({
+    queryKey: ["follow-up-escalations"],
+    enabled: !!isPastor,
+    staleTime: 60_000,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("follow_ups")
+        .select("id, member_id, notes, contacted_on, members(full_name)")
+        .eq("escalated", true)
+        .order("created_at", { ascending: false })
+        .limit(50);
+      if (error) throw error;
+      return data ?? [];
+    },
   });
 
   // Load the IDs of notifications the signed-in user has already cleared.
@@ -166,8 +184,23 @@ export function useNotifications() {
       }
     }
 
+    // Escalated follow-ups needing the Pastor's attention.
+    if (isPastor) {
+      for (const f of (escalationsQuery.data ?? []) as any[]) {
+        list.push({
+          id: `escalation-${f.id}`,
+          kind: "escalation",
+          title: `Follow-up escalated: ${f.members?.full_name ?? "a member"}`,
+          body: f.notes ? f.notes : "A follow-up needs your attention.",
+          memberId: f.member_id,
+        });
+      }
+    }
+
     return list;
   }, [
+    escalationsQuery.data,
+    isPastor,
     greetingsQuery.data,
     celebrationsQuery.data,
     signupsQuery.data,
