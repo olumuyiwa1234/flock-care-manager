@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 import { AppShell, EmptyState } from "@/components/AppShell";
 import { Input } from "@/components/ui/input";
@@ -79,7 +79,8 @@ function People({ people }: { people: MemberRow[] }) {
           className="flex items-center justify-between rounded-2xl border border-border bg-card p-3 text-sm"
         >
           <span>
-            <span className="block font-medium">{m.full_name}</span>
+            {/* Tapping the name opens this person's profile. */}
+<Link to="/members/$memberId" params={{ memberId: m.id }} className="block font-medium hover:underline">{m.full_name}</Link>
             <span className="block text-xs text-muted-foreground">
               {m.member_code} · {m.department ?? "No department"}
             </span>

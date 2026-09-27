@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -169,7 +169,8 @@ function AttendancePage() {
                 <div className="flex items-center gap-3">
                   <MemberPhoto path={m.photo_url} name={m.full_name} size={40} />
                   <div className="min-w-0 flex-1">
-                    <p className="truncate font-medium">{m.full_name}</p>
+                    {/* Tapping the name opens this person's profile. */}
+<Link to="/members/$memberId" params={{ memberId: m.id }} className="block truncate font-medium hover:underline">{m.full_name}</Link>
                     <p className="truncate text-xs text-muted-foreground">{m.member_code}</p>
                   </div>
                 </div>

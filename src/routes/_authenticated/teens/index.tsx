@@ -1,4 +1,4 @@
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { Check, Plus, Search, X } from "lucide-react";
@@ -192,7 +192,8 @@ function TeensAttendance() {
                   {initials(t.full_name)}
                 </span>
                 <div className="min-w-0 flex-1">
-                  <p className="truncate text-sm font-semibold">{t.full_name}</p>
+                  {/* Tapping the name opens this person's profile. */}
+<Link to="/members/$memberId" params={{ memberId: t.id }} className="block truncate text-sm font-semibold hover:underline">{t.full_name}</Link>
                   <p className="text-xs text-muted-foreground">
                     {t.member_code}
                     {status ? ` · ${status}` : ""}
