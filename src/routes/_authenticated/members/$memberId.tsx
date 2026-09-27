@@ -421,7 +421,7 @@ function MemberDetail() {
             No follow-up recorded yet.{" "}
             <Link
               to="/followup"
-              search={{ memberId: m.id }}
+              search={{ memberId: m.id, view: undefined }}
               className="font-medium text-primary underline-offset-4 hover:underline"
             >
               Add one
