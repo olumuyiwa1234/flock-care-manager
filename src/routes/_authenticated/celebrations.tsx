@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Cake, HeartHandshake } from "lucide-react";
@@ -128,7 +128,8 @@ function Celebrations() {
                 )}
               </span>
               <div className="min-w-0 flex-1">
-                <p className="truncate font-semibold">{c.name}</p>
+                {/* Tapping the name opens this person's profile. */}
+<Link to="/members/$memberId" params={{ memberId: c.memberId }} className="block truncate font-semibold hover:underline">{c.name}</Link>
                 <p className="text-sm text-muted-foreground">
                   {c.kind === "birthday" ? "Birthday" : "Wedding anniversary"} ·{" "}
                   {MONTHS[c.month - 1]} {c.day}
