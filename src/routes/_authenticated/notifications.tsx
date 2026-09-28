@@ -1,5 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { Bell, Cake, Heart, MailOpen, TriangleAlert, UserPlus, X } from "lucide-react";
+import { AlertTriangle } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { AppShell, EmptyState } from "@/components/AppShell";
 import { useNotifications } from "@/lib/useNotifications";
@@ -25,6 +26,8 @@ const icons = {
   absent: TriangleAlert,
   signup: UserPlus,
   greeting: MailOpen,
+  // Follow-ups escalated to the Pastor.
+  escalation: AlertTriangle,
 };
 
 function Notifications() {
