@@ -407,6 +407,10 @@ function FollowUpForm({ memberId }: { memberId: string }) {
                 </span>
                 <span className="text-xs text-muted-foreground">{formatDate(f.contacted_on)}</span>
               </div>
+              {/* Show who recorded this follow-up, when we know their name. */}
+              {f.profiles?.full_name && (
+                <p className="text-xs text-muted-foreground">Recorded by {f.profiles.full_name}</p>
+              )}
               {f.situation && f.situation !== "None" && (
                 <p className="text-xs text-muted-foreground">{f.situation}</p>
               )}
@@ -471,6 +475,10 @@ function FollowUpHistory() {
                 {f.situation && f.situation !== "None" ? ` · ${f.situation}` : ""}
                 {f.escalated && <span className="ml-2 text-destructive">Escalated to Pastor</span>}
               </p>
+              {/* Show who recorded this follow-up, when we know their name. */}
+              {f.profiles?.full_name && (
+                <p className="text-xs text-muted-foreground">Recorded by {f.profiles.full_name}</p>
+              )}
               {f.notes && <p className="mt-1 text-muted-foreground">{f.notes}</p>}
             </li>
           ))}
