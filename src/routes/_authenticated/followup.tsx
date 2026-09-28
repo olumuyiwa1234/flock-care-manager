@@ -486,3 +486,19 @@ function FollowUpHistory() {
     </AppShell>
   );
 }
+
+/**
+ * Looks up the profile name of whoever recorded each follow-up (created_by)
+ * in one query and attaches it as `profiles.full_name` on every row.
+ * If names can't be read, rows are still returned without them.
+ */
+async function withRecorderNames<T extends { created_by: string | null }>(rows: T[]) {
+  const ids = [...new Set(rows.map((r) => r.created_by).filter(Boolean))] as string[];
+  if (ids.length === 0) return rows.map((r) => ({ ...r, profiles: null }));
+  const { data } = await supabase.from("profiles").select("id, full_name").in("id", ids);
+  const names = new Map((data ?? []).map((p) => [p.id, p.full_name]));
+  return rows.map((r) => ({
+    ...r,
+    profiles: r.created_by && names.has(r.created_by) ? { full_name: names.get(r.created_by)! } : null,
+  }));
+}
