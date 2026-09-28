@@ -1,0 +1,2 @@
+ALTER TABLE public.follow_ups ADD COLUMN IF NOT EXISTS keep_open boolean NOT NULL DEFAULT false;
+COMMENT ON COLUMN public.follow_ups.keep_open IS 'true = member stays in the Follow-up list (e.g. unreachable); false = moved to past follow-ups';

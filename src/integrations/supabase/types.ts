@@ -320,6 +320,7 @@ export type Database = {
           created_by: string | null
           escalated: boolean
           id: string
+          keep_open: boolean
           member_id: string
           notes: string | null
           situation: string | null
@@ -331,6 +332,7 @@ export type Database = {
           created_by?: string | null
           escalated?: boolean
           id?: string
+          keep_open?: boolean
           member_id: string
           notes?: string | null
           situation?: string | null
@@ -342,6 +344,7 @@ export type Database = {
           created_by?: string | null
           escalated?: boolean
           id?: string
+          keep_open?: boolean
           member_id?: string
           notes?: string | null
           situation?: string | null
