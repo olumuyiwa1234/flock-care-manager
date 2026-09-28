@@ -116,7 +116,9 @@ function FollowUpList() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("follow_ups")
-        .select("member_id, contacted_on");
+        .select("member_id, contacted_on")
+        // Kept-open follow-ups don't reset the count, so the member stays listed.
+        .eq("keep_open", false);
       if (error) throw error;
       const map = new Map<string, string>();
       for (const f of data ?? []) {
@@ -264,6 +266,8 @@ function FollowUpForm({ memberId }: { memberId: string }) {
   const [saving, setSaving] = useState(false);
   // Optional: flag this follow-up for the Pastor's attention.
   const [escalate, setEscalate] = useState(false);
+  // true = member stays in the Follow-up list after this record (e.g. unreachable).
+  const [keepOpen, setKeepOpen] = useState(false);
 
   // Past follow-ups recorded for this member only, including who recorded each
   // one (joined from the profiles table via the created_by foreign key).
@@ -293,6 +297,7 @@ function FollowUpForm({ memberId }: { memberId: string }) {
       notes: notes || null,
       created_by: auth?.userId ?? null,
       escalated: escalate,
+      keep_open: keepOpen,
     });
     setSaving(false);
     if (error) {
@@ -301,7 +306,13 @@ function FollowUpForm({ memberId }: { memberId: string }) {
     }
     setNotes("");
     setEscalate(false);
-    toast.success(escalate ? "Follow-up recorded and sent to the Pastor" : "Follow-up recorded");
+    setKeepOpen(false);
+    toast.success(
+      keepOpen
+        ? "Follow-up recorded — member stays in the follow-up list"
+        : escalate ? "Follow-up recorded and sent to the Pastor" : "Follow-up recorded",
+    );
+    queryClient.invalidateQueries({ queryKey: ["follow-ups-all"] });
     // Refresh history, the list (member drops off) and the Pastor's alerts.
     await Promise.all([
       queryClient.invalidateQueries({ queryKey: ["follow-ups", memberId] }),
@@ -381,6 +392,18 @@ function FollowUpForm({ memberId }: { memberId: string }) {
           />
         </div>
 
+        {/* Where this member goes after saving: stay in the list or move to past follow-ups. */}
+        <div className="space-y-1">
+          <Label>After recording</Label>
+          <Select value={keepOpen ? "keep" : "move"} onValueChange={(v) => setKeepOpen(v === "keep")}>
+            <SelectTrigger><SelectValue /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="move">Move to past follow-ups</SelectItem>
+              <SelectItem value="keep">Keep in follow-up (e.g. not reachable)</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+
         {/* Optional escalation: notifies the Pastor about this follow-up. */}
         <label className="flex items-center gap-2 text-sm">
           <Checkbox checked={escalate} onCheckedChange={(v) => setEscalate(v === true)} />
@@ -434,6 +457,8 @@ function FollowUpHistory() {
         .from("follow_ups")
         // Member names come from the direct members foreign key.
         .select("*, members(full_name, member_code)")
+        // Only follow-ups the logger chose to move to past follow-ups.
+        .eq("keep_open", false)
         .order("contacted_on", { ascending: false })
         .limit(500);
       if (error) throw error;
