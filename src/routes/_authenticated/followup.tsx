@@ -265,13 +265,16 @@ function FollowUpForm({ memberId }: { memberId: string }) {
   // Optional: flag this follow-up for the Pastor's attention.
   const [escalate, setEscalate] = useState(false);
 
-  // Past follow-ups recorded for this member only.
+  // Past follow-ups recorded for this member only, including who recorded each
+  // one (joined from the profiles table via the created_by foreign key).
   const list = useQuery({
     queryKey: ["follow-ups", memberId],
     queryFn: async () => {
       const { data, error } = await supabase
         .from("follow_ups")
-        .select("*")
+        // Explicit FK hint: created_by points to auth.users, so PostgREST needs
+        // the constraint name to pick the matching profiles row.
+        .select("*, profiles!follow_ups_created_by_fkey(full_name)")
         .eq("member_id", memberId)
         .order("contacted_on", { ascending: false })
         .limit(50);
@@ -404,6 +407,10 @@ function FollowUpForm({ memberId }: { memberId: string }) {
                 </span>
                 <span className="text-xs text-muted-foreground">{formatDate(f.contacted_on)}</span>
               </div>
+              {/* Show who recorded this follow-up, when we know their name. */}
+              {f.profiles?.full_name && (
+                <p className="text-xs text-muted-foreground">Recorded by {f.profiles.full_name}</p>
+              )}
               {f.situation && f.situation !== "None" && (
                 <p className="text-xs text-muted-foreground">{f.situation}</p>
               )}
@@ -426,7 +433,9 @@ function FollowUpHistory() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("follow_ups")
-        .select("*, members(full_name, member_code)")
+        // Member names plus the name of whoever recorded each follow-up
+        // (created_by -> auth.users -> profiles).
+        .select("*, members(full_name, member_code), profiles!follow_ups_created_by_fkey(full_name)")
         .order("contacted_on", { ascending: false })
         .limit(500);
       if (error) throw error;
@@ -466,6 +475,10 @@ function FollowUpHistory() {
                 {f.situation && f.situation !== "None" ? ` · ${f.situation}` : ""}
                 {f.escalated && <span className="ml-2 text-destructive">Escalated to Pastor</span>}
               </p>
+              {/* Show who recorded this follow-up, when we know their name. */}
+              {f.profiles?.full_name && (
+                <p className="text-xs text-muted-foreground">Recorded by {f.profiles.full_name}</p>
+              )}
               {f.notes && <p className="mt-1 text-muted-foreground">{f.notes}</p>}
             </li>
           ))}
