@@ -272,14 +272,13 @@ function FollowUpForm({ memberId }: { memberId: string }) {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("follow_ups")
-        // Explicit FK hint: created_by points to auth.users, so PostgREST needs
-        // the constraint name to pick the matching profiles row.
-        .select("*, profiles!follow_ups_created_by_fkey(full_name)")
+        .select("*")
         .eq("member_id", memberId)
         .order("contacted_on", { ascending: false })
         .limit(50);
       if (error) throw error;
-      return data ?? [];
+      // Attach the recorder's name (created_by has no FK to profiles).
+      return (await withRecorderNames(data ?? [])) as any[];
     },
   });
 
@@ -433,13 +432,13 @@ function FollowUpHistory() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("follow_ups")
-        // Member names plus the name of whoever recorded each follow-up
-        // (created_by -> auth.users -> profiles).
-        .select("*, members(full_name, member_code), profiles!follow_ups_created_by_fkey(full_name)")
+        // Member names come from the direct members foreign key.
+        .select("*, members(full_name, member_code)")
         .order("contacted_on", { ascending: false })
         .limit(500);
       if (error) throw error;
-      return (data ?? []) as any[];
+      // Attach the recorder's name (created_by has no FK to profiles).
+      return (await withRecorderNames(data ?? [])) as any[];
     },
   });
   // Filter by member name as the user types.
@@ -486,4 +485,20 @@ function FollowUpHistory() {
       )}
     </AppShell>
   );
+}
+
+/**
+ * Looks up the profile name of whoever recorded each follow-up (created_by)
+ * in one query and attaches it as `profiles.full_name` on every row.
+ * If names can't be read, rows are still returned without them.
+ */
+async function withRecorderNames<T extends { created_by: string | null }>(rows: T[]) {
+  const ids = [...new Set(rows.map((r) => r.created_by).filter(Boolean))] as string[];
+  if (ids.length === 0) return rows.map((r) => ({ ...r, profiles: null }));
+  const { data } = await supabase.from("profiles").select("id, full_name").in("id", ids);
+  const names = new Map((data ?? []).map((p) => [p.id, p.full_name]));
+  return rows.map((r) => ({
+    ...r,
+    profiles: r.created_by && names.has(r.created_by) ? { full_name: names.get(r.created_by)! } : null,
+  }));
 }
