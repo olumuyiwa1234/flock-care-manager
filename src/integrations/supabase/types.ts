@@ -661,6 +661,33 @@ export type Database = {
         }
         Relationships: []
       }
+      testimonies: {
+        Row: {
+          author_name: string
+          content: string
+          created_at: string
+          id: string
+          title: string | null
+          user_id: string
+        }
+        Insert: {
+          author_name: string
+          content: string
+          created_at?: string
+          id?: string
+          title?: string | null
+          user_id?: string
+        }
+        Update: {
+          author_name?: string
+          content?: string
+          created_at?: string
+          id?: string
+          title?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           id: string
