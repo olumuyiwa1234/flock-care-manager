@@ -91,8 +91,32 @@ function CheckIn() {
         // snapshot below is the fallback.
       }
 
-      // Give the GPS up to 10 seconds to refine the fix before deciding.
-      if (watchId) await new Promise((resolve) => setTimeout(resolve, 10000));
+      // Keep refining for up to 25 seconds, checking every 2 seconds.
+      // Stop as soon as the member is confirmed inside (fast check-in) or
+      // confirmed clearly outside; keep waiting while the reading is too rough.
+      if (watchId) {
+        const deadline = Date.now() + 25000;
+        let lastChecked: number | null = null;
+        while (Date.now() < deadline) {
+          await new Promise((resolve) => setTimeout(resolve, 2000));
+          const fix = best as { lat: number; lng: number; accuracy: number } | null;
+          // Only ask the server again when the reading actually improved.
+          if (!fix || fix.accuracy === lastChecked) continue;
+          lastChecked = fix.accuracy;
+          try {
+            const r = await checkGeofence({
+              data: {
+                lat: fix.lat,
+                lng: fix.lng,
+                accuracy: Number.isFinite(fix.accuracy) ? fix.accuracy : undefined,
+              },
+            });
+            if (r.allowed || !r.enabled || !r.weakSignal) break;
+          } catch {
+            // Network hiccup: keep trying until the deadline.
+          }
+        }
+      }
 
       // Fall back to a one-off snapshot when the watch produced nothing.
       if (!best) {

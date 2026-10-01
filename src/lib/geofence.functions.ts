@@ -43,21 +43,23 @@ export const checkGeofence = createServerFn({ method: "POST" })
       Math.cos(toRad(data.lat)) * Math.cos(toRad(s.latitude)) * Math.sin(lngDelta / 2) ** 2;
     const dist = 6371000 * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 
-    // Reject readings that are too rough to judge. A fix with a huge (or
-    // unknown) error circle used to widen the fence by up to 1.5 km, which
-    // let people check in from far away. Now they must get a better fix.
-    const MAX_ACCURACY = 150;
+    const radius = s.radius_meters ?? 300;
+    const MAX_ACCURACY = 150; // readings rougher than this can't be trusted
     const accuracy = data.accuracy;
+    const base = { churchName: s.church_name, enabled: true };
+
+    // Unknown or very rough reading: we can't tell, so ask for a better one
+    // (never let a vague reading stretch the fence).
     if (accuracy == null || accuracy > MAX_ACCURACY) {
-      return { churchName: s.church_name, enabled: true, allowed: false, weakSignal: true };
+      return { ...base, allowed: false, weakSignal: true };
     }
 
-    // Small tolerance for normal indoor GPS drift: the reported error, capped
-    // at 50 m, so the fence can never stretch far beyond the set radius.
-    const buffer = Math.min(accuracy, 50);
-    return {
-      churchName: s.church_name,
-      enabled: true,
-      allowed: dist - buffer <= (s.radius_meters ?? 300),
-    };
+    // INSIDE: within the set radius plus a small drift allowance (max 50 m).
+    if (dist <= radius + Math.min(accuracy, 50)) return { ...base, allowed: true };
+
+    // CLEARLY OUTSIDE: even the nearest edge of the error circle is outside.
+    if (dist - accuracy > radius) return { ...base, allowed: false };
+
+    // Borderline: could be either side — keep refining instead of guessing.
+    return { ...base, allowed: false, weakSignal: true };
   });
