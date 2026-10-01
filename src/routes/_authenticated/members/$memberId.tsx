@@ -41,7 +41,7 @@ export const Route = createFileRoute("/_authenticated/members/$memberId")({
   component: MemberDetail,
   errorComponent: ({ error }) => (
     <AppShell title="Member" back="/members">
-      <p className="text-sm text-destructive">{error.message}</p>
+      <p className="text-sm text-destructive">{error instanceof Error ? error.message : String(error)}</p>
     </AppShell>
   ),
   notFoundComponent: () => (
