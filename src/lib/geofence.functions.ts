@@ -6,6 +6,8 @@ export type GeofenceResult = {
   churchName: string;
   enabled: boolean;
   allowed: boolean;
+  /** True when the GPS fix was too imprecise to decide inside/outside. */
+  weakSignal?: boolean;
 };
 
 // Server-side geofence check: returns only inside/outside, never the church coordinates.
@@ -41,12 +43,18 @@ export const checkGeofence = createServerFn({ method: "POST" })
       Math.cos(toRad(data.lat)) * Math.cos(toRad(s.latitude)) * Math.sin(lngDelta / 2) ** 2;
     const dist = 6371000 * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 
-    // Phone GPS is unreliable indoors: the reported position can be hundreds
-    // of metres off even when the phone claims good accuracy. Use the larger
-    // of the reported error and a generous baseline as the buffer so members
-    // standing inside the church are never rejected. The cap stops a totally
-    // failed fix from opening the geofence to the whole city.
-    const buffer = Math.min(Math.max(data.accuracy ?? 0, 250), 1500);
+    // Reject readings that are too rough to judge. A fix with a huge (or
+    // unknown) error circle used to widen the fence by up to 1.5 km, which
+    // let people check in from far away. Now they must get a better fix.
+    const MAX_ACCURACY = 150;
+    const accuracy = data.accuracy;
+    if (accuracy == null || accuracy > MAX_ACCURACY) {
+      return { churchName: s.church_name, enabled: true, allowed: false, weakSignal: true };
+    }
+
+    // Small tolerance for normal indoor GPS drift: the reported error, capped
+    // at 50 m, so the fence can never stretch far beyond the set radius.
+    const buffer = Math.min(accuracy, 50);
     return {
       churchName: s.church_name,
       enabled: true,

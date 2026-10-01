@@ -141,6 +141,13 @@ function CheckIn() {
         setGeo(null);
         return;
       }
+      // A GPS reading too rough to trust: ask the member to try again
+      // (outdoors / with location on high accuracy) instead of guessing.
+      if (latestResult.weakSignal) {
+        setGeoError(
+          "Your phone's location is not precise enough right now. Turn on high-accuracy location, step near a window or outside, then tap \"Check location again\".",
+        );
+      }
       setGeo(latestResult);
     } catch {
       setGeoError("Location permission denied or unavailable.");
