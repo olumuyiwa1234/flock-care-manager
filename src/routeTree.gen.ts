@@ -31,6 +31,7 @@ import { Route as AuthenticatedPushLogRouteImport } from './routes/_authenticate
 import { Route as AuthenticatedReportsRouteImport } from './routes/_authenticated/reports'
 import { Route as AuthenticatedRolesRouteImport } from './routes/_authenticated/roles'
 import { Route as AuthenticatedSettingsRouteImport } from './routes/_authenticated/settings'
+import { Route as AuthenticatedTestimoniesRouteImport } from './routes/_authenticated/testimonies'
 import { Route as AuthenticatedChildrenIndexRouteImport } from './routes/_authenticated/children/index'
 import { Route as AuthenticatedChildrenNewRouteImport } from './routes/_authenticated/children/new'
 import { Route as AuthenticatedMembersIndexRouteImport } from './routes/_authenticated/members/index'
@@ -155,6 +156,12 @@ const AuthenticatedSettingsRoute = AuthenticatedSettingsRouteImport.update({
   path: '/settings',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedTestimoniesRoute =
+  AuthenticatedTestimoniesRouteImport.update({
+    id: '/testimonies',
+    path: '/testimonies',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedChildrenIndexRoute =
   AuthenticatedChildrenIndexRouteImport.update({
     id: '/children/',
@@ -229,6 +236,7 @@ export interface FileRoutesByFullPath {
   '/reports': typeof AuthenticatedReportsRoute
   '/roles': typeof AuthenticatedRolesRoute
   '/settings': typeof AuthenticatedSettingsRoute
+  '/testimonies': typeof AuthenticatedTestimoniesRoute
   '/children/new': typeof AuthenticatedChildrenNewRoute
   '/members/$memberId': typeof AuthenticatedMembersMemberIdRoute
   '/members/new': typeof AuthenticatedMembersNewRoute
@@ -261,6 +269,7 @@ export interface FileRoutesByTo {
   '/reports': typeof AuthenticatedReportsRoute
   '/roles': typeof AuthenticatedRolesRoute
   '/settings': typeof AuthenticatedSettingsRoute
+  '/testimonies': typeof AuthenticatedTestimoniesRoute
   '/children/new': typeof AuthenticatedChildrenNewRoute
   '/members/$memberId': typeof AuthenticatedMembersMemberIdRoute
   '/members/new': typeof AuthenticatedMembersNewRoute
@@ -295,6 +304,7 @@ export interface FileRoutesById {
   '/_authenticated/reports': typeof AuthenticatedReportsRoute
   '/_authenticated/roles': typeof AuthenticatedRolesRoute
   '/_authenticated/settings': typeof AuthenticatedSettingsRoute
+  '/_authenticated/testimonies': typeof AuthenticatedTestimoniesRoute
   '/_authenticated/children/new': typeof AuthenticatedChildrenNewRoute
   '/_authenticated/members/$memberId': typeof AuthenticatedMembersMemberIdRoute
   '/_authenticated/members/new': typeof AuthenticatedMembersNewRoute
@@ -329,6 +339,7 @@ export interface FileRouteTypes {
     | '/reports'
     | '/roles'
     | '/settings'
+    | '/testimonies'
     | '/children/new'
     | '/members/$memberId'
     | '/members/new'
@@ -361,6 +372,7 @@ export interface FileRouteTypes {
     | '/reports'
     | '/roles'
     | '/settings'
+    | '/testimonies'
     | '/children/new'
     | '/members/$memberId'
     | '/members/new'
@@ -394,6 +406,7 @@ export interface FileRouteTypes {
     | '/_authenticated/reports'
     | '/_authenticated/roles'
     | '/_authenticated/settings'
+    | '/_authenticated/testimonies'
     | '/_authenticated/children/new'
     | '/_authenticated/members/$memberId'
     | '/_authenticated/members/new'
@@ -570,6 +583,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedSettingsRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/testimonies': {
+      id: '/_authenticated/testimonies'
+      path: '/testimonies'
+      fullPath: '/testimonies'
+      preLoaderRoute: typeof AuthenticatedTestimoniesRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/children/': {
       id: '/_authenticated/children/'
       path: '/children'
@@ -655,6 +675,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedReportsRoute: typeof AuthenticatedReportsRoute
   AuthenticatedRolesRoute: typeof AuthenticatedRolesRoute
   AuthenticatedSettingsRoute: typeof AuthenticatedSettingsRoute
+  AuthenticatedTestimoniesRoute: typeof AuthenticatedTestimoniesRoute
   AuthenticatedChildrenNewRoute: typeof AuthenticatedChildrenNewRoute
   AuthenticatedMembersMemberIdRoute: typeof AuthenticatedMembersMemberIdRoute
   AuthenticatedMembersNewRoute: typeof AuthenticatedMembersNewRoute
@@ -683,6 +704,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedReportsRoute: AuthenticatedReportsRoute,
   AuthenticatedRolesRoute: AuthenticatedRolesRoute,
   AuthenticatedSettingsRoute: AuthenticatedSettingsRoute,
+  AuthenticatedTestimoniesRoute: AuthenticatedTestimoniesRoute,
   AuthenticatedChildrenNewRoute: AuthenticatedChildrenNewRoute,
   AuthenticatedMembersMemberIdRoute: AuthenticatedMembersMemberIdRoute,
   AuthenticatedMembersNewRoute: AuthenticatedMembersNewRoute,
