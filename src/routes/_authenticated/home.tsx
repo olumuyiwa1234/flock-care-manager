@@ -19,6 +19,7 @@ import {
   UserPlus,
   UserRound,
   Users,
+  Sparkles,
 } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -59,6 +60,8 @@ const tiles = [
   { to: "/roles", label: "User Roles", icon: UserCog, staffOnly: true, pastorOnly: true },
   { to: "/profile", label: "My Profile", icon: UserRound, staffOnly: false },
   { to: "/feedback", label: "Feedback", icon: Lightbulb, staffOnly: false },
+  // Testimonies: every signed-in user can share and read testimonies.
+  { to: "/testimonies", label: "Testimonies", icon: Sparkles, staffOnly: false },
   { to: "/contact-pastor", label: "Contact Pastor", icon: MessageSquareHeart, staffOnly: false },
   { to: "/settings", label: "Settings", icon: Settings, staffOnly: true },
 ];
