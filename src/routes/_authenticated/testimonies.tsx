@@ -65,8 +65,8 @@ function Testimonies() {
   // Validate and save a new testimony from the signed-in user.
   async function share() {
     const content = text.trim();
-    if (!content) return toast.error("Please write your testimony first");
-    if (content.length > 4000) return toast.error("Please keep it under 4000 characters");
+    if (!content) { toast.error("Please write your testimony first"); return; }
+    if (content.length > 4000) { toast.error("Please keep it under 4000 characters"); return; }
     if (!auth) return;
     setBusy(true);
     const { data: prof } = await supabase.from("profiles").select("full_name").eq("id", auth.userId).maybeSingle();
@@ -77,7 +77,7 @@ function Testimonies() {
       content,
     });
     setBusy(false);
-    if (error) return toast.error(error.message);
+    if (error) { toast.error(error.message); return; }
     setTitle("");
     setText("");
     toast.success("Testimony shared. Thank you!");
@@ -88,7 +88,7 @@ function Testimonies() {
   async function remove(id: string) {
     if (!confirm("Delete this testimony?")) return;
     const { error } = await supabase.from("testimonies").delete().eq("id", id);
-    if (error) return toast.error(error.message);
+    if (error) { toast.error(error.message); return; }
     toast.success("Testimony deleted");
     queryClient.invalidateQueries({ queryKey: ["testimonies"] });
   }
