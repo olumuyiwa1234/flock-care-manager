@@ -67,7 +67,7 @@ function CheckIn() {
       // reading over a short window and send them all to the server, which
       // lets the member in as soon as ANY trustworthy reading (or the average
       // of them) places them inside the church.
-      type Fix = { lat: number; lng: number; accuracy?: number };
+      type Fix = { lat: number; lng: number; accuracy?: number | undefined };
       const fixes: Fix[] = [];
       const pushFix = (lat: number, lng: number, accuracy: number | null | undefined) => {
         fixes.push({
