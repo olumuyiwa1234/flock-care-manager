@@ -63,92 +63,85 @@ function CheckIn() {
       let latestResult: GeofenceResult | null = null;
       let receivedPosition = false;
 
-      // A phone's first GPS fix is often stale or based on a nearby mast.
-      // Watch the live position for up to ~10 seconds and keep the fix with
-      // the smallest reported error (the most trustworthy one). Checking the
-      // geofence with that best fix avoids false "out of range" results from
-      // an early, inaccurate reading.
-      let best: { lat: number; lng: number; accuracy: number } | null = null;
+      // A phone's GPS readings jump around, especially indoors. Collect every
+      // reading over a short window and send them all to the server, which
+      // lets the member in as soon as ANY trustworthy reading (or the average
+      // of them) places them inside the church.
+      type Fix = { lat: number; lng: number; accuracy?: number | undefined };
+      const fixes: Fix[] = [];
+      const pushFix = (lat: number, lng: number, accuracy: number | null | undefined) => {
+        fixes.push({
+          lat,
+          lng,
+          accuracy: accuracy != null && Number.isFinite(accuracy) ? Math.min(accuracy, 5000) : undefined,
+        });
+        // Keep only the most recent 40 readings.
+        if (fixes.length > 40) fixes.shift();
+      };
+
+      // --- Start watching the live position --------------------------------
       let watchId: string | undefined;
       try {
-        const watchPromise = Geolocation.watchPosition(
-          { enableHighAccuracy: true, maximumAge: 0, timeout: 12000 },
+        watchId = await Geolocation.watchPosition(
+          { enableHighAccuracy: true, maximumAge: 0, timeout: 15000 },
           (pos) => {
             if (!pos?.coords) return;
-            const accuracy = pos.coords.accuracy ?? Number.MAX_SAFE_INTEGER;
-            if (!best || accuracy < best.accuracy) {
-              best = {
-                lat: pos.coords.latitude,
-                lng: pos.coords.longitude,
-                accuracy,
-              };
-            }
+            pushFix(pos.coords.latitude, pos.coords.longitude, pos.coords.accuracy);
           },
         );
-        watchId = await watchPromise;
       } catch {
         // Watching failed (e.g. permission prompt dismissed); a single
         // snapshot below is the fallback.
       }
 
-      // Keep refining for up to 25 seconds, checking every 2 seconds.
-      // Stop as soon as the member is confirmed inside (fast check-in) or
-      // confirmed clearly outside; keep waiting while the reading is too rough.
+      // Ask the server to judge every reading collected so far.
+      const judge = async (): Promise<GeofenceResult | null> => {
+        if (fixes.length === 0) return null;
+        try {
+          return await checkGeofence({ data: { fixes: [...fixes] } });
+        } catch {
+          return null; // Network hiccup — caller keeps trying.
+        }
+      };
+
+      // --- Refine for up to 30 seconds, checking every 1.5 seconds ---------
+      // Stop early when the member is confirmed inside (fast check-in) or
+      // confirmed clearly outside.
       if (watchId) {
-        const deadline = Date.now() + 25000;
-        let lastChecked: number | null = null;
+        const deadline = Date.now() + 30000;
+        let lastCount = 0;
         while (Date.now() < deadline) {
-          await new Promise((resolve) => setTimeout(resolve, 2000));
-          const fix = best as { lat: number; lng: number; accuracy: number } | null;
-          // Only ask the server again when the reading actually improved.
-          if (!fix || fix.accuracy === lastChecked) continue;
-          lastChecked = fix.accuracy;
-          try {
-            const r = await checkGeofence({
-              data: {
-                lat: fix.lat,
-                lng: fix.lng,
-                accuracy: Number.isFinite(fix.accuracy) ? fix.accuracy : undefined,
-              },
-            });
+          await new Promise((resolve) => setTimeout(resolve, 1500));
+          if (fixes.length === lastCount) continue; // nothing new to judge
+          lastCount = fixes.length;
+          const r = await judge();
+          if (r) {
+            latestResult = r;
+            receivedPosition = true;
             if (r.allowed || !r.enabled || !r.weakSignal) break;
-          } catch {
-            // Network hiccup: keep trying until the deadline.
           }
         }
       }
 
-      // Fall back to a one-off snapshot when the watch produced nothing.
-      if (!best) {
+      // --- Fallback: one-off snapshot when the watch produced nothing ------
+      if (fixes.length === 0) {
         try {
           const pos = await Geolocation.getCurrentPosition({
             enableHighAccuracy: true,
-            timeout: 12000,
+            timeout: 15000,
             maximumAge: 0,
           });
-          best = {
-            lat: pos.coords.latitude,
-            lng: pos.coords.longitude,
-            accuracy: pos.coords.accuracy ?? Number.MAX_SAFE_INTEGER,
-          };
+          pushFix(pos.coords.latitude, pos.coords.longitude, pos.coords.accuracy);
         } catch {
           // No usable position at all.
         }
       }
 
-      if (best) {
+      // Final verdict using everything collected (if not already decided).
+      if (fixes.length > 0 && (!latestResult || latestResult.weakSignal)) {
+        const r = await judge();
+        if (r) latestResult = r;
         receivedPosition = true;
-        try {
-          latestResult = await checkGeofence({
-            data: {
-              lat: best.lat,
-              lng: best.lng,
-              accuracy: Number.isFinite(best.accuracy) ? best.accuracy : undefined,
-            },
-          });
-        } catch {
-          latestResult = null;
-        }
       }
 
       // Stop watching so the GPS radio does not keep draining battery.
@@ -359,7 +352,9 @@ function CheckIn() {
                       ? "Locating…"
                       : withinPremises
                         ? "Check In"
-                        : "Out of range"}
+                        : geo?.weakSignal
+                          ? "Weak signal"
+                          : "Out of range"}
               </span>
             </span>
           </button>
