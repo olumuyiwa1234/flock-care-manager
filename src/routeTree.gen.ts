@@ -32,11 +32,13 @@ import { Route as AuthenticatedRolesRouteImport } from './routes/_authenticated/
 import { Route as AuthenticatedSettingsRouteImport } from './routes/_authenticated/settings'
 import { Route as AuthenticatedTestimoniesRouteImport } from './routes/_authenticated/testimonies'
 import { Route as AuthenticatedChildrenIndexRouteImport } from './routes/_authenticated/children/index'
+import { Route as AuthenticatedChildrenFollowupRouteImport } from './routes/_authenticated/children/followup'
 import { Route as AuthenticatedChildrenNewRouteImport } from './routes/_authenticated/children/new'
 import { Route as AuthenticatedMembersIndexRouteImport } from './routes/_authenticated/members/index'
 import { Route as AuthenticatedMembersMemberIdRouteImport } from './routes/_authenticated/members/$memberId'
 import { Route as AuthenticatedMembersNewRouteImport } from './routes/_authenticated/members/new'
 import { Route as AuthenticatedTeensIndexRouteImport } from './routes/_authenticated/teens/index'
+import { Route as AuthenticatedTeensFollowupRouteImport } from './routes/_authenticated/teens/followup'
 import { Route as AuthenticatedTeensNewRouteImport } from './routes/_authenticated/teens/new'
 import { Route as ApiPublicHooksAutoCelebrationGreetingsRouteImport } from './routes/api/public/hooks/auto-celebration-greetings'
 import { Route as ApiPublicHooksCelebrationPushRouteImport } from './routes/api/public/hooks/celebration-push'
@@ -162,6 +164,12 @@ const AuthenticatedChildrenIndexRoute =
     path: '/children/',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedChildrenFollowupRoute =
+  AuthenticatedChildrenFollowupRouteImport.update({
+    id: '/children/followup',
+    path: '/children/followup',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedChildrenNewRoute =
   AuthenticatedChildrenNewRouteImport.update({
     id: '/children/new',
@@ -190,6 +198,12 @@ const AuthenticatedTeensIndexRoute = AuthenticatedTeensIndexRouteImport.update({
   path: '/teens/',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedTeensFollowupRoute =
+  AuthenticatedTeensFollowupRouteImport.update({
+    id: '/teens/followup',
+    path: '/teens/followup',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedTeensNewRoute = AuthenticatedTeensNewRouteImport.update({
   id: '/teens/new',
   path: '/teens/new',
@@ -230,9 +244,11 @@ export interface FileRoutesByFullPath {
   '/roles': typeof AuthenticatedRolesRoute
   '/settings': typeof AuthenticatedSettingsRoute
   '/testimonies': typeof AuthenticatedTestimoniesRoute
+  '/children/followup': typeof AuthenticatedChildrenFollowupRoute
   '/children/new': typeof AuthenticatedChildrenNewRoute
   '/members/$memberId': typeof AuthenticatedMembersMemberIdRoute
   '/members/new': typeof AuthenticatedMembersNewRoute
+  '/teens/followup': typeof AuthenticatedTeensFollowupRoute
   '/teens/new': typeof AuthenticatedTeensNewRoute
   '/children/': typeof AuthenticatedChildrenIndexRoute
   '/members/': typeof AuthenticatedMembersIndexRoute
@@ -262,9 +278,11 @@ export interface FileRoutesByTo {
   '/roles': typeof AuthenticatedRolesRoute
   '/settings': typeof AuthenticatedSettingsRoute
   '/testimonies': typeof AuthenticatedTestimoniesRoute
+  '/children/followup': typeof AuthenticatedChildrenFollowupRoute
   '/children/new': typeof AuthenticatedChildrenNewRoute
   '/members/$memberId': typeof AuthenticatedMembersMemberIdRoute
   '/members/new': typeof AuthenticatedMembersNewRoute
+  '/teens/followup': typeof AuthenticatedTeensFollowupRoute
   '/teens/new': typeof AuthenticatedTeensNewRoute
   '/children': typeof AuthenticatedChildrenIndexRoute
   '/members': typeof AuthenticatedMembersIndexRoute
@@ -296,9 +314,11 @@ export interface FileRoutesById {
   '/_authenticated/roles': typeof AuthenticatedRolesRoute
   '/_authenticated/settings': typeof AuthenticatedSettingsRoute
   '/_authenticated/testimonies': typeof AuthenticatedTestimoniesRoute
+  '/_authenticated/children/followup': typeof AuthenticatedChildrenFollowupRoute
   '/_authenticated/children/new': typeof AuthenticatedChildrenNewRoute
   '/_authenticated/members/$memberId': typeof AuthenticatedMembersMemberIdRoute
   '/_authenticated/members/new': typeof AuthenticatedMembersNewRoute
+  '/_authenticated/teens/followup': typeof AuthenticatedTeensFollowupRoute
   '/_authenticated/teens/new': typeof AuthenticatedTeensNewRoute
   '/_authenticated/children/': typeof AuthenticatedChildrenIndexRoute
   '/_authenticated/members/': typeof AuthenticatedMembersIndexRoute
@@ -330,9 +350,11 @@ export interface FileRouteTypes {
     | '/roles'
     | '/settings'
     | '/testimonies'
+    | '/children/followup'
     | '/children/new'
     | '/members/$memberId'
     | '/members/new'
+    | '/teens/followup'
     | '/teens/new'
     | '/children/'
     | '/members/'
@@ -362,9 +384,11 @@ export interface FileRouteTypes {
     | '/roles'
     | '/settings'
     | '/testimonies'
+    | '/children/followup'
     | '/children/new'
     | '/members/$memberId'
     | '/members/new'
+    | '/teens/followup'
     | '/teens/new'
     | '/children'
     | '/members'
@@ -395,9 +419,11 @@ export interface FileRouteTypes {
     | '/_authenticated/roles'
     | '/_authenticated/settings'
     | '/_authenticated/testimonies'
+    | '/_authenticated/children/followup'
     | '/_authenticated/children/new'
     | '/_authenticated/members/$memberId'
     | '/_authenticated/members/new'
+    | '/_authenticated/teens/followup'
     | '/_authenticated/teens/new'
     | '/_authenticated/children/'
     | '/_authenticated/members/'
@@ -578,6 +604,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedChildrenIndexRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/children/followup': {
+      id: '/_authenticated/children/followup'
+      path: '/children/followup'
+      fullPath: '/children/followup'
+      preLoaderRoute: typeof AuthenticatedChildrenFollowupRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/children/new': {
       id: '/_authenticated/children/new'
       path: '/children/new'
@@ -611,6 +644,13 @@ declare module '@tanstack/react-router' {
       path: '/teens'
       fullPath: '/teens/'
       preLoaderRoute: typeof AuthenticatedTeensIndexRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/teens/followup': {
+      id: '/_authenticated/teens/followup'
+      path: '/teens/followup'
+      fullPath: '/teens/followup'
+      preLoaderRoute: typeof AuthenticatedTeensFollowupRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/teens/new': {
@@ -656,9 +696,11 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedRolesRoute: typeof AuthenticatedRolesRoute
   AuthenticatedSettingsRoute: typeof AuthenticatedSettingsRoute
   AuthenticatedTestimoniesRoute: typeof AuthenticatedTestimoniesRoute
+  AuthenticatedChildrenFollowupRoute: typeof AuthenticatedChildrenFollowupRoute
   AuthenticatedChildrenNewRoute: typeof AuthenticatedChildrenNewRoute
   AuthenticatedMembersMemberIdRoute: typeof AuthenticatedMembersMemberIdRoute
   AuthenticatedMembersNewRoute: typeof AuthenticatedMembersNewRoute
+  AuthenticatedTeensFollowupRoute: typeof AuthenticatedTeensFollowupRoute
   AuthenticatedTeensNewRoute: typeof AuthenticatedTeensNewRoute
   AuthenticatedChildrenIndexRoute: typeof AuthenticatedChildrenIndexRoute
   AuthenticatedMembersIndexRoute: typeof AuthenticatedMembersIndexRoute
@@ -684,9 +726,11 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedRolesRoute: AuthenticatedRolesRoute,
   AuthenticatedSettingsRoute: AuthenticatedSettingsRoute,
   AuthenticatedTestimoniesRoute: AuthenticatedTestimoniesRoute,
+  AuthenticatedChildrenFollowupRoute: AuthenticatedChildrenFollowupRoute,
   AuthenticatedChildrenNewRoute: AuthenticatedChildrenNewRoute,
   AuthenticatedMembersMemberIdRoute: AuthenticatedMembersMemberIdRoute,
   AuthenticatedMembersNewRoute: AuthenticatedMembersNewRoute,
+  AuthenticatedTeensFollowupRoute: AuthenticatedTeensFollowupRoute,
   AuthenticatedTeensNewRoute: AuthenticatedTeensNewRoute,
   AuthenticatedChildrenIndexRoute: AuthenticatedChildrenIndexRoute,
   AuthenticatedMembersIndexRoute: AuthenticatedMembersIndexRoute,

@@ -1,7 +1,7 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
-import { Check, Plus, Search, X } from "lucide-react";
+import { Check, Plus, Search, X, HeartHandshake, ChevronRight } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { AppShell } from "@/components/AppShell";
 import { Button } from "@/components/ui/button";
@@ -135,6 +135,17 @@ function ChildrenAttendance() {
         </Button>
       }
     >
+      {/* Department-specific missed-Sunday sub-tile. */}
+      <Button asChild variant="outline" className="mb-4 h-auto w-full justify-start gap-3 whitespace-normal py-4 text-left">
+        <Link to="/children/followup">
+          <HeartHandshake className="size-5 shrink-0 text-primary" />
+          <span className="min-w-0 flex-1">
+            <span className="block font-semibold">Children follow-up</span>
+            <span className="block text-xs text-muted-foreground">Missed 2 or more consecutive Sundays</span>
+          </span>
+          <ChevronRight className="size-4 shrink-0" />
+        </Link>
+      </Button>
       <div className="space-y-4">
         <div className="rounded-2xl border border-border bg-card p-4">
           <Label className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
