@@ -28,8 +28,10 @@ import {
   lastSundays,
   todayISO,
 } from "@/lib/shepherd";
-import { useMembers, useAttendance, type MemberRow, type AttendanceRow } from "@/lib/queries";
+import { useMembers, useAttendance, type MemberRow } from "@/lib/queries";
 import { useAuth } from "@/lib/useAuth";
+import { isYouthMember, missedSundayCount } from "@/lib/follow-up-counts";
+import { useFollowUpDates } from "@/lib/useFollowUpDates";
 
 export const Route = createFileRoute("/_authenticated/followup")({
   // The tile can be opened as a plain list, or focused on one member via ?memberId=
@@ -57,29 +59,6 @@ const LOOKBACK_SUNDAYS = 8;
  * ignored, so nobody appears in follow-up until they miss Sundays from here on.
  */
 const TRACKING_START = "2026-09-13";
-
-/**
- * Counts how many of the most recent Sunday Services a member missed in a row.
- * Stops counting at the first Sunday the member was recorded as present.
- */
-function consecutiveMissedSundays(
-  memberId: string,
-  sundays: string[],
-  attendance: AttendanceRow[],
-): number {
-  // Build a quick lookup of "member attended on this Sunday" keys.
-  const attended = new Set(
-    attendance
-      .filter((a) => a.service_type === "Sunday Service" && a.status !== "Absent")
-      .map((a) => `${a.member_id}:${a.service_date}`),
-  );
-  let missed = 0;
-  for (const s of sundays) {
-    if (attended.has(`${memberId}:${s}`)) break;
-    missed += 1;
-  }
-  return missed;
-}
 
 function FollowUp() {
   const { isFloor } = useAuth();
@@ -110,24 +89,8 @@ function FollowUpList() {
   // Full attendance history, used only to show when each member was last seen.
   const { data: allAttendance = [] } = useAttendance();
 
-  // Most recent follow-up date per member: counting restarts after it.
-  const lastFollowUps = useQuery({
-    queryKey: ["follow-ups-latest"],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from("follow_ups")
-        .select("member_id, contacted_on")
-        // Kept-open follow-ups don't reset the count, so the member stays listed.
-        .eq("keep_open", false);
-      if (error) throw error;
-      const map = new Map<string, string>();
-      for (const f of data ?? []) {
-        const cur = map.get(f.member_id);
-        if (!cur || f.contacted_on > cur) map.set(f.member_id, f.contacted_on);
-      }
-      return map;
-    },
-  });
+  // Completed contacts reset the shared adult and youth absence counters.
+  const lastFollowUps = useFollowUpDates();
 
   // Natural group leaders are limited to the fellowship(s) they lead.
   const leaderGroups = useMemo(
@@ -155,6 +118,8 @@ function FollowUpList() {
   const needsFollowUp = useMemo(() => {
     return members
       .filter((m) => {
+        // Children and teens now have their own missed-Sunday sub-tiles.
+        if (isYouthMember(m)) return false;
         if (!restrictToGroup) return true;
         // Use the saved natural group, falling back to the derived fellowship.
         const group =
@@ -162,15 +127,8 @@ function FollowUpList() {
         return !!group && leaderGroups.includes(group.toLowerCase());
       })
       .map((m) => {
-        // Only count Sundays on/after the day the member registered —
-        // they cannot miss services that happened before they joined.
-        const registeredOn = m.created_at.slice(0, 10);
-        // Once followed up, only Sundays AFTER the follow-up date count again.
-        const followedUpOn = lastFollowUps.data?.get(m.id);
-        const countable = sundays.filter(
-          (s) => s >= registeredOn && (!followedUpOn || s > followedUpOn),
-        );
-        return { member: m, missed: consecutiveMissedSundays(m.id, countable, attendance) };
+        // Share registration-date and completed-follow-up reset rules with youth lists.
+        return { member: m, missed: missedSundayCount(m, sundays, attendance, lastFollowUps.data?.get(m.id)) };
       })
       .filter((row) => row.missed >= 2)
       .sort((a, b) => b.missed - a.missed || a.member.full_name.localeCompare(b.member.full_name));
@@ -189,7 +147,7 @@ function FollowUpList() {
       Gender: member.gender ?? "",
       "Phone Number": member.phone ?? "",
       "House Address": member.home_address ?? "",
-      "Last Seen": lastSeen.get(member.id) ? formatDate(lastSeen.get(member.id)!) : "Never",
+      "Last Seen": lastSeen.get(member.id) ? formatDate(lastSeen.get(member.id)) : "Never",
       "Sunday Services Missed": missed,
     }));
     const sheet = XLSX.utils.json_to_sheet(rows);
@@ -524,6 +482,6 @@ async function withRecorderNames<T extends { created_by: string | null }>(rows: 
   const names = new Map((data ?? []).map((p) => [p.id, p.full_name]));
   return rows.map((r) => ({
     ...r,
-    profiles: r.created_by && names.has(r.created_by) ? { full_name: names.get(r.created_by)! } : null,
+    profiles: r.created_by && names.has(r.created_by) ? { full_name: names.get(r.created_by) } : null,
   }));
 }
