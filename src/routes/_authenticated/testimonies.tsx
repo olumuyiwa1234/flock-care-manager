@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { Trash2 } from "lucide-react";
+import { Trash2, Lock } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { AppShell, EmptyState } from "@/components/AppShell";
 import { Button } from "@/components/ui/button";
@@ -30,6 +30,7 @@ type TestimonyRow = {
   title: string | null;
   content: string;
   created_at: string;
+  visibility: string;
 };
 
 function Testimonies() {
@@ -38,6 +39,8 @@ function Testimonies() {
   const [title, setTitle] = useState("");
   const [text, setText] = useState("");
   const [busy, setBusy] = useState(false);
+  // Who can read the new testimony: everyone signed in, or only the pastorate.
+  const [visibility, setVisibility] = useState<"public" | "private">("public");
 
   // All shared testimonies, newest first, plus each author's member id so
   // their name can link to their profile.
@@ -46,7 +49,7 @@ function Testimonies() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("testimonies")
-        .select("id, user_id, author_name, title, content, created_at")
+        .select("id, user_id, author_name, title, content, created_at, visibility")
         .order("created_at", { ascending: false })
         .limit(200);
       if (error) throw error;
@@ -75,6 +78,7 @@ function Testimonies() {
       author_name: prof?.full_name || auth.email || "Member",
       title: title.trim().slice(0, 120) || null,
       content,
+      visibility,
     });
     setBusy(false);
     if (error) { toast.error(error.message); return; }
@@ -99,6 +103,17 @@ function Testimonies() {
       <div className="space-y-3 rounded-2xl border border-border bg-card p-4">
         <Input placeholder="Title (optional)" value={title} maxLength={120} onChange={(e) => setTitle(e.target.value)} />
         <Textarea rows={5} placeholder="Write your testimony…" value={text} maxLength={4000} onChange={(e) => setText(e.target.value)} />
+        {/* Visibility choice: public vs private (pastorate only) */}
+        <div className="grid grid-cols-2 gap-2">
+          {(["public", "private"] as const).map((v) => (
+            <Button key={v} type="button" variant={visibility === v ? "default" : "outline"} onClick={() => setVisibility(v)}>
+              {v === "public" ? "Public" : "Private"}
+            </Button>
+          ))}
+        </div>
+        <p className="text-xs text-muted-foreground">
+          {visibility === "public" ? "Every signed-in member can read it." : "Only the Pastorate (and you) can read it."}
+        </p>
         <Button className="w-full" onClick={() => void share()} disabled={busy}>
           {busy ? "Sharing…" : "Share testimony"}
         </Button>
@@ -125,6 +140,10 @@ function Testimonies() {
                     t.author_name
                   )}{" "}
                   · {formatDate(t.created_at)}
+                  {/* Badge for private testimonies */}
+                  {t.visibility === "private" && (
+                    <span className="ml-2 inline-flex items-center gap-1 text-primary"><Lock className="size-3" /> Private</span>
+                  )}
                 </p>
               </div>
               {(t.user_id === auth?.userId || isFullAccess) && (
