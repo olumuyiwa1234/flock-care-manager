@@ -87,6 +87,9 @@ export function MemberForm({
   invitedBy?: string | null;
   submitLabel?: string;
   allowNaturalGroup?: boolean;
+  // When true, the age bracket is locked — Children/Teens leaders cannot move
+  // a child or teen out of their own age group while editing.
+  lockAgeBracket?: boolean;
   onSaved?: (member: { id: string; full_name: string; member_code: string }) => void;
 }) {
   const [draft, setDraft] = useState<MemberDraft>(() => ({
