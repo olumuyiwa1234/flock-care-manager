@@ -77,6 +77,9 @@ export function MemberForm({
   onSaved,
   // When true, the form shows a Natural group selector (Pastor / Parish Coordinator / Admin only)
   allowNaturalGroup = false,
+  // When true, the age bracket is locked — Children/Teens leaders cannot move
+  // a child or teen out of their own age group while editing.
+  lockAgeBracket = false,
 }: {
   initial?: Partial<MemberDraft> & { photo_url?: string | null };
   memberId?: string;
@@ -84,6 +87,9 @@ export function MemberForm({
   invitedBy?: string | null;
   submitLabel?: string;
   allowNaturalGroup?: boolean;
+  // When true, the age bracket is locked — Children/Teens leaders cannot move
+  // a child or teen out of their own age group while editing.
+  lockAgeBracket?: boolean;
   onSaved?: (member: { id: string; full_name: string; member_code: string }) => void;
 }) {
   const [draft, setDraft] = useState<MemberDraft>(() => ({
@@ -255,7 +261,12 @@ export function MemberForm({
       </Field>
 
       <Field label="Age bracket">
-        <Select value={draft.age_bracket} onValueChange={(v) => set("age_bracket", v)}>
+        {/* Locked for Children/Teens leaders: they edit within their own age group only */}
+        <Select
+          value={draft.age_bracket}
+          onValueChange={(v) => set("age_bracket", v)}
+          disabled={lockAgeBracket}
+        >
           <SelectTrigger>
             <SelectValue placeholder="Select age bracket" />
           </SelectTrigger>

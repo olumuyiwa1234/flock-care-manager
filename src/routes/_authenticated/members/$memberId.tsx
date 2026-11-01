@@ -28,6 +28,7 @@ import { MONTHS, formatDate } from "@/lib/shepherd";
 import type { MemberRow, AttendanceRow } from "@/lib/queries";
 import { useAuth } from "@/lib/useAuth";
 import { deleteUserAccount, requestAccountDeletion } from "@/lib/accounts.functions";
+import { deleteYouthMemberProfile } from "@/lib/youth-members.functions";
 
 export const Route = createFileRoute("/_authenticated/members/$memberId")({
   head: () => ({
@@ -68,7 +69,7 @@ function MemberDetail() {
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [photoOpen, setPhotoOpen] = useState(false);
-  const { isFullAccess, isPastor, auth } = useAuth();
+  const { isFullAccess, isPastor, isChildrenLeader, isTeensLeader, auth } = useAuth();
 
   const memberQuery = useQuery({
     queryKey: ["member", memberId],
@@ -125,6 +126,16 @@ function MemberDetail() {
     m?.age_bracket === "0-12" ||
     m?.age_bracket === "13-17";
 
+  // Children HOD manages 0-12 profiles; Teens HOD manages 13-17 profiles.
+  // Their rights stop at their own age group — no other member profiles.
+  const youthBracket = isChildrenLeader ? "0-12" : isTeensLeader ? "13-17" : null;
+  const isYouthLeaderOfMember = !!youthBracket && m?.age_bracket === youthBracket;
+  // Editing: full access, or the Children/Teens leader for this member's bracket.
+  const canEdit = isFullAccess || isYouthLeaderOfMember;
+  // Direct profile deletion: full access, or the youth leader — but only while
+  // the child/teen has no own login (accounts always go through the pastor).
+  const canDeleteProfile = isFullAccess || (isYouthLeaderOfMember && !m?.user_id);
+
   const parentsQuery = useQuery({
     queryKey: ["member-parents", memberId],
     enabled: isFullAccess && !!m?.parent_id,
@@ -161,6 +172,17 @@ function MemberDetail() {
     if (!m) return;
     setDeleting(true);
     try {
+      // Children/Teens leaders: remove the profile directly (only offered when
+      // the child/teen has no own login — checked again on the server).
+      if (!isPastor && !isFullAccess && isYouthLeaderOfMember && !m.user_id) {
+        await deleteYouthMemberProfile({ data: { memberId: m.id } });
+        await queryClient.invalidateQueries({ queryKey: ["member", memberId] });
+        await queryClient.invalidateQueries({ queryKey: ["members"] });
+        toast.success("Profile deleted");
+        setConfirmDelete(false);
+        void navigate({ to: "/members" });
+        return;
+      }
       if (isPastor) {
         await deleteUserAccount({
           data: m.user_id ? { userId: m.user_id, memberId: m.id } : { memberId: m.id },
@@ -193,13 +215,15 @@ function MemberDetail() {
   }
 
 
-  if (editing) {
+  if (editing && canEdit) {
     return (
       <AppShell title="Edit member" subtitle={m.full_name} back="/members">
         <MemberForm
           memberId={m.id}
           submitLabel="Update member"
           allowNaturalGroup={isFullAccess}
+          // A Children/Teens leader cannot move the child out of their own age group
+          lockAgeBracket={!isFullAccess && isYouthLeaderOfMember}
           initial={{
             full_name: m.full_name,
             phone: m.phone ?? "",
@@ -233,9 +257,12 @@ function MemberDetail() {
       subtitle={m.member_code}
       back="/members"
       action={
-        <Button size="icon" variant="secondary" className="rounded-full" onClick={() => setEditing(true)}>
-          <Pencil className="size-4" />
-        </Button>
+        // The edit pencil is only offered to those allowed to edit this profile.
+        canEdit ? (
+          <Button size="icon" variant="secondary" className="rounded-full" onClick={() => setEditing(true)}>
+            <Pencil className="size-4" />
+          </Button>
+        ) : undefined
       }
     >
       <div className="flex items-center gap-4 rounded-2xl border border-border bg-card p-4">
@@ -446,7 +473,7 @@ function MemberDetail() {
         )}
       </section>
 
-      {isFullAccess && m.user_id !== auth?.userId && (
+      {canDeleteProfile && m.user_id !== auth?.userId && (
         <section className="mt-6">
           <Button
             variant="outline"
@@ -454,12 +481,16 @@ function MemberDetail() {
             onClick={() => setConfirmDelete(true)}
           >
             <Trash2 className="mr-2 size-4" />{" "}
-            {isPastor ? "Delete account" : "Request account deletion"}
+            {/* Children/Teens leaders remove the profile themselves; Admin staff
+                ask the pastor; the pastor deletes accounts outright. */}
+            {isPastor ? "Delete account" : isFullAccess ? "Request account deletion" : "Delete profile"}
           </Button>
           <p className="mt-2 text-center text-xs text-muted-foreground">
             {isPastor
               ? "Permanently removes this person, their profile, attendance and follow-up records."
-              : "The pastor has to approve before this account and its records are removed."}
+              : isFullAccess
+                ? "The pastor has to approve before this account and its records are removed."
+                : "Permanently removes this profile with its attendance and follow-up records. Children or teens with their own login need the pastor instead."}
           </p>
         </section>
       )}
@@ -468,12 +499,18 @@ function MemberDetail() {
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>
-              {isPastor ? "Delete this account?" : "Ask the pastor to delete this account?"}
+              {isPastor
+                ? "Delete this account?"
+                : isFullAccess
+                  ? "Ask the pastor to delete this account?"
+                  : "Delete this profile?"}
             </AlertDialogTitle>
             <AlertDialogDescription>
               {isPastor
                 ? `This permanently wipes ${m.full_name} from the database — profile, attendance and follow-up records included. This action cannot be undone.`
-                : `The pastor will be asked to approve removing ${m.full_name}. Nothing is deleted until the pastor approves.`}
+                : isFullAccess
+                  ? `The pastor will be asked to approve removing ${m.full_name}. Nothing is deleted until the pastor approves.`
+                  : `This permanently removes ${m.full_name}'s profile, attendance and follow-up records. This action cannot be undone.`}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
@@ -487,12 +524,14 @@ function MemberDetail() {
               disabled={deleting}
             >
               {deleting
-                ? isPastor
+                ? isPastor || !isFullAccess
                   ? "Deleting…"
                   : "Sending…"
                 : isPastor
                   ? "Delete account"
-                  : "Send request"}
+                  : isFullAccess
+                    ? "Send request"
+                    : "Delete profile"}
             </AlertDialogAction>
 
           </AlertDialogFooter>
