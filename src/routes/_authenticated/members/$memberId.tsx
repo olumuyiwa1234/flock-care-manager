@@ -28,6 +28,7 @@ import { MONTHS, formatDate } from "@/lib/shepherd";
 import type { MemberRow, AttendanceRow } from "@/lib/queries";
 import { useAuth } from "@/lib/useAuth";
 import { deleteUserAccount, requestAccountDeletion } from "@/lib/accounts.functions";
+import { deleteYouthMemberProfile } from "@/lib/youth-members.functions";
 
 export const Route = createFileRoute("/_authenticated/members/$memberId")({
   head: () => ({
@@ -68,7 +69,7 @@ function MemberDetail() {
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [photoOpen, setPhotoOpen] = useState(false);
-  const { isFullAccess, isPastor, auth } = useAuth();
+  const { isFullAccess, isPastor, isChildrenLeader, isTeensLeader, auth } = useAuth();
 
   const memberQuery = useQuery({
     queryKey: ["member", memberId],
@@ -125,6 +126,16 @@ function MemberDetail() {
     m?.age_bracket === "0-12" ||
     m?.age_bracket === "13-17";
 
+  // Children HOD manages 0-12 profiles; Teens HOD manages 13-17 profiles.
+  // Their rights stop at their own age group — no other member profiles.
+  const youthBracket = isChildrenLeader ? "0-12" : isTeensLeader ? "13-17" : null;
+  const isYouthLeaderOfMember = !!youthBracket && m?.age_bracket === youthBracket;
+  // Editing: full access, or the Children/Teens leader for this member's bracket.
+  const canEdit = isFullAccess || isYouthLeaderOfMember;
+  // Direct profile deletion: full access, or the youth leader — but only while
+  // the child/teen has no own login (accounts always go through the pastor).
+  const canDeleteProfile = isFullAccess || (isYouthLeaderOfMember && !m?.user_id);
+
   const parentsQuery = useQuery({
     queryKey: ["member-parents", memberId],
     enabled: isFullAccess && !!m?.parent_id,
@@ -161,6 +172,17 @@ function MemberDetail() {
     if (!m) return;
     setDeleting(true);
     try {
+      // Children/Teens leaders: remove the profile directly (only offered when
+      // the child/teen has no own login — checked again on the server).
+      if (!isPastor && !isFullAccess && isYouthLeaderOfMember && !m.user_id) {
+        await deleteYouthMemberProfile({ data: { memberId: m.id } });
+        await queryClient.invalidateQueries({ queryKey: ["member", memberId] });
+        await queryClient.invalidateQueries({ queryKey: ["members"] });
+        toast.success("Profile deleted");
+        setConfirmDelete(false);
+        void navigate({ to: "/members" });
+        return;
+      }
       if (isPastor) {
         await deleteUserAccount({
           data: m.user_id ? { userId: m.user_id, memberId: m.id } : { memberId: m.id },
@@ -200,6 +222,8 @@ function MemberDetail() {
           memberId={m.id}
           submitLabel="Update member"
           allowNaturalGroup={isFullAccess}
+          // A Children/Teens leader cannot move the child out of their own age group
+          lockAgeBracket={!isFullAccess && isYouthLeaderOfMember}
           initial={{
             full_name: m.full_name,
             phone: m.phone ?? "",
