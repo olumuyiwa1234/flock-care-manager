@@ -215,7 +215,7 @@ function MemberDetail() {
   }
 
 
-  if (editing) {
+  if (editing && canEdit) {
     return (
       <AppShell title="Edit member" subtitle={m.full_name} back="/members">
         <MemberForm
@@ -257,9 +257,12 @@ function MemberDetail() {
       subtitle={m.member_code}
       back="/members"
       action={
-        <Button size="icon" variant="secondary" className="rounded-full" onClick={() => setEditing(true)}>
-          <Pencil className="size-4" />
-        </Button>
+        // The edit pencil is only offered to those allowed to edit this profile.
+        canEdit ? (
+          <Button size="icon" variant="secondary" className="rounded-full" onClick={() => setEditing(true)}>
+            <Pencil className="size-4" />
+          </Button>
+        ) : undefined
       }
     >
       <div className="flex items-center gap-4 rounded-2xl border border-border bg-card p-4">
