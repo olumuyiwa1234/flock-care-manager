@@ -473,7 +473,7 @@ function MemberDetail() {
         )}
       </section>
 
-      {isFullAccess && m.user_id !== auth?.userId && (
+      {canDeleteProfile && m.user_id !== auth?.userId && (
         <section className="mt-6">
           <Button
             variant="outline"
@@ -481,12 +481,16 @@ function MemberDetail() {
             onClick={() => setConfirmDelete(true)}
           >
             <Trash2 className="mr-2 size-4" />{" "}
-            {isPastor ? "Delete account" : "Request account deletion"}
+            {/* Children/Teens leaders remove the profile themselves; Admin staff
+                ask the pastor; the pastor deletes accounts outright. */}
+            {isPastor ? "Delete account" : isFullAccess ? "Request account deletion" : "Delete profile"}
           </Button>
           <p className="mt-2 text-center text-xs text-muted-foreground">
             {isPastor
               ? "Permanently removes this person, their profile, attendance and follow-up records."
-              : "The pastor has to approve before this account and its records are removed."}
+              : isFullAccess
+                ? "The pastor has to approve before this account and its records are removed."
+                : "Permanently removes this profile with its attendance and follow-up records. Children or teens with their own login need the pastor instead."}
           </p>
         </section>
       )}
@@ -495,12 +499,18 @@ function MemberDetail() {
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>
-              {isPastor ? "Delete this account?" : "Ask the pastor to delete this account?"}
+              {isPastor
+                ? "Delete this account?"
+                : isFullAccess
+                  ? "Ask the pastor to delete this account?"
+                  : "Delete this profile?"}
             </AlertDialogTitle>
             <AlertDialogDescription>
               {isPastor
                 ? `This permanently wipes ${m.full_name} from the database — profile, attendance and follow-up records included. This action cannot be undone.`
-                : `The pastor will be asked to approve removing ${m.full_name}. Nothing is deleted until the pastor approves.`}
+                : isFullAccess
+                  ? `The pastor will be asked to approve removing ${m.full_name}. Nothing is deleted until the pastor approves.`
+                  : `This permanently removes ${m.full_name}'s profile, attendance and follow-up records. This action cannot be undone.`}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
@@ -514,12 +524,14 @@ function MemberDetail() {
               disabled={deleting}
             >
               {deleting
-                ? isPastor
+                ? isPastor || !isFullAccess
                   ? "Deleting…"
                   : "Sending…"
                 : isPastor
                   ? "Delete account"
-                  : "Send request"}
+                  : isFullAccess
+                    ? "Send request"
+                    : "Delete profile"}
             </AlertDialogAction>
 
           </AlertDialogFooter>
