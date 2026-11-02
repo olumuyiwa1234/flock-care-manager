@@ -1,7 +1,7 @@
 import { createFileRoute, Link, useNavigate, useSearch } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { ChevronLeft } from "lucide-react";
+import { ChevronLeft, Phone, UserRound } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { AppShell, EmptyState } from "@/components/AppShell";
 import { MemberPhoto } from "@/components/MemberPhoto";
@@ -181,12 +181,15 @@ function FollowUpList() {
       ) : (
         <ul className="space-y-2">
           {needsFollowUp.map(({ member, missed }) => (
-            <li key={member.id}>
-              {/* Tapping a member opens the follow-up form already set to that person. */}
+            <li
+              key={member.id}
+              className="flex items-center gap-3 rounded-2xl border border-border bg-card p-3"
+            >
+              {/* Tapping the main area opens the follow-up form set to that person. */}
               <button
                 type="button"
                 onClick={() => navigate({ to: "/followup", search: { memberId: member.id, view: undefined } })}
-                className="flex w-full items-center gap-3 rounded-2xl border border-border bg-card p-3 text-left"
+                className="flex min-w-0 flex-1 items-center gap-3 text-left"
               >
                 <MemberPhoto path={member.photo_url} name={member.full_name} />
                 <span className="min-w-0 flex-1">
@@ -200,6 +203,15 @@ function FollowUpList() {
                   {missed} missed
                 </span>
               </button>
+              {/* Separate link so leaders can jump straight to the member's profile. */}
+              <Link
+                to="/members/$memberId"
+                params={{ memberId: member.id }}
+                aria-label={`View ${member.full_name}'s profile`}
+                className="flex shrink-0 items-center gap-1 rounded-full border border-border px-2 py-1 text-xs text-primary"
+              >
+                <UserRound className="h-3.5 w-3.5" /> Profile
+              </Link>
             </li>
           ))}
         </ul>
@@ -294,6 +306,33 @@ function FollowUpForm({ memberId }: { memberId: string }) {
       >
         <ChevronLeft className="mr-1 h-4 w-4" /> All follow-ups
       </Button>
+
+      {/* Member contact details: phone number for calling, and a link to the full profile. */}
+      {member && (
+        <div className="mb-3 flex flex-wrap items-center justify-between gap-2 rounded-2xl border border-border bg-card p-3">
+          <div className="flex min-w-0 items-center gap-2">
+            <Phone className="h-4 w-4 shrink-0 text-primary" />
+            <div className="min-w-0">
+              <p className="text-xs text-muted-foreground">Phone number</p>
+              {/* Tap to call straight from the follow-up form when a number exists. */}
+              {member.phone ? (
+                <a href={`tel:${member.phone}`} className="block truncate text-sm font-medium text-primary">
+                  {member.phone}
+                </a>
+              ) : (
+                <p className="text-sm text-muted-foreground">Not provided</p>
+              )}
+            </div>
+          </div>
+          <Link
+            to="/members/$memberId"
+            params={{ memberId: member.id }}
+            className="flex shrink-0 items-center gap-1 rounded-full border border-border px-3 py-1.5 text-xs font-medium text-primary"
+          >
+            <UserRound className="h-3.5 w-3.5" /> View profile
+          </Link>
+        </div>
+      )}
 
       <div className="space-y-4 rounded-2xl border border-border bg-card p-4">
         <div className="grid grid-cols-2 gap-3">
