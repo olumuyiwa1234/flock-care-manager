@@ -18,6 +18,7 @@ import {
   UserCog,
   UserPlus,
   UserRound,
+  BookOpen,
   Users,
   Sparkles,
 } from "lucide-react";
