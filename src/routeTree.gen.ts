@@ -15,6 +15,7 @@ import { Route as AuthRouteImport } from './routes/auth'
 import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as AuthenticatedAnnouncementsRouteImport } from './routes/_authenticated/announcements'
 import { Route as AuthenticatedApprovalsRouteImport } from './routes/_authenticated/approvals'
+import { Route as AuthenticatedAskAiRouteImport } from './routes/_authenticated/ask-ai'
 import { Route as AuthenticatedAttendanceRouteImport } from './routes/_authenticated/attendance'
 import { Route as AuthenticatedCelebrationsRouteImport } from './routes/_authenticated/celebrations'
 import { Route as AuthenticatedCheckinRouteImport } from './routes/_authenticated/checkin'
@@ -31,6 +32,7 @@ import { Route as AuthenticatedReportsRouteImport } from './routes/_authenticate
 import { Route as AuthenticatedRolesRouteImport } from './routes/_authenticated/roles'
 import { Route as AuthenticatedSettingsRouteImport } from './routes/_authenticated/settings'
 import { Route as AuthenticatedTestimoniesRouteImport } from './routes/_authenticated/testimonies'
+import { Route as ApiChatRouteImport } from './routes/api/chat'
 import { Route as AuthenticatedChildrenIndexRouteImport } from './routes/_authenticated/children/index'
 import { Route as AuthenticatedChildrenFollowupRouteImport } from './routes/_authenticated/children/followup'
 import { Route as AuthenticatedChildrenNewRouteImport } from './routes/_authenticated/children/new'
@@ -71,6 +73,11 @@ const AuthenticatedAnnouncementsRoute =
 const AuthenticatedApprovalsRoute = AuthenticatedApprovalsRouteImport.update({
   id: '/approvals',
   path: '/approvals',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedAskAiRoute = AuthenticatedAskAiRouteImport.update({
+  id: '/ask-ai',
+  path: '/ask-ai',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedAttendanceRoute = AuthenticatedAttendanceRouteImport.update({
@@ -158,6 +165,11 @@ const AuthenticatedTestimoniesRoute =
     path: '/testimonies',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const ApiChatRoute = ApiChatRouteImport.update({
+  id: '/api/chat',
+  path: '/api/chat',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AuthenticatedChildrenIndexRoute =
   AuthenticatedChildrenIndexRouteImport.update({
     id: '/children/',
@@ -228,6 +240,7 @@ export interface FileRoutesByFullPath {
   '/reset-password': typeof ResetPasswordRoute
   '/announcements': typeof AuthenticatedAnnouncementsRoute
   '/approvals': typeof AuthenticatedApprovalsRoute
+  '/ask-ai': typeof AuthenticatedAskAiRoute
   '/attendance': typeof AuthenticatedAttendanceRoute
   '/celebrations': typeof AuthenticatedCelebrationsRoute
   '/checkin': typeof AuthenticatedCheckinRoute
@@ -244,6 +257,7 @@ export interface FileRoutesByFullPath {
   '/roles': typeof AuthenticatedRolesRoute
   '/settings': typeof AuthenticatedSettingsRoute
   '/testimonies': typeof AuthenticatedTestimoniesRoute
+  '/api/chat': typeof ApiChatRoute
   '/children/followup': typeof AuthenticatedChildrenFollowupRoute
   '/children/new': typeof AuthenticatedChildrenNewRoute
   '/members/$memberId': typeof AuthenticatedMembersMemberIdRoute
@@ -262,6 +276,7 @@ export interface FileRoutesByTo {
   '/reset-password': typeof ResetPasswordRoute
   '/announcements': typeof AuthenticatedAnnouncementsRoute
   '/approvals': typeof AuthenticatedApprovalsRoute
+  '/ask-ai': typeof AuthenticatedAskAiRoute
   '/attendance': typeof AuthenticatedAttendanceRoute
   '/celebrations': typeof AuthenticatedCelebrationsRoute
   '/checkin': typeof AuthenticatedCheckinRoute
@@ -278,6 +293,7 @@ export interface FileRoutesByTo {
   '/roles': typeof AuthenticatedRolesRoute
   '/settings': typeof AuthenticatedSettingsRoute
   '/testimonies': typeof AuthenticatedTestimoniesRoute
+  '/api/chat': typeof ApiChatRoute
   '/children/followup': typeof AuthenticatedChildrenFollowupRoute
   '/children/new': typeof AuthenticatedChildrenNewRoute
   '/members/$memberId': typeof AuthenticatedMembersMemberIdRoute
@@ -298,6 +314,7 @@ export interface FileRoutesById {
   '/reset-password': typeof ResetPasswordRoute
   '/_authenticated/announcements': typeof AuthenticatedAnnouncementsRoute
   '/_authenticated/approvals': typeof AuthenticatedApprovalsRoute
+  '/_authenticated/ask-ai': typeof AuthenticatedAskAiRoute
   '/_authenticated/attendance': typeof AuthenticatedAttendanceRoute
   '/_authenticated/celebrations': typeof AuthenticatedCelebrationsRoute
   '/_authenticated/checkin': typeof AuthenticatedCheckinRoute
@@ -314,6 +331,7 @@ export interface FileRoutesById {
   '/_authenticated/roles': typeof AuthenticatedRolesRoute
   '/_authenticated/settings': typeof AuthenticatedSettingsRoute
   '/_authenticated/testimonies': typeof AuthenticatedTestimoniesRoute
+  '/api/chat': typeof ApiChatRoute
   '/_authenticated/children/followup': typeof AuthenticatedChildrenFollowupRoute
   '/_authenticated/children/new': typeof AuthenticatedChildrenNewRoute
   '/_authenticated/members/$memberId': typeof AuthenticatedMembersMemberIdRoute
@@ -334,6 +352,7 @@ export interface FileRouteTypes {
     | '/reset-password'
     | '/announcements'
     | '/approvals'
+    | '/ask-ai'
     | '/attendance'
     | '/celebrations'
     | '/checkin'
@@ -350,6 +369,7 @@ export interface FileRouteTypes {
     | '/roles'
     | '/settings'
     | '/testimonies'
+    | '/api/chat'
     | '/children/followup'
     | '/children/new'
     | '/members/$memberId'
@@ -368,6 +388,7 @@ export interface FileRouteTypes {
     | '/reset-password'
     | '/announcements'
     | '/approvals'
+    | '/ask-ai'
     | '/attendance'
     | '/celebrations'
     | '/checkin'
@@ -384,6 +405,7 @@ export interface FileRouteTypes {
     | '/roles'
     | '/settings'
     | '/testimonies'
+    | '/api/chat'
     | '/children/followup'
     | '/children/new'
     | '/members/$memberId'
@@ -403,6 +425,7 @@ export interface FileRouteTypes {
     | '/reset-password'
     | '/_authenticated/announcements'
     | '/_authenticated/approvals'
+    | '/_authenticated/ask-ai'
     | '/_authenticated/attendance'
     | '/_authenticated/celebrations'
     | '/_authenticated/checkin'
@@ -419,6 +442,7 @@ export interface FileRouteTypes {
     | '/_authenticated/roles'
     | '/_authenticated/settings'
     | '/_authenticated/testimonies'
+    | '/api/chat'
     | '/_authenticated/children/followup'
     | '/_authenticated/children/new'
     | '/_authenticated/members/$memberId'
@@ -437,6 +461,7 @@ export interface RootRouteChildren {
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
   AuthRoute: typeof AuthRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
+  ApiChatRoute: typeof ApiChatRoute
   ApiPublicHooksAutoCelebrationGreetingsRoute: typeof ApiPublicHooksAutoCelebrationGreetingsRoute
   ApiPublicHooksCelebrationPushRoute: typeof ApiPublicHooksCelebrationPushRoute
 }
@@ -483,6 +508,13 @@ declare module '@tanstack/react-router' {
       path: '/approvals'
       fullPath: '/approvals'
       preLoaderRoute: typeof AuthenticatedApprovalsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/ask-ai': {
+      id: '/_authenticated/ask-ai'
+      path: '/ask-ai'
+      fullPath: '/ask-ai'
+      preLoaderRoute: typeof AuthenticatedAskAiRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/attendance': {
@@ -597,6 +629,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedTestimoniesRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/api/chat': {
+      id: '/api/chat'
+      path: '/api/chat'
+      fullPath: '/api/chat'
+      preLoaderRoute: typeof ApiChatRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/_authenticated/children/': {
       id: '/_authenticated/children/'
       path: '/children'
@@ -680,6 +719,7 @@ declare module '@tanstack/react-router' {
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedAnnouncementsRoute: typeof AuthenticatedAnnouncementsRoute
   AuthenticatedApprovalsRoute: typeof AuthenticatedApprovalsRoute
+  AuthenticatedAskAiRoute: typeof AuthenticatedAskAiRoute
   AuthenticatedAttendanceRoute: typeof AuthenticatedAttendanceRoute
   AuthenticatedCelebrationsRoute: typeof AuthenticatedCelebrationsRoute
   AuthenticatedCheckinRoute: typeof AuthenticatedCheckinRoute
@@ -710,6 +750,7 @@ interface AuthenticatedRouteRouteChildren {
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedAnnouncementsRoute: AuthenticatedAnnouncementsRoute,
   AuthenticatedApprovalsRoute: AuthenticatedApprovalsRoute,
+  AuthenticatedAskAiRoute: AuthenticatedAskAiRoute,
   AuthenticatedAttendanceRoute: AuthenticatedAttendanceRoute,
   AuthenticatedCelebrationsRoute: AuthenticatedCelebrationsRoute,
   AuthenticatedCheckinRoute: AuthenticatedCheckinRoute,
@@ -745,6 +786,7 @@ const rootRouteChildren: RootRouteChildren = {
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
   AuthRoute: AuthRoute,
   ResetPasswordRoute: ResetPasswordRoute,
+  ApiChatRoute: ApiChatRoute,
   ApiPublicHooksAutoCelebrationGreetingsRoute:
     ApiPublicHooksAutoCelebrationGreetingsRoute,
   ApiPublicHooksCelebrationPushRoute: ApiPublicHooksCelebrationPushRoute,

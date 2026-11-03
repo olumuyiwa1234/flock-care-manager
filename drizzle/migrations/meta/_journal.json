@@ -71,6 +71,13 @@
       "when": 1793531773263,
       "tag": "0009_youth_leader_profile_edit",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1793688556722,
+      "tag": "0010_ai_chat_messages",
+      "breakpoints": true
     }
   ]
 }
