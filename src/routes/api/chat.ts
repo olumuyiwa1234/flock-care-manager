@@ -76,7 +76,7 @@ async function postChat({ request }: { request: Request }) {
   };
 
   // --- 4. Stream the answer through the Lovable AI Gateway ------------------
-  const { response } = handleShepherdChat(request, { messages, persist });
+  const { response } = await handleShepherdChat(request, { messages, persist });
   return response();
 }
 

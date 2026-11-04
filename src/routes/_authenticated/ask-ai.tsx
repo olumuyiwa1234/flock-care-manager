@@ -92,7 +92,7 @@ function ChatWindow({ initialMessages }: { initialMessages: UIMessage[] }) {
     });
     // A failed save must not stop the answer; tell the member and continue.
     if (error) toast.error("Your question could not be saved, but the answer will still come.");
-    chat.sendMessage({ id, text: content });
+    chat.sendMessage({ text: content, messageId: id });
   }
 
   return (

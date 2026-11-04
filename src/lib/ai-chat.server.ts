@@ -200,7 +200,7 @@ function safeGatewayError(error: unknown): string {
   return "The AI assistant could not answer right now. Please try again shortly.";
 }
 
-export function handleShepherdChat(
+export async function handleShepherdChat(
   request: Request,
   opts: {
     // The whole conversation as UI messages (history + the new question).
@@ -231,7 +231,7 @@ export function handleShepherdChat(
   const result = streamText({
     model: provider.responses("openai/gpt-6-astra"),
     system: SYSTEM_PROMPT,
-    messages: convertToModelMessages(opts.messages),
+    messages: await convertToModelMessages(opts.messages),
     abortSignal: request.signal,
     maxRetries: 0,
     providerOptions: {
@@ -243,21 +243,6 @@ export function handleShepherdChat(
         include: ["reasoning.encrypted_content"],
       },
     },
-    // When the stream ends, hand the finished assistant message to the
-    // caller for persistence (duplicates are ignored by the database).
-    onEnd: async (event) => {
-      const last = event.messages[event.messages.length - 1];
-      if (!last || last.role !== "assistant") return;
-      // Keep partial answers from an aborted stream, but skip empty ones.
-      const hasText = last.parts.some((p) => p.type === "text" && p.text.trim().length > 0);
-      if (!hasText) return;
-      try {
-        await opts.persist({ messageId: last.id, role: last.role, parts: last.parts });
-      } catch (error) {
-        // Persistence must never break the streamed answer; log and move on.
-        console.error("[ask-ai] failed to save assistant message", error);
-      }
-    },
   });
 
   return {
@@ -267,6 +252,23 @@ export function handleShepherdChat(
           originalMessages: opts.messages,
           sendReasoning: true,
           onError: safeGatewayError,
+          // When the UI message stream finishes, hand the completed assistant
+          // message to the caller for persistence (re-saves are ignored).
+          onEnd: async (event) => {
+            const last = event.messages[event.messages.length - 1];
+            if (!last || last.role !== "assistant") return;
+            // Keep partial answers from an aborted stream, but skip empty ones.
+            const hasText = last.parts.some(
+              (p) => p.type === "text" && p.text.trim().length > 0,
+            );
+            if (!hasText) return;
+            try {
+              await opts.persist({ messageId: last.id, role: last.role, parts: last.parts });
+            } catch (error) {
+              // Persistence must never break the streamed answer; log only.
+              console.error("[ask-ai] failed to save assistant message", error);
+            }
+          },
         }),
         runIdFetch,
       ),
