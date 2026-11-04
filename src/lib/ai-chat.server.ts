@@ -200,7 +200,7 @@ function safeGatewayError(error: unknown): string {
   return "The AI assistant could not answer right now. Please try again shortly.";
 }
 
-export function handleShepherdChat(
+export async function handleShepherdChat(
   request: Request,
   opts: {
     // The whole conversation as UI messages (history + the new question).
