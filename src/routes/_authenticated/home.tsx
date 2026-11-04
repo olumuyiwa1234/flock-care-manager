@@ -59,6 +59,8 @@ const tiles = [
   { to: "/roles", label: "User Roles", icon: UserCog, staffOnly: true, pastorOnly: true },
   { to: "/profile", label: "My Profile", icon: UserRound, staffOnly: false },
   { to: "/feedback", label: "Feedback", icon: Lightbulb, staffOnly: false },
+  // Ask AI: every signed-in user can ask the AI assistant Bible and church questions.
+  { to: "/ask-ai", label: "Ask AI", icon: BookOpen, staffOnly: false },
   // Testimonies: every signed-in user can share and read testimonies.
   { to: "/testimonies", label: "Testimonies", icon: Sparkles, staffOnly: false },
   { to: "/contact-pastor", label: "Contact Pastor", icon: MessageSquareHeart, staffOnly: false },
