@@ -70,7 +70,7 @@ async function postChat({ request }: { request: Request }) {
         role: message.role,
         parts: message.parts as Database["public"]["Tables"]["ai_chat_messages"]["Insert"]["parts"],
       },
-      { onConflict: "user_id,message_id" },
+      { onConflict: "user_id,message_id", ignoreDuplicates: true },
     );
     if (error) console.error("[ask-ai] failed to save assistant message", error.message);
   };
