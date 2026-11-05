@@ -62,7 +62,20 @@ function ChatWindow({ initialMessages }: { initialMessages: UIMessage[] }) {
   const { auth } = useAuth();
 
   // Transport: post the conversation to the app's own streaming endpoint.
-  const transport = useMemo(() => new DefaultChatTransport({ api: "/api/chat" }), []);
+  // Every request carries the signed-in user's token, which the server
+  // verifies before streaming an answer or saving it to the transcript.
+  const transport = useMemo(
+    () =>
+      new DefaultChatTransport({
+        api: "/api/chat",
+        headers: async () => {
+          const { data } = await supabase.auth.getSession();
+          const token = data.session?.access_token;
+          return token ? { Authorization: `Bearer ${token}` } : {};
+        },
+      }),
+    [],
+  );
 
   // Wire the chat: optimistic sending, streaming status and error toasts.
   const chat = useChat({
