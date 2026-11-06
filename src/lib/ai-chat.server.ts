@@ -250,6 +250,9 @@ export async function handleShepherdChat(
       withLovableAiGatewayRunIdHeader(
         result.toUIMessageStreamResponse({
           originalMessages: opts.messages,
+          // The response message needs an id of its own: without a generator
+          // it is saved (and reloaded) with an empty id.
+          generateMessageId: () => crypto.randomUUID(),
           sendReasoning: true,
           onError: safeGatewayError,
           // When the UI message stream finishes, hand the completed assistant
