@@ -63,7 +63,6 @@ async function postChat({ request }: { request: Request }) {
   // Saves each finished assistant message to this caller's transcript; the
   // database's unique index makes re-saves (retries) harmless.
   const persist = async (message: { messageId: string; role: string; parts: unknown }) => {
-    console.log("[ask-ai] persist called for", message.messageId);
     const { error } = await supabase.from("ai_chat_messages").upsert(
       {
         user_id: userId,
