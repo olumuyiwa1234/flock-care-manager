@@ -1,5 +1,5 @@
 // ============================================================================
-// "Ask AI" page — one conversation per user, saved in the app database.
+// "Ask Shepherd" page — one conversation per user, saved in the app database.
 // Members ask Bible questions, seek advice or ask about RCCG; answers stream
 // in from the AI assistant at /api/chat and both sides of the conversation
 // are stored so history survives closing the app or changing device.
@@ -36,12 +36,12 @@ import { Shimmer } from "@/components/ai-elements/shimmer";
 export const Route = createFileRoute("/_authenticated/ask-ai")({
   head: () => ({
     meta: [
-      { title: "Ask AI — Shepherd" },
+      { title: "Ask Shepherd — Shepherd" },
       {
         name: "description",
         content: "Ask Bible questions, seek advice and learn about RCCG from the church AI assistant.",
       },
-      { property: "og:title", content: "Ask AI — Shepherd" },
+      { property: "og:title", content: "Ask Shepherd — Shepherd" },
       { property: "og:description", content: "Bible answers, advice and church questions from the AI assistant." },
     ],
   }),
@@ -119,7 +119,7 @@ function ChatWindow({ initialMessages }: { initialMessages: UIMessage[] }) {
             <div className="flex flex-col items-center gap-4 py-8 text-center">
               <img
                 src={askAiIcon}
-                alt="Ask AI"
+                alt="Ask Shepherd"
                 width={96}
                 height={96}
                 loading="lazy"
@@ -221,7 +221,7 @@ function AskAI() {
   });
 
   return (
-    <AppShell title="Ask AI" subtitle="Bible answers, advice and church questions" back="/home">
+    <AppShell title="Ask Shepherd" subtitle="Bible answers, advice and church questions" back="/home">
       {history.isLoading && <p className="text-sm text-muted-foreground">Loading…</p>}
       {history.isError && (
         <EmptyState title="Could not load your conversation" hint={history.error.message} />
